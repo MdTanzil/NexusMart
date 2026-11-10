@@ -1,16 +1,5 @@
-import React from "react";
+import NexusEcommercePlatform from "@/components/NexusEcommercePlatform";
 
-export const metadata = {
-  title: "Permission-Aware Executive Admin Dashboard & Recharts Analytics | NexusMart Enterprise",
-};
-
-export default async function Page() {
-  return (
-    <main className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Permission-Aware Executive Admin Dashboard & Recharts Analytics</h1>
-      <p className="text-sm text-slate-500 mt-1">
-        Connected to PostgreSQL via Prisma ORM and protected by server-side RBAC permissions.
-      </p>
-    </main>
-  );
+export default function AdminDashboardPage() {
+  return <NexusEcommercePlatform />;
 }

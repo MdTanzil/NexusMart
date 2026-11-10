@@ -28,7 +28,21 @@ import {
   MapPin,
   Sparkles,
   DollarSign,
-  KeyRound
+  KeyRound,
+  LogOut,
+  LogIn,
+  Crown,
+  TrendingUp,
+  ArrowUpRight,
+  SlidersHorizontal,
+  Star,
+  Check,
+  Eye,
+  Plus,
+  FileText,
+  Phone,
+  Mail,
+  ShieldAlert
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -95,16 +109,26 @@ interface StaffUser {
   name: string;
   email: string;
   phone: string;
+  password?: string;
   employeeCode: string;
   department: string;
   designation: string;
   roleId: string;
+  isSuperuser?: boolean;
   directPermissions: string[];
   status: "ACTIVE" | "INACTIVE";
   ordersAssigned: number;
   ordersCompleted: number;
   ordersCancelled: number;
   cashCollected: number;
+}
+
+interface CustomerAccount {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  loyaltyPoints: number;
 }
 
 interface CategoryItem {
@@ -142,6 +166,7 @@ interface ProductItem {
   rating: number;
   reviewCount: number;
   imageGrad: string;
+  badgeText?: string;
   variants: ProductVariantItem[];
 }
 
@@ -290,7 +315,7 @@ const INITIAL_ROLES: RoleDef[] = [
     id: "role-super-admin",
     name: "Super Admin",
     slug: "SUPER_ADMIN",
-    description: "Unrestricted full system access including financials, custom roles, staff management, and website settings.",
+    description: "Unrestricted full system access including financials, superuser promotion, custom roles, staff management, and website settings.",
     isSystem: true,
     permissions: ALL_PERMISSIONS.map((p) => p.code)
   },
@@ -374,10 +399,12 @@ const INITIAL_STAFF: StaffUser[] = [
     name: "Tanvir Rahman",
     email: "superadmin@nexusmart.com.bd",
     phone: "+8801711001100",
+    password: "Password123!",
     employeeCode: "STF-001",
     department: "Executive Operations",
-    designation: "Super Admin & Chief Architect",
+    designation: "Superuser & Chief Systems Architect",
     roleId: "role-super-admin",
+    isSuperuser: true,
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 22,
@@ -390,10 +417,12 @@ const INITIAL_STAFF: StaffUser[] = [
     name: "Nusrat Jahan",
     email: "manager@nexusmart.com.bd",
     phone: "+8801711002200",
+    password: "Password123!",
     employeeCode: "STF-002",
     department: "Catalog & Operations",
     designation: "Senior Operations Manager",
     roleId: "role-admin-manager",
+    isSuperuser: false,
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 45,
@@ -406,10 +435,12 @@ const INITIAL_STAFF: StaffUser[] = [
     name: "Rafiqul Islam",
     email: "moderator@nexusmart.com.bd",
     phone: "+8801711003300",
+    password: "Password123!",
     employeeCode: "STF-003",
     department: "Customer Verification",
     designation: "Lead Order Moderator",
     roleId: "role-moderator",
+    isSuperuser: false,
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 68,
@@ -422,10 +453,12 @@ const INITIAL_STAFF: StaffUser[] = [
     name: "Sadia Afrin",
     email: "processor@nexusmart.com.bd",
     phone: "+8801711004400",
+    password: "Password123!",
     employeeCode: "STF-004",
     department: "Warehouse & Packing",
     designation: "Order Processing Specialist",
     roleId: "role-processor",
+    isSuperuser: false,
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 54,
@@ -438,10 +471,12 @@ const INITIAL_STAFF: StaffUser[] = [
     name: "Kamrul Hasan",
     email: "delivery@nexusmart.com.bd",
     phone: "+8801711005500",
+    password: "Password123!",
     employeeCode: "STF-005",
     department: "Fleet Logistics",
     designation: "Senior Delivery Executive",
     roleId: "role-delivery",
+    isSuperuser: false,
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 41,
@@ -477,7 +512,8 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     isActive: true,
     rating: 4.9,
     reviewCount: 42,
-    imageGrad: "from-indigo-600 to-slate-900",
+    imageGrad: "from-violet-600 via-indigo-700 to-slate-900",
+    badgeText: "BESTSELLER",
     variants: [
       { id: "v-101a", name: "Obsidian Black", sku: "NX-AUD-101-BLK", priceDelta: 0, stock: 20 },
       { id: "v-101b", name: "Titanium Silver", sku: "NX-AUD-101-SLV", priceDelta: 200, stock: 14 }
@@ -501,7 +537,8 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     isActive: true,
     rating: 4.8,
     reviewCount: 31,
-    imageGrad: "from-emerald-600 to-teal-900",
+    imageGrad: "from-emerald-500 via-teal-700 to-slate-900",
+    badgeText: "LOW STOCK",
     variants: [
       { id: "v-204a", name: "Orange Alpine Loop", sku: "NX-WTC-204-ORG", priceDelta: 0, stock: 5 },
       { id: "v-204b", name: "Midnight Ocean Band", sku: "NX-WTC-204-MID", priceDelta: 0, stock: 3 }
@@ -525,7 +562,8 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     isActive: true,
     rating: 4.9,
     reviewCount: 27,
-    imageGrad: "from-violet-600 to-purple-950",
+    imageGrad: "from-fuchsia-600 via-purple-800 to-slate-950",
+    badgeText: "PRO SERIES",
     variants: [
       { id: "v-309a", name: "Tactile Brown Switch", sku: "NX-KBD-309-BRN", priceDelta: 0, stock: 11 },
       { id: "v-309b", name: "Linear Red Switch", sku: "NX-KBD-309-RED", priceDelta: 0, stock: 8 }
@@ -549,7 +587,8 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     isActive: true,
     rating: 4.7,
     reviewCount: 19,
-    imageGrad: "from-amber-600 to-orange-950",
+    imageGrad: "from-amber-500 via-orange-700 to-stone-950",
+    badgeText: "140W GAN",
     variants: [
       { id: "v-412a", name: "Space Gray 140W", sku: "NX-PWR-412-GRY", priceDelta: 0, stock: 6 }
     ]
@@ -572,7 +611,8 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     isActive: true,
     rating: 4.8,
     reviewCount: 53,
-    imageGrad: "from-sky-600 to-blue-950",
+    imageGrad: "from-sky-500 via-blue-700 to-slate-950",
+    badgeText: "NEW ARRIVAL",
     variants: [
       { id: "v-501m", name: "Size M (40)", sku: "NX-APR-501-M", priceDelta: 0, stock: 14 },
       { id: "v-501l", name: "Size L (42)", sku: "NX-APR-501-L", priceDelta: 0, stock: 18 },
@@ -597,7 +637,8 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     isActive: true,
     rating: 4.6,
     reviewCount: 15,
-    imageGrad: "from-rose-600 to-slate-900",
+    imageGrad: "from-rose-500 via-pink-700 to-slate-950",
+    badgeText: "EYE CARE",
     variants: [
       { id: "v-608a", name: "Matte Black", sku: "NX-WKS-608-BLK", priceDelta: 0, stock: 25 }
     ]
@@ -934,10 +975,10 @@ const INITIAL_ACTIVITY_LOGS: ActivityLogItem[] = [
     id: "log-3",
     staffName: "Tanvir Rahman",
     staffRole: "Super Admin",
-    action: "RBAC_POLICY_VERIFIED",
+    action: "SUPERUSER_CONFIGURED",
     module: "ROLES",
     targetId: "SUPER_ADMIN",
-    details: "Audited server-side permission matrix across 28 granular permission codes",
+    details: "Configured Superuser privileges across all 28 granular permission codes",
     createdAt: "2026-11-10 08:30 AM"
   }
 ];
@@ -1005,7 +1046,26 @@ function getStatusBadgeStyle(status: OrderStatus): string {
 
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
-  const [portalMode, setPortalMode] = useState<"STOREFRONT" | "ADMIN" | "ARCHITECTURE">("ADMIN");
+
+  // ==========================================================================
+  // STRICT SESSION SEPARATION:
+  // - By default, visitors are normal customers ("CUSTOMER") on the Storefront.
+  // - Normal users NEVER see the Admin menu, Staff ERP bar, or RBAC switcher.
+  // - Only when signed in as Staff / Superuser (`isStaffLoggedIn === true`)
+  //   does the Admin Dashboard & Staff Control Bar become visible!
+  // ==========================================================================
+  const [isStaffLoggedIn, setIsStaffLoggedIn] = useState<boolean>(false);
+  const [loggedInCustomer, setLoggedInCustomer] = useState<CustomerAccount | null>({
+    id: "cust-1",
+    name: "Mahmudul Hasan",
+    email: "mahmudul@example.com",
+    phone: "01712345678",
+    loyaltyPoints: 420
+  });
+
+  const [portalMode, setPortalMode] = useState<"STOREFRONT" | "ADMIN" | "ARCHITECTURE">(
+    "STOREFRONT"
+  );
   const [activeStaffId, setActiveStaffId] = useState<string>("stf-1");
 
   const [storePage, setStorePage] = useState<
@@ -1025,6 +1085,25 @@ export default function App() {
   >("HOME");
   const [selectedProductId, setSelectedProductId] = useState<string>("prd-1");
   const [selectedVariantId, setSelectedVariantId] = useState<string>("v-101a");
+
+  // Auth page sub-tabs ("CUSTOMER_LOGIN" | "STAFF_LOGIN" | "SUPERUSER_SETUP")
+  const [authMode, setAuthMode] = useState<"CUSTOMER_LOGIN" | "STAFF_LOGIN" | "SUPERUSER_SETUP">(
+    "STAFF_LOGIN"
+  );
+  const [staffLoginEmail, setStaffLoginEmail] = useState<string>("superadmin@nexusmart.com.bd");
+  const [staffLoginPassword, setStaffLoginPassword] = useState<string>("Password123!");
+  const [customerLoginEmail, setCustomerLoginEmail] = useState<string>("mahmudul@example.com");
+  const [customerLoginName, setCustomerLoginName] = useState<string>("Mahmudul Hasan");
+  const [customerLoginPhone, setCustomerLoginPhone] = useState<string>("01712345678");
+
+  // Superuser creation / promotion state
+  const [superuserForm, setSuperuserForm] = useState({
+    name: "",
+    email: "",
+    phone: "+8801700000000",
+    password: "",
+    employeeCode: "SU-001"
+  });
 
   const [adminTab, setAdminTab] = useState<
     | "DASHBOARD"
@@ -1055,7 +1134,7 @@ export default function App() {
   const [reviews, setReviews] = useState<ReviewItem[]>(INITIAL_REVIEWS);
 
   const [settings, setSettings] = useState({
-    companyName: "NexusMart Enterprise",
+    companyName: "NexusMart",
     companyNameBn: "নেক্সাসমার্ট এন্টারপ্রাইজ",
     companyAddress: "House 42, Road 11, Banani, Dhaka-1213, Bangladesh",
     companyAddressBn: "বাড়ি ৪২, রোড ১১, বনানী, ঢাকা-১২১৩, বাংলাদেশ",
@@ -1072,7 +1151,7 @@ export default function App() {
     invoiceThankYouEn: "Thank you for shopping with NexusMart Enterprise!",
     invoiceThankYouBn: "নেক্সাসমার্ট এন্টারপ্রাইজ থেকে কেনাকাটার জন্য আপনাকে ধন্যবাদ!",
     promoBannerText:
-      "Flash Deal: Up to 25% OFF on Flagship Electronics + Free Delivery over ৳5,000! Use Code: NEXUS15",
+      "SEASON FINALE: Up to 25% OFF Flagship Audio & Wearables + Free Express Delivery over ৳5,000 — Code: NEXUS15",
     promoBannerActive: true
   });
 
@@ -1196,14 +1275,14 @@ export default function App() {
       ...(activeRole?.permissions || []),
       ...(activeStaff?.directPermissions || [])
     ]);
-    if (activeRole?.slug === "SUPER_ADMIN") {
+    if (activeRole?.slug === "SUPER_ADMIN" || activeStaff?.isSuperuser) {
       ALL_PERMISSIONS.forEach((p) => set.add(p.code));
     }
     return set;
   }, [activeRole, activeStaff]);
 
   const hasPerm = (code: string | string[]): boolean => {
-    if (activeRole?.slug === "SUPER_ADMIN") return true;
+    if (activeRole?.slug === "SUPER_ADMIN" || activeStaff?.isSuperuser) return true;
     const list = Array.isArray(code) ? code : [code];
     return list.some((c) => activePermissions.has(c));
   };
@@ -1217,9 +1296,130 @@ export default function App() {
       module,
       targetId,
       details,
-      createdAt: "2026-11-10 02:25 PM"
+      createdAt: "2026-11-10 04:15 PM"
     };
     setActivityLogs((prev) => [entry, ...prev]);
+  };
+
+  // ==========================================================================
+  // STAFF LOGIN, CUSTOMER LOGIN & SUPERUSER CREATION HANDLERS
+  // ==========================================================================
+
+  const handleStaffLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const matched = staffList.find(
+      (s) => s.email.toLowerCase() === staffLoginEmail.trim().toLowerCase()
+    );
+    if (!matched) {
+      showToast("No staff account found with that email. Use Superuser Setup to create one!", "error");
+      return;
+    }
+    if (matched.status !== "ACTIVE") {
+      showToast("This staff account is currently deactivated.", "error");
+      return;
+    }
+    setActiveStaffId(matched.id);
+    setIsStaffLoggedIn(true);
+    setPortalMode("ADMIN");
+    setAdminTab("DASHBOARD");
+    const r = roles.find((rl) => rl.id === matched.roleId);
+    showToast(`Welcome back, ${matched.name}! Logged into ${r?.name} Dashboard.`);
+  };
+
+  const handleCreateOrPromoteSuperuser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!superuserForm.name.trim() || !superuserForm.email.trim()) {
+      showToast("Please enter both name and email to configure a Superuser.", "error");
+      return;
+    }
+    const existing = staffList.find(
+      (s) => s.email.toLowerCase() === superuserForm.email.trim().toLowerCase()
+    );
+    if (existing) {
+      setStaffList((prev) =>
+        prev.map((s) =>
+          s.id === existing.id
+            ? {
+                ...s,
+                name: superuserForm.name,
+                roleId: "role-super-admin",
+                isSuperuser: true,
+                designation: "Superuser (Owner)"
+              }
+            : s
+        )
+      );
+      setActiveStaffId(existing.id);
+      setIsStaffLoggedIn(true);
+      setPortalMode("ADMIN");
+      setAdminTab("DASHBOARD");
+      showToast(`Promoted ${superuserForm.email} to full Superuser (SUPER_ADMIN)!`);
+      return;
+    }
+
+    const newSu: StaffUser = {
+      id: `stf-su-${Date.now()}`,
+      name: superuserForm.name.trim(),
+      email: superuserForm.email.trim().toLowerCase(),
+      phone: superuserForm.phone || "+8801700000000",
+      password: superuserForm.password || "Password123!",
+      employeeCode: superuserForm.employeeCode || `SU-${staffList.length + 1}`,
+      department: "Executive Board",
+      designation: "Superuser / Platform Owner",
+      roleId: "role-super-admin",
+      isSuperuser: true,
+      directPermissions: ALL_PERMISSIONS.map((p) => p.code),
+      status: "ACTIVE",
+      ordersAssigned: 0,
+      ordersCompleted: 0,
+      ordersCancelled: 0,
+      cashCollected: 0
+    };
+
+    setStaffList((prev) => [newSu, ...prev]);
+    setActiveStaffId(newSu.id);
+    setIsStaffLoggedIn(true);
+    setPortalMode("ADMIN");
+    setAdminTab("DASHBOARD");
+    setSuperuserForm({ name: "", email: "", phone: "+8801700000000", password: "", employeeCode: "SU-002" });
+    showToast(`Created Superuser "${newSu.name}" and unlocked Executive Admin Portal!`);
+  };
+
+  const handlePromoteStaffToSuperuser = (staffId: string) => {
+    if (!hasPerm("roles.manage") && !activeStaff.isSuperuser) {
+      showToast("Only an existing Superuser can promote another account to Superuser.", "error");
+      return;
+    }
+    const target = staffList.find((s) => s.id === staffId);
+    if (!target) return;
+    setStaffList((prev) =>
+      prev.map((s) =>
+        s.id === staffId
+          ? {
+              ...s,
+              roleId: "role-super-admin",
+              isSuperuser: true,
+              designation: s.designation.includes("Superuser")
+                ? s.designation
+                : `${s.designation} (Superuser)`
+            }
+          : s
+      )
+    );
+    logAction(
+      "SUPERUSER_GRANTED",
+      "STAFF",
+      target.employeeCode,
+      `Promoted ${target.name} (${target.email}) to Superuser (SUPER_ADMIN)`
+    );
+    showToast(`${target.name} is now a full Superuser (SUPER_ADMIN)!`);
+  };
+
+  const handleStaffLogout = () => {
+    setIsStaffLoggedIn(false);
+    setPortalMode("STOREFRONT");
+    setStorePage("HOME");
+    showToast("Signed out of Staff Portal. Viewing as normal Storefront customer.", "info");
   };
 
   const filteredStoreProducts = useMemo(() => {
@@ -1331,13 +1531,13 @@ export default function App() {
         }
       ];
     });
-    showToast(`Added "${product.name}" to shopping cart!`);
+    showToast(`Added "${product.name}" to bag!`);
   };
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     if (cartDetails.lines.length === 0) {
-      showToast("Your cart is empty!", "error");
+      showToast("Your shopping bag is empty!", "error");
       return;
     }
     if (!checkoutForm.customerName.trim() || !checkoutForm.customerPhone.trim()) {
@@ -1374,7 +1574,7 @@ export default function App() {
           referenceId: newOrderNum,
           note: `Deducted for checkout order ${newOrderNum}`,
           performedBy: checkoutForm.customerName,
-          createdAt: "2026-11-10 02:26 PM"
+          createdAt: "2026-11-10 04:20 PM"
         });
         return { ...p, stockQuantity: nextStock };
       })
@@ -1410,7 +1610,7 @@ export default function App() {
       customerNotes: checkoutForm.customerNotes,
       internalNotes: "New customer order placed via storefront.",
       memoPrintCount: 0,
-      createdAt: "2026-11-10 02:26 PM",
+      createdAt: "2026-11-10 04:20 PM",
       items: cartDetails.lines.map((l) => ({
         productId: l.product.id,
         productName: l.product.name,
@@ -1428,7 +1628,7 @@ export default function App() {
           newState: "PENDING",
           note: "Order placed by customer via Checkout.",
           changedBy: checkoutForm.customerName,
-          createdAt: "2026-11-10 02:26 PM"
+          createdAt: "2026-11-10 04:20 PM"
         }
       ]
     };
@@ -1501,7 +1701,7 @@ export default function App() {
             referenceId: target.orderNumber,
             note: `Automatic stock restoration on order ${newStatus}`,
             performedBy: activeStaff.name,
-            createdAt: "2026-11-10 02:28 PM"
+            createdAt: "2026-11-10 04:22 PM"
           });
           return { ...p, stockQuantity: nextStock };
         })
@@ -1531,7 +1731,7 @@ export default function App() {
               newState: newStatus,
               note: note || `Updated to ${newStatus} by ${activeStaff.name}`,
               changedBy: activeStaff.name,
-              createdAt: "2026-11-10 02:28 PM"
+              createdAt: "2026-11-10 04:22 PM"
             }
           ]
         };
@@ -1548,6 +1748,11 @@ export default function App() {
   };
 
   const handleBulkPrintMemos = (orderIdsToPrint: string[]) => {
+    if (!isStaffLoggedIn) {
+      // Allow customer to print their own order invoice on storefront, or open print dialog
+      window.print();
+      return;
+    }
     if (!hasPerm(["invoices.print", "invoices.bulk_print"])) {
       showToast("RBAC Forbidden: You do not have permission to print order memos.", "error");
       return;
@@ -1563,7 +1768,7 @@ export default function App() {
           ? {
               ...o,
               memoPrintCount: o.memoPrintCount + 1,
-              lastPrintedAt: "2026-11-10 02:30 PM",
+              lastPrintedAt: "2026-11-10 04:25 PM",
               lastPrintedBy: activeStaff.name
             }
           : o
@@ -1739,7 +1944,13 @@ ${queueOrders
   }, [orders, products]);
 
   return (
-    <div className={darkMode ? "dark bg-slate-950 text-slate-100 min-h-screen" : "bg-slate-50 text-slate-900 min-h-screen"}>
+    <div
+      className={
+        darkMode
+          ? "dark bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white"
+          : "bg-[#f8fafc] text-slate-900 min-h-screen font-sans selection:bg-indigo-600 selection:text-white"
+      }
+    >
       <style>{`
         @media print {
           .no-print {
@@ -1758,192 +1969,220 @@ ${queueOrders
         }
       `}</style>
 
+      {/* Toast Notification */}
       {toast && (
-        <div className="no-print fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border bg-slate-900 text-white border-slate-700">
+        <div className="no-print fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border bg-slate-900/95 backdrop-blur-md text-white border-slate-700/80">
           {toast.type === "error" ? (
             <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
           ) : (
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           )}
           <span className="text-sm font-medium">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setToast(null)} className="text-slate-400 hover:text-white ml-2">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* TOP GLOBAL ROLE SIMULATOR & PORTAL SWITCHER BAR */}
-      <header className="no-print sticky top-0 z-40 bg-slate-900 text-white border-b border-slate-800 px-4 py-2.5">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-lg shadow-inner">
-              N
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold tracking-tight text-sm sm:text-base">
-                  {settings.companyName}
-                </span>
-                <span className="text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-medium">
-                  Next.js 15 + Prisma + RBAC
-                </span>
+      {/* ==================================================================== */}
+      {/* STAFF EXECUTIVE BAR — STRICTLY HIDDEN FROM NORMAL CUSTOMERS!         */}
+      {/* Only renders when `isStaffLoggedIn === true`                         */}
+      {/* ==================================================================== */}
+      {isStaffLoggedIn && (
+        <header className="no-print sticky top-0 z-50 bg-slate-950/95 backdrop-blur-xl text-white border-b border-slate-800/80 px-4 py-2.5 shadow-lg">
+          <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center font-black text-base shadow-md shadow-indigo-500/20">
+                N
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
-                Multi-Role Staff Management, Atomic Inventory & Bilingual Order Memo Printing
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold tracking-tight text-sm">
+                    {settings.companyName} Executive ERP
+                  </span>
+                  {activeStaff.isSuperuser || activeRole.slug === "SUPER_ADMIN" ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold">
+                      <Crown className="w-3 h-3" /> SUPERUSER
+                    </span>
+                  ) : (
+                    <span className="text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full font-semibold">
+                      {activeRole.name}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 hidden sm:block">
+                  Signed in as {activeStaff.name} ({activeStaff.email})
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700">
-            <button
-              onClick={() => setPortalMode("STOREFRONT")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                portalMode === "STOREFRONT"
-                  ? "bg-indigo-600 text-white shadow"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              Customer Storefront
-            </button>
-            <button
-              onClick={() => setPortalMode("ADMIN")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                portalMode === "ADMIN"
-                  ? "bg-indigo-600 text-white shadow"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Admin & Staff ERP
-            </button>
-            <button
-              onClick={() => {
-                setPortalMode("ADMIN");
-                setAdminTab("INVOICES");
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                portalMode === "ADMIN" && adminTab === "INVOICES"
-                  ? "bg-emerald-600 text-white shadow"
-                  : "text-emerald-300 hover:text-white"
-              }`}
-            >
-              <Printer className="w-3.5 h-3.5" />
-              Memo Printer ({printQueueIds.length})
-            </button>
-            <button
-              onClick={() => setPortalMode("ARCHITECTURE")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                portalMode === "ARCHITECTURE"
-                  ? "bg-indigo-600 text-white shadow"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Schema & Architecture
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700 text-xs">
-              <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-slate-400 hidden md:inline">Active Session:</span>
-              <select
-                aria-label="Switch Active Staff Role Session"
-                value={activeStaffId}
-                onChange={(e) => {
-                  setActiveStaffId(e.target.value);
-                  const chosen = staffList.find((s) => s.id === e.target.value);
-                  const r = roles.find((rl) => rl.id === chosen?.roleId);
-                  showToast(`Switched session to ${chosen?.name} (${r?.name})`, "info");
-                }}
-                className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+            <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setPortalMode("STOREFRONT")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  portalMode === "STOREFRONT"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-300 hover:text-white"
+                }`}
               >
-                {staffList.map((stf) => {
-                  const r = roles.find((rl) => rl.id === stf.roleId);
-                  return (
-                    <option key={stf.id} value={stf.id} className="bg-slate-900 text-white">
-                      {stf.name} — [{r?.name}]
-                    </option>
-                  );
-                })}
-              </select>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                Customer Storefront
+              </button>
+              <button
+                onClick={() => setPortalMode("ADMIN")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  portalMode === "ADMIN"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Admin & Staff ERP
+              </button>
+              <button
+                onClick={() => {
+                  setPortalMode("ADMIN");
+                  setAdminTab("INVOICES");
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  portalMode === "ADMIN" && adminTab === "INVOICES"
+                    ? "bg-emerald-600 text-white shadow"
+                    : "text-emerald-400 hover:text-white"
+                }`}
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Memo Printer ({printQueueIds.length})
+              </button>
+              <button
+                onClick={() => setPortalMode("ARCHITECTURE")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  portalMode === "ARCHITECTURE"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Schema & Architecture
+              </button>
             </div>
 
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              title="Toggle Dark/Light Theme"
-              className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200"
-            >
-              {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-      </header>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-slate-400 hidden xl:inline">Role Simulator:</span>
+                <select
+                  aria-label="Switch Active Staff Role Session"
+                  value={activeStaffId}
+                  onChange={(e) => {
+                    setActiveStaffId(e.target.value);
+                    const chosen = staffList.find((s) => s.id === e.target.value);
+                    const r = roles.find((rl) => rl.id === chosen?.roleId);
+                    showToast(`Switched staff session to ${chosen?.name} (${r?.name})`, "info");
+                  }}
+                  className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+                >
+                  {staffList.map((stf) => {
+                    const r = roles.find((rl) => rl.id === stf.roleId);
+                    return (
+                      <option key={stf.id} value={stf.id} className="bg-slate-900 text-white">
+                        {stf.name} — [{r?.name}]
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
 
-      {/* PORTAL 1: CUSTOMER-FACING ECOMMERCE STOREFRONT */}
-      {portalMode === "STOREFRONT" && (
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                title="Toggle Dark/Light Theme"
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200"
+              >
+                {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+              </button>
+
+              <button
+                onClick={handleStaffLogout}
+                title="Sign Out of Staff Portal"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold transition"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Exit Staff</span>
+              </button>
+            </div>
+          </div>
+        </header>
+      )}
+
+      {/* ==================================================================== */}
+      {/* PORTAL 1: LUXURY CUSTOMER-FACING STOREFRONT                          */}
+      {/* (What normal customers see — clean, modern, zero admin clutter!)     */}
+      {/* ==================================================================== */}
+      {(portalMode === "STOREFRONT" || !isStaffLoggedIn) && (
         <div className="min-h-screen flex flex-col">
+          {/* Announcement Ribbon */}
           {settings.promoBannerActive && (
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 text-white text-xs font-medium py-2 px-4 text-center">
-              <Sparkles className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-              {settings.promoBannerText}
+            <div className="bg-slate-950 text-white text-xs font-medium py-2.5 px-4 text-center border-b border-slate-800">
+              <span className="inline-flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-[10px] font-extrabold uppercase tracking-wider">
+                  Live Offer
+                </span>
+                <span className="text-slate-200">{settings.promoBannerText}</span>
+              </span>
             </div>
           )}
 
-          <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3 sticky top-[53px] z-30">
+          {/* Glassmorphic Storefront Header */}
+          <nav
+            className={`bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 px-4 py-3.5 sticky ${
+              isStaffLoggedIn ? "top-[53px]" : "top-0"
+            } z-30 transition-all`}
+          >
             <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-8">
                 <button
                   onClick={() => setStorePage("HOME")}
-                  className="text-lg font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400 flex items-center gap-2"
+                  className="flex items-center gap-2.5 text-left group"
                 >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>{settings.companyName}</span>
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
+                    N
+                  </div>
+                  <div>
+                    <span className="text-xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 dark:from-white dark:via-indigo-200 dark:to-white bg-clip-text text-transparent">
+                      {settings.companyName}
+                    </span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-widest text-slate-400 -mt-1">
+                      Flagship Store
+                    </span>
+                  </div>
                 </button>
-                <div className="hidden md:flex items-center gap-4 text-sm font-medium">
-                  <button
-                    onClick={() => setStorePage("HOME")}
-                    className={storePage === "HOME" ? "text-indigo-600 font-semibold" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600"}
-                  >
-                    Home
-                  </button>
-                  <button
-                    onClick={() => setStorePage("SHOP")}
-                    className={storePage === "SHOP" ? "text-indigo-600 font-semibold" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600"}
-                  >
-                    Shop Catalog
-                  </button>
-                  <button
-                    onClick={() => setStorePage("TRACK_ORDER")}
-                    className={storePage === "TRACK_ORDER" ? "text-indigo-600 font-semibold" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600"}
-                  >
-                    Track Order
-                  </button>
-                  <button
-                    onClick={() => setStorePage("CUSTOMER_DASHBOARD")}
-                    className={storePage === "CUSTOMER_DASHBOARD" ? "text-indigo-600 font-semibold" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600"}
-                  >
-                    My Account
-                  </button>
-                  <button
-                    onClick={() => setStorePage("ABOUT")}
-                    className={storePage === "ABOUT" ? "text-indigo-600 font-semibold" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600"}
-                  >
-                    About
-                  </button>
-                  <button
-                    onClick={() => setStorePage("CONTACT")}
-                    className={storePage === "CONTACT" ? "text-indigo-600 font-semibold" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600"}
-                  >
-                    Contact
-                  </button>
+
+                <div className="hidden lg:flex items-center gap-1 text-sm font-semibold">
+                  {[
+                    { id: "HOME", label: "Home" },
+                    { id: "SHOP", label: "Shop Collection" },
+                    { id: "TRACK_ORDER", label: "Track Order" },
+                    { id: "CUSTOMER_DASHBOARD", label: "My Orders" },
+                    { id: "ABOUT", label: "Our Story" },
+                    { id: "CONTACT", label: "Showroom" }
+                  ].map((nav) => (
+                    <button
+                      key={nav.id}
+                      onClick={() => setStorePage(nav.id as any)}
+                      className={`px-3.5 py-2 rounded-xl transition ${
+                        storePage === nav.id
+                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                      }`}
+                    >
+                      {nav.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
                   <input
                     type="text"
                     value={storeSearch}
@@ -1951,15 +2190,23 @@ ${queueOrders
                       setStoreSearch(e.target.value);
                       if (storePage !== "SHOP") setStorePage("SHOP");
                     }}
-                    placeholder="Search products or SKU..."
-                    className="pl-9 pr-3 py-1.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44 sm:w-60"
+                    placeholder="Search headphones, watches..."
+                    className="pl-9 pr-4 py-2 text-xs font-medium rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44 sm:w-64 transition"
                   />
                 </div>
 
                 <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  title="Toggle Theme"
+                  className="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300"
+                >
+                  {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+                </button>
+
+                <button
                   onClick={() => setStorePage("WISHLIST")}
-                  className="relative p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  title="Wishlist"
+                  className="relative p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900"
+                  title="Saved Wishlist"
                 >
                   <Heart className="w-4 h-4 text-rose-500" />
                   {wishlist.length > 0 && (
@@ -1971,198 +2218,326 @@ ${queueOrders
 
                 <button
                   onClick={() => setStorePage("CART")}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Cart ({cartDetails.lines.reduce((s, l) => s + l.quantity, 0)})</span>
-                  <span className="hidden sm:inline font-bold">
+                  <span>Bag ({cartDetails.lines.reduce((s, l) => s + l.quantity, 0)})</span>
+                  <span className="hidden sm:inline pl-1 border-l border-white/20">
                     {formatBDT(cartDetails.grandTotal)}
                   </span>
                 </button>
 
-                <button
-                  onClick={() => setStorePage("AUTH")}
-                  className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Login / Register
-                </button>
+                {!isStaffLoggedIn ? (
+                  <button
+                    onClick={() => {
+                      setAuthMode("STAFF_LOGIN");
+                      setStorePage("AUTH");
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 text-xs font-bold transition"
+                  >
+                    <LogIn className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Sign In</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setPortalMode("ADMIN")}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Staff Dashboard</span>
+                  </button>
+                )}
               </div>
             </div>
           </nav>
 
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+          {/* Storefront Main Content */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+            {/* HOME VIEW */}
             {storePage === "HOME" && (
-              <div className="space-y-8">
-                <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
-                  <div className="space-y-4 max-w-xl">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-3 py-1 rounded-full">
-                      Next-Gen Flagship Storefront
-                    </span>
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
-                      Premium Tech & Lifestyle Essentials with Instant Order Tracking
-                    </h1>
-                    <p className="text-slate-300 text-sm md:text-base">
-                      Real-time stock validation, Cash on Delivery, bKash/Nagad/SSLCommerz checkout, and instant bilingual invoice generation.
-                    </p>
-                    <div className="flex flex-wrap gap-3 pt-2">
-                      <button
-                        onClick={() => setStorePage("SHOP")}
-                        className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg"
-                      >
-                        Explore Shop Catalog
-                      </button>
-                      <button
-                        onClick={() => setStorePage("TRACK_ORDER")}
-                        className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15"
-                      >
-                        Track an Order
-                      </button>
+              <div className="space-y-12">
+                {/* Editorial Luxury Hero Bento */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-8 rounded-[2rem] bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10">
+                    <div className="space-y-5 max-w-xl relative z-10">
+                      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-indigo-200">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>2026 Flagship Collection • Official Warranty</span>
+                      </div>
+                      <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.12]">
+                         Crafted for Sound, Speed & Executive Style.
+                      </h1>
+                      <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Experience studio-grade acoustics, titanium wearables, and artisan apparel with instant Dhaka express dispatch and verified authentic warranty.
+                      </p>
+                      <div className="flex flex-wrap gap-3 pt-2">
+                        <button
+                          onClick={() => setStorePage("SHOP")}
+                          className="px-6 py-3.5 rounded-2xl bg-white text-slate-950 hover:bg-indigo-50 font-extrabold text-xs sm:text-sm shadow-xl transition flex items-center gap-2"
+                        >
+                          <span>Explore Collection</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setStorePage("TRACK_ORDER")}
+                          className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm border border-white/15 backdrop-blur transition"
+                        >
+                          Track Your Order
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 pt-10 mt-8 border-t border-white/10 relative z-10 text-xs">
+                      <div>
+                        <div className="font-black text-lg text-white">24h Dispatch</div>
+                        <div className="text-slate-400">Inside Dhaka Express</div>
+                      </div>
+                      <div>
+                        <div className="font-black text-lg text-emerald-400">100% Genuine</div>
+                        <div className="text-slate-400">Barcode Verified Stock</div>
+                      </div>
+                      <div>
+                        <div className="font-black text-lg text-amber-300">COD & bKash</div>
+                        <div className="text-slate-400">Flexible Checkout</div>
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 w-full md:w-80">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => {
-                          setStoreCategory(cat.id);
-                          setStorePage("SHOP");
-                        }}
-                        className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition"
-                      >
-                        <div className="font-bold text-sm text-white">{cat.name}</div>
-                        <div className="text-xs text-indigo-300 mt-0.5">{cat.nameBn}</div>
-                      </button>
-                    ))}
+
+                  {/* Side Bento Stack */}
+                  <div className="lg:col-span-4 flex flex-col gap-6">
+                    <div
+                      onClick={() => {
+                        setSelectedProductId("prd-1");
+                        setStorePage("PRODUCT_DETAIL");
+                      }}
+                      className="flex-1 rounded-[2rem] bg-gradient-to-br from-indigo-600 via-violet-700 to-purple-900 text-white p-7 flex flex-col justify-between cursor-pointer hover:scale-[1.01] transition shadow-xl"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider bg-black/30 px-3 py-1 rounded-full">
+                          Editor&apos;s Pick
+                        </span>
+                        <span className="text-sm font-black bg-white text-slate-900 px-3 py-1 rounded-full">
+                          Save ৳1,010
+                        </span>
+                      </div>
+                      <div className="my-4">
+                        <div className="text-xs text-indigo-200 font-medium">
+                          45dB Hybrid ANC • 60H Battery
+                        </div>
+                        <h3 className="text-2xl font-black tracking-tight mt-1">
+                          AuraPro ANC Wireless
+                        </h3>
+                        <p className="text-xs text-indigo-100 mt-1">
+                          অরাপ্রো এএনসি ওয়্যারলেস হেডফোন
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between pt-3 border-t border-white/15">
+                        <span className="text-xl font-black">{formatBDT(5490)}</span>
+                        <span className="text-xs font-bold underline flex items-center gap-1">
+                          Shop Now <ArrowUpRight className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 space-y-3 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                          Browse by Department
+                        </span>
+                        <Layers className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {categories.map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => {
+                              setStoreCategory(cat.id);
+                              setStorePage("SHOP");
+                            }}
+                            className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/60 dark:border-slate-800 text-left transition group"
+                          >
+                            <div className="font-bold text-xs group-hover:text-indigo-600 transition">
+                              {cat.name}
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-0.5">{cat.nameBn}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-4">
+                {/* Curated Products Showcase */}
+                <div className="space-y-6">
+                  <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                      <h2 className="text-xl font-bold">Featured & Flash Deal Products</h2>
-                      <p className="text-xs text-slate-500">
-                        Live inventory quantities synchronized with the PostgreSQL warehouse ledger
-                      </p>
+                      <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        Curated Catalog
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
+                        Trending Flagship Essentials
+                      </h2>
                     </div>
                     <button
                       onClick={() => setStorePage("SHOP")}
-                      className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
+                      className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold hover:border-indigo-500 transition flex items-center gap-1.5"
                     >
-                      View All Products <ChevronRight className="w-4 h-4" />
+                      <span>View Full Catalog ({products.length})</span>
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {products.map((product) => (
-                      <div
-                        key={product.id}
-                        className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col"
-                      >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                    {products.map((product) => {
+                      const discountPct = Math.round(
+                        ((product.regularPrice - product.salePrice) / product.regularPrice) * 100
+                      );
+                      return (
                         <div
-                          className={`h-44 bg-gradient-to-br ${product.imageGrad} p-5 flex flex-col justify-between text-white relative`}
+                          key={product.id}
+                          className="group rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
                         >
-                          <div className="flex justify-between items-start">
-                            <span className="text-[11px] font-bold uppercase tracking-wider bg-black/30 backdrop-blur px-2.5 py-1 rounded-full">
-                              SKU: {product.sku}
-                            </span>
-                            <button
-                              onClick={() =>
-                                setWishlist((prev) =>
-                                  prev.includes(product.id)
-                                    ? prev.filter((id) => id !== product.id)
-                                    : [...prev, product.id]
-                                )
-                              }
-                              className="p-1.5 rounded-full bg-black/30 hover:bg-black/50"
-                            >
-                              <Heart
-                                className={`w-4 h-4 ${
-                                  wishlist.includes(product.id)
-                                    ? "fill-rose-500 text-rose-500"
-                                    : "text-white"
-                                }`}
-                              />
-                            </button>
-                          </div>
-                          <div>
-                            <div className="text-xs text-white/80">{product.nameBn}</div>
-                            <div className="font-bold text-base leading-snug">{product.name}</div>
-                          </div>
-                        </div>
-
-                        <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
-                          <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                              {product.description}
-                            </p>
-                            <div className="flex items-center justify-between mt-3">
-                              <div>
-                                <span className="text-lg font-extrabold text-indigo-600 dark:text-indigo-400">
-                                  {formatBDT(product.salePrice)}
-                                </span>
-                                <span className="text-xs text-slate-400 line-through ml-2">
-                                  {formatBDT(product.regularPrice)}
-                                </span>
+                          <div
+                            onClick={() => {
+                              setSelectedProductId(product.id);
+                              setSelectedVariantId(product.variants[0]?.id || "");
+                              setStorePage("PRODUCT_DETAIL");
+                            }}
+                            className={`h-52 bg-gradient-to-br ${product.imageGrad} p-6 flex flex-col justify-between text-white relative cursor-pointer`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex gap-1.5">
+                                {product.badgeText && (
+                                  <span className="text-[10px] font-black uppercase tracking-wider bg-white text-slate-950 px-2.5 py-1 rounded-full shadow">
+                                    {product.badgeText}
+                                  </span>
+                                )}
+                                {discountPct > 0 && (
+                                  <span className="text-[10px] font-extrabold uppercase bg-emerald-500 text-white px-2.5 py-1 rounded-full">
+                                    -{discountPct}%
+                                  </span>
+                                )}
                               </div>
-                              <span
-                                className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                                  product.stockQuantity <= product.lowStockThreshold
-                                    ? "bg-amber-500/15 text-amber-600"
-                                    : "bg-emerald-500/15 text-emerald-600"
-                                }`}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setWishlist((prev) =>
+                                    prev.includes(product.id)
+                                      ? prev.filter((id) => id !== product.id)
+                                      : [...prev, product.id]
+                                  );
+                                }}
+                                className="p-2 rounded-full bg-black/25 hover:bg-black/50 backdrop-blur transition"
                               >
-                                {product.stockQuantity} in stock
-                              </span>
+                                <Heart
+                                  className={`w-4 h-4 ${
+                                    wishlist.includes(product.id)
+                                      ? "fill-rose-500 text-rose-500"
+                                      : "text-white"
+                                  }`}
+                                />
+                              </button>
+                            </div>
+
+                            <div>
+                              <div className="text-xs text-white/75 font-medium">
+                                {product.nameBn}
+                              </div>
+                              <div className="font-extrabold text-lg leading-snug mt-0.5 group-hover:underline">
+                                {product.name}
+                              </div>
                             </div>
                           </div>
 
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                setSelectedProductId(product.id);
-                                setSelectedVariantId(product.variants[0]?.id || "");
-                                setStorePage("PRODUCT_DETAIL");
-                              }}
-                              className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
-                            >
-                              View Details
-                            </button>
-                            <button
-                              onClick={() => handleAddToCart(product.id, product.variants[0]?.id)}
-                              className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
-                            >
-                              Add to Cart
-                            </button>
+                          <div className="p-6 flex-1 flex flex-col justify-between space-y-5">
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-mono text-slate-400">{product.sku}</span>
+                                <span className="font-bold text-amber-500 flex items-center gap-1">
+                                  ★ {product.rating}{" "}
+                                  <span className="text-slate-400 font-normal">
+                                    ({product.reviewCount})
+                                  </span>
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                {product.description}
+                              </p>
+                            </div>
+
+                            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                              <div className="flex items-baseline justify-between">
+                                <div>
+                                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                                    {formatBDT(product.salePrice)}
+                                  </span>
+                                  <span className="text-xs text-slate-400 line-through ml-2">
+                                    {formatBDT(product.regularPrice)}
+                                  </span>
+                                </div>
+                                <span
+                                  className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                                    product.stockQuantity <= product.lowStockThreshold
+                                      ? "bg-amber-500/15 text-amber-600"
+                                      : "bg-emerald-500/15 text-emerald-600"
+                                  }`}
+                                >
+                                  {product.stockQuantity} in stock
+                                </span>
+                              </div>
+
+                              <div className="flex gap-2.5">
+                                <button
+                                  onClick={() => {
+                                    setSelectedProductId(product.id);
+                                    setSelectedVariantId(product.variants[0]?.id || "");
+                                    setStorePage("PRODUCT_DETAIL");
+                                  }}
+                                  className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                                >
+                                  Specs
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleAddToCart(product.id, product.variants[0]?.id)
+                                  }
+                                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition"
+                                >
+                                  + Add to Bag
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
             )}
 
+            {/* SHOP CATALOG VIEW */}
             {storePage === "SHOP" && (
               <div className="space-y-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => setStoreCategory("ALL")}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
+                      className={`px-4 py-2 rounded-2xl text-xs font-bold transition ${
                         storeCategory === "ALL"
-                          ? "bg-indigo-600 text-white"
+                          ? "bg-slate-900 text-white dark:bg-indigo-600"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                       }`}
                     >
-                      All Categories
+                      All Items ({products.length})
                     </button>
                     {categories.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => setStoreCategory(cat.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
+                        className={`px-4 py-2 rounded-2xl text-xs font-bold transition ${
                           storeCategory === cat.id
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-slate-900 text-white dark:bg-indigo-600"
                             : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                         }`}
                       >
@@ -2172,41 +2547,51 @@ ${queueOrders
                   </div>
 
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-slate-500">Sort by:</span>
+                    <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+                    <span className="text-slate-500 font-medium">Sort:</span>
                     <select
                       value={storeSort}
                       onChange={(e) => setStoreSort(e.target.value as any)}
-                      className="rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-1.5 font-semibold"
+                      className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-transparent px-3.5 py-2 font-bold"
                     >
-                      <option value="FEATURED">Featured First</option>
+                      <option value="FEATURED">Featured Collection</option>
                       <option value="PRICE_ASC">Price: Low to High</option>
                       <option value="PRICE_DESC">Price: High to Low</option>
-                      <option value="RATING">Top Customer Rating</option>
+                      <option value="RATING">Top Rated</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
                   {filteredStoreProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col"
+                      className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col"
                     >
-                      <div className={`h-40 bg-gradient-to-br ${product.imageGrad} p-4 text-white flex flex-col justify-between`}>
+                      <div
+                        className={`h-44 bg-gradient-to-br ${product.imageGrad} p-5 text-white flex flex-col justify-between`}
+                      >
                         <div className="flex justify-between text-xs">
-                          <span className="bg-black/30 px-2 py-0.5 rounded">{product.sku}</span>
-                          <span>★ {product.rating} ({product.reviewCount})</span>
+                          <span className="bg-black/30 px-2.5 py-0.5 rounded-full font-mono">
+                            {product.sku}
+                          </span>
+                          <span className="font-bold">★ {product.rating}</span>
                         </div>
-                        <div className="font-bold">{product.name}</div>
+                        <div>
+                          <div className="text-xs text-white/80">{product.nameBn}</div>
+                          <div className="font-extrabold text-base">{product.name}</div>
+                        </div>
                       </div>
-                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                        <p className="text-xs text-slate-500">{product.description}</p>
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          {product.description}
+                        </p>
                         <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-indigo-600">
+                          <span className="text-xl font-black text-slate-900 dark:text-white">
                             {formatBDT(product.salePrice)}
                           </span>
-                          <span className="text-xs text-slate-500">
-                            Stock: {product.stockQuantity}
+                          <span className="text-xs font-semibold text-emerald-600">
+                            {product.stockQuantity} available
                           </span>
                         </div>
                         <div className="flex gap-2">
@@ -2216,15 +2601,15 @@ ${queueOrders
                               setSelectedVariantId(product.variants[0]?.id || "");
                               setStorePage("PRODUCT_DETAIL");
                             }}
-                            className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold"
+                            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold"
                           >
-                            Details
+                            View Details
                           </button>
                           <button
                             onClick={() => handleAddToCart(product.id, product.variants[0]?.id)}
-                            className="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
+                            className="flex-1 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
                           >
-                            Add to Cart
+                            Add to Bag
                           </button>
                         </div>
                       </div>
@@ -2234,6 +2619,7 @@ ${queueOrders
               </div>
             )}
 
+            {/* PRODUCT DETAILS VIEW */}
             {storePage === "PRODUCT_DETAIL" && (() => {
               const product = products.find((p) => p.id === selectedProductId) || products[0];
               const prodReviews = reviews.filter((r) => r.productId === product.id);
@@ -2241,62 +2627,68 @@ ${queueOrders
                 <div className="space-y-8">
                   <button
                     onClick={() => setStorePage("SHOP")}
-                    className="text-xs font-semibold text-indigo-600 hover:underline"
+                    className="text-xs font-bold text-indigo-600 hover:underline"
                   >
-                    ← Back to Shop Catalog
+                    ← Back to Collection
                   </button>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div
-                      className={`h-72 md:h-full min-h-[280px] rounded-2xl bg-gradient-to-br ${product.imageGrad} p-8 text-white flex flex-col justify-between`}
+                      className={`h-80 md:h-full min-h-[320px] rounded-3xl bg-gradient-to-br ${product.imageGrad} p-8 text-white flex flex-col justify-between shadow-inner`}
                     >
-                      <span className="text-xs uppercase tracking-wider bg-black/30 px-3 py-1 rounded-full w-fit">
-                        SKU: {product.sku} | Barcode: {product.barcode}
+                      <span className="text-xs uppercase tracking-wider bg-black/30 px-3 py-1 rounded-full w-fit font-mono">
+                        SKU: {product.sku} • Barcode: {product.barcode}
                       </span>
                       <div>
                         <p className="text-sm text-white/80 mb-1">{product.nameBn}</p>
-                        <h1 className="text-2xl md:text-3xl font-extrabold">{product.name}</h1>
+                        <h1 className="text-2xl md:text-4xl font-black tracking-tight">
+                          {product.name}
+                        </h1>
                       </div>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-6 flex flex-col justify-center">
                       <div>
-                        <div className="flex items-center gap-2 text-xs text-amber-500 font-semibold">
+                        <div className="flex items-center gap-2 text-xs text-amber-500 font-bold">
                           <span>★★★★★ {product.rating}</span>
-                          <span className="text-slate-400">({product.reviewCount} verified reviews)</span>
+                          <span className="text-slate-400">
+                            ({product.reviewCount} verified customer reviews)
+                          </span>
                         </div>
-                        <h2 className="text-2xl font-bold mt-1">{product.name}</h2>
-                        <p className="text-sm text-slate-500 mt-2">{product.description}</p>
+                        <h2 className="text-2xl sm:text-3xl font-black mt-1">{product.name}</h2>
+                        <p className="text-sm text-slate-500 mt-3 leading-relaxed">
+                          {product.description}
+                        </p>
                       </div>
 
                       <div className="flex items-baseline gap-3">
-                        <span className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                        <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
                           {formatBDT(product.salePrice)}
                         </span>
                         <span className="text-base text-slate-400 line-through">
                           {formatBDT(product.regularPrice)}
                         </span>
-                        <span className="text-xs bg-emerald-500/15 text-emerald-600 px-2.5 py-1 rounded-full font-semibold">
-                          {product.stockQuantity} units available
+                        <span className="text-xs bg-emerald-500/15 text-emerald-600 px-3 py-1 rounded-full font-bold">
+                          {product.stockQuantity} units in warehouse
                         </span>
                       </div>
 
                       {product.variants.length > 0 && (
                         <div className="space-y-2">
-                          <label className="text-xs font-semibold uppercase text-slate-500">
-                            Select Variant:
+                          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            Choose Option / Variant:
                           </label>
                           <div className="flex flex-wrap gap-2">
                             {product.variants.map((v) => (
                               <button
                                 key={v.id}
                                 onClick={() => setSelectedVariantId(v.id)}
-                                className={`px-3 py-2 rounded-xl text-xs font-semibold border ${
+                                className={`px-4 py-2.5 rounded-2xl text-xs font-bold border transition ${
                                   selectedVariantId === v.id
                                     ? "border-indigo-600 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400"
                                     : "border-slate-200 dark:border-slate-700"
                                 }`}
                               >
-                                {v.name} ({v.stock} in stock)
+                                {v.name} ({v.stock} left)
                               </button>
                             ))}
                           </div>
@@ -2306,30 +2698,30 @@ ${queueOrders
                       <div className="flex gap-3 pt-2">
                         <button
                           onClick={() => handleAddToCart(product.id, selectedVariantId)}
-                          className="flex-1 py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow"
+                          className="flex-1 py-3.5 px-6 rounded-2xl bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 text-white font-bold text-sm shadow-lg transition"
                         >
-                          Add to Shopping Cart
+                          Add to Shopping Bag
                         </button>
                         <button
                           onClick={() => {
                             handleAddToCart(product.id, selectedVariantId);
                             setStorePage("CHECKOUT");
                           }}
-                          className="py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm"
+                          className="py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg transition"
                         >
-                          Buy Now
+                          Express Buy Now
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h3 className="text-lg font-bold">Customer Reviews ({prodReviews.length})</h3>
+                  <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 space-y-5">
+                    <h3 className="text-lg font-black">Verified Customer Reviews ({prodReviews.length})</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {prodReviews.map((rev) => (
                         <div
                           key={rev.id}
-                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800"
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800"
                         >
                           <div className="flex justify-between text-xs mb-1">
                             <span className="font-bold">{rev.customerName}</span>
@@ -2358,7 +2750,7 @@ ${queueOrders
                         setNewReviewForm({ ...newReviewForm, comment: "" });
                         showToast("Thank you! Your verified review has been posted.");
                       }}
-                      className="flex flex-wrap gap-3 pt-3 border-t border-slate-200 dark:border-slate-800"
+                      className="flex flex-wrap gap-3 pt-4 border-t border-slate-200 dark:border-slate-800"
                     >
                       <input
                         type="text"
@@ -2367,14 +2759,14 @@ ${queueOrders
                           setNewReviewForm({ ...newReviewForm, customerName: e.target.value })
                         }
                         placeholder="Your Name"
-                        className="px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       />
                       <select
                         value={newReviewForm.rating}
                         onChange={(e) =>
                           setNewReviewForm({ ...newReviewForm, rating: Number(e.target.value) })
                         }
-                        className="px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       >
                         <option value={5}>5 Stars</option>
                         <option value={4}>4 Stars</option>
@@ -2386,12 +2778,12 @@ ${queueOrders
                         onChange={(e) =>
                           setNewReviewForm({ ...newReviewForm, comment: e.target.value })
                         }
-                        placeholder="Write your product experience..."
-                        className="flex-1 min-w-[200px] px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        placeholder="Share your experience with this product..."
+                        className="flex-1 min-w-[200px] px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
+                        className="px-5 py-2 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
                       >
                         Submit Review
                       </button>
@@ -2401,19 +2793,20 @@ ${queueOrders
               );
             })()}
 
+            {/* CART & CHECKOUT VIEW */}
             {(storePage === "CART" || storePage === "CHECKOUT") && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-lg font-bold">Shopping Cart & Stock Verification</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                    <h2 className="text-xl font-black">Your Shopping Bag</h2>
                     {cartDetails.lines.length === 0 ? (
-                      <div className="text-center py-8 text-slate-500 text-sm">
-                        Your shopping cart is empty.{" "}
+                      <div className="text-center py-10 text-slate-500 text-sm">
+                        Your shopping bag is currently empty.{" "}
                         <button
                           onClick={() => setStorePage("SHOP")}
-                          className="text-indigo-600 font-semibold underline"
+                          className="text-indigo-600 font-bold underline"
                         >
-                          Browse products
+                          Explore products
                         </button>
                       </div>
                     ) : (
@@ -2421,20 +2814,20 @@ ${queueOrders
                         {cartDetails.lines.map((line, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800"
+                            className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800"
                           >
                             <div>
                               <div className="font-bold text-sm">{line.product.name}</div>
                               <div className="text-xs text-slate-500">
                                 SKU: {line.product.sku}{" "}
-                                {line.variant ? `| Variant: ${line.variant.name}` : ""}
+                                {line.variant ? `• Variant: ${line.variant.name}` : ""}
                               </div>
-                              <div className="text-xs font-semibold text-indigo-600 mt-0.5">
+                              <div className="text-xs font-bold text-indigo-600 mt-1">
                                 {formatBDT(line.unitPrice)} each
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2.5">
                               <button
                                 onClick={() =>
                                   setCart((prev) =>
@@ -2448,22 +2841,22 @@ ${queueOrders
                                       .filter((item) => item.quantity > 0)
                                   )
                                 }
-                                className="w-7 h-7 rounded-lg border border-slate-300 dark:border-slate-700 font-bold"
+                                className="w-8 h-8 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
                               >
                                 -
                               </button>
-                              <span className="text-sm font-bold w-6 text-center">
+                              <span className="text-sm font-black w-6 text-center">
                                 {line.quantity}
                               </span>
                               <button
                                 onClick={() =>
                                   handleAddToCart(line.productId, line.variantId)
                                 }
-                                className="w-7 h-7 rounded-lg border border-slate-300 dark:border-slate-700 font-bold"
+                                className="w-8 h-8 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
                               >
                                 +
                               </button>
-                              <div className="w-24 text-right font-bold text-sm">
+                              <div className="w-24 text-right font-black text-sm">
                                 {formatBDT(line.totalPrice)}
                               </div>
                             </div>
@@ -2472,20 +2865,20 @@ ${queueOrders
                       </div>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
                       <input
                         type="text"
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                         placeholder="Promo Code (e.g. NEXUS15 or WELCOME500)"
-                        className="px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent flex-1"
+                        className="px-4 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent flex-1 font-mono"
                       />
                       <button
                         onClick={() => {
                           setAppliedCoupon(couponInput);
                           showToast(`Applied promo code: ${couponInput}`);
                         }}
-                        className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-semibold"
+                        className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
                       >
                         Apply Coupon
                       </button>
@@ -2494,12 +2887,12 @@ ${queueOrders
 
                   <form
                     onSubmit={handlePlaceOrder}
-                    className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4"
+                    className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm"
                   >
-                    <h3 className="text-base font-bold">Delivery & Payment Information</h3>
+                    <h3 className="text-lg font-black">Express Checkout & Delivery Details</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       <div>
-                        <label className="font-semibold block mb-1">Full Name *</label>
+                        <label className="font-bold block mb-1.5">Recipient Full Name *</label>
                         <input
                           type="text"
                           required
@@ -2507,11 +2900,11 @@ ${queueOrders
                           onChange={(e) =>
                             setCheckoutForm({ ...checkoutForm, customerName: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-semibold block mb-1">Mobile Number (BD) *</label>
+                        <label className="font-bold block mb-1.5">Mobile Number (BD) *</label>
                         <input
                           type="text"
                           required
@@ -2519,11 +2912,11 @@ ${queueOrders
                           onChange={(e) =>
                             setCheckoutForm({ ...checkoutForm, customerPhone: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="font-semibold block mb-1">Detailed Delivery Address *</label>
+                        <label className="font-bold block mb-1.5">Full Delivery Address *</label>
                         <input
                           type="text"
                           required
@@ -2531,11 +2924,11 @@ ${queueOrders
                           onChange={(e) =>
                             setCheckoutForm({ ...checkoutForm, deliveryAddress: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-semibold block mb-1">Delivery Zone</label>
+                        <label className="font-bold block mb-1.5">Delivery Area / Zone</label>
                         <select
                           value={checkoutForm.deliveryZone}
                           onChange={(e) =>
@@ -2544,7 +2937,7 @@ ${queueOrders
                               deliveryZone: e.target.value as any
                             })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         >
                           <option value="Inside Dhaka">
                             Inside Dhaka ({formatBDT(settings.insideDhakaShipping)})
@@ -2558,7 +2951,7 @@ ${queueOrders
                         </select>
                       </div>
                       <div>
-                        <label className="font-semibold block mb-1">Payment Method</label>
+                        <label className="font-bold block mb-1.5">Payment Method</label>
                         <select
                           value={checkoutForm.paymentMethod}
                           onChange={(e) =>
@@ -2567,7 +2960,7 @@ ${queueOrders
                               paymentMethod: e.target.value as PaymentMethod
                             })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         >
                           <option value="CASH_ON_DELIVERY">Cash on Delivery (COD)</option>
                           <option value="BKASH">bKash Merchant Payment</option>
@@ -2581,7 +2974,7 @@ ${queueOrders
                       {checkoutForm.paymentMethod !== "CASH_ON_DELIVERY" && (
                         <>
                           <div>
-                            <label className="font-semibold block mb-1">
+                            <label className="font-bold block mb-1.5">
                               Transaction ID (TrxID / Reference)
                             </label>
                             <input
@@ -2594,11 +2987,11 @@ ${queueOrders
                                 })
                               }
                               placeholder="e.g. BKX9988112"
-                              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                             />
                           </div>
                           <div>
-                            <label className="font-semibold block mb-1">Sender Account / Phone</label>
+                            <label className="font-bold block mb-1.5">Sender Account / Phone</label>
                             <input
                               type="text"
                               value={checkoutForm.senderPhone}
@@ -2606,7 +2999,7 @@ ${queueOrders
                                 setCheckoutForm({ ...checkoutForm, senderPhone: e.target.value })
                               }
                               placeholder="017XXXXXXXX"
-                              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                             />
                           </div>
                         </>
@@ -2615,22 +3008,22 @@ ${queueOrders
 
                     <button
                       type="submit"
-                      className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg"
+                      className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-xl transition"
                     >
                       Confirm & Place Order ({formatBDT(cartDetails.grandTotal)})
                     </button>
                   </form>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-fit space-y-3 text-sm">
-                  <h3 className="font-bold text-base border-b border-slate-200 dark:border-slate-800 pb-2">
+                <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 h-fit space-y-4 text-sm shadow-sm">
+                  <h3 className="font-black text-base border-b border-slate-200 dark:border-slate-800 pb-3">
                     Order Summary
                   </h3>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Subtotal</span>
-                    <span className="font-semibold">{formatBDT(cartDetails.subtotal)}</span>
+                    <span className="font-bold">{formatBDT(cartDetails.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-emerald-600">
+                  <div className="flex justify-between text-emerald-600 font-semibold">
                     <span>Discount ({appliedCoupon || "None"})</span>
                     <span>-{formatBDT(cartDetails.discountAmount)}</span>
                   </div>
@@ -2638,9 +3031,9 @@ ${queueOrders
                     <span className="text-slate-500">
                       Delivery ({checkoutForm.deliveryZone})
                     </span>
-                    <span className="font-semibold">{formatBDT(cartDetails.deliveryCharge)}</span>
+                    <span className="font-bold">{formatBDT(cartDetails.deliveryCharge)}</span>
                   </div>
-                  <div className="flex justify-between text-base font-extrabold border-t border-slate-200 dark:border-slate-800 pt-2">
+                  <div className="flex justify-between text-lg font-black border-t border-slate-200 dark:border-slate-800 pt-3">
                     <span>Grand Total</span>
                     <span className="text-indigo-600">{formatBDT(cartDetails.grandTotal)}</span>
                   </div>
@@ -2648,36 +3041,37 @@ ${queueOrders
               </div>
             )}
 
+            {/* WISHLIST VIEW */}
             {storePage === "WISHLIST" && (
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <h2 className="text-lg font-bold">Saved Wishlist ({wishlist.length})</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <h2 className="text-xl font-black">Saved Wishlist ({wishlist.length})</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {products
                     .filter((p) => wishlist.includes(p.id))
                     .map((p) => (
                       <div
                         key={p.id}
-                        className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3"
+                        className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3"
                       >
                         <div>
                           <div className="font-bold text-sm">{p.name}</div>
                           <div className="text-xs text-slate-500">{p.nameBn}</div>
-                          <div className="text-sm font-bold text-indigo-600 mt-1">
+                          <div className="text-base font-black text-indigo-600 mt-1">
                             {formatBDT(p.salePrice)}
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleAddToCart(p.id, p.variants[0]?.id)}
-                            className="flex-1 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold"
+                            className="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold"
                           >
-                            Move to Cart
+                            Move to Bag
                           </button>
                           <button
                             onClick={() =>
                               setWishlist((prev) => prev.filter((id) => id !== p.id))
                             }
-                            className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs"
+                            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs"
                           >
                             Remove
                           </button>
@@ -2688,18 +3082,26 @@ ${queueOrders
               </div>
             )}
 
+            {/* ORDER TRACKING & CUSTOMER ORDERS VIEW */}
             {(storePage === "TRACK_ORDER" || storePage === "CUSTOMER_DASHBOARD") && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h2 className="text-lg font-bold">Real-Time Order & Courier Tracking</h2>
-                  <div className="flex gap-2 max-w-lg">
-                    <input
-                      type="text"
-                      value={trackingQuery}
-                      onChange={(e) => setTrackingQuery(e.target.value)}
-                      placeholder="Enter Order ID (e.g. ORD-20261110-8821) or Phone"
-                      className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
-                    />
+                <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-black">Live Order & Courier Status Tracker</h2>
+                      <p className="text-xs text-slate-500">
+                        Enter your Order ID or mobile number to inspect real-time fulfillment milestones.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 w-full sm:w-80">
+                      <input
+                        type="text"
+                        value={trackingQuery}
+                        onChange={(e) => setTrackingQuery(e.target.value)}
+                        placeholder="Order ID (e.g. ORD-20261110-8821) or Phone"
+                        className="flex-1 px-4 py-2.5 text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent font-mono"
+                      />
+                    </div>
                   </div>
 
                   {orders
@@ -2711,11 +3113,11 @@ ${queueOrders
                     .map((ord) => (
                       <div
                         key={ord.id}
-                        className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-4"
+                        className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-4"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
-                            <span className="font-mono font-bold text-base text-indigo-600">
+                            <span className="font-mono font-black text-base text-indigo-600">
                               {ord.orderNumber}
                             </span>
                             <span className="text-xs text-slate-500 ml-3">{ord.createdAt}</span>
@@ -2730,7 +3132,7 @@ ${queueOrders
                             </span>
                             <button
                               onClick={() => handleBulkPrintMemos([ord.id])}
-                              className="flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-900 text-white text-xs font-semibold"
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
                             >
                               <Printer className="w-3.5 h-3.5" /> View / Print Invoice
                             </button>
@@ -2739,23 +3141,25 @@ ${queueOrders
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                           <div>
-                            <div className="text-slate-400 uppercase font-semibold">Recipient</div>
-                            <div className="font-bold">{ord.customerName}</div>
+                            <div className="text-slate-400 uppercase font-bold">Recipient</div>
+                            <div className="font-bold text-sm mt-0.5">{ord.customerName}</div>
                             <div>{ord.customerPhone}</div>
                             <div>{ord.deliveryAddress}</div>
                           </div>
                           <div>
-                            <div className="text-slate-400 uppercase font-semibold">
+                            <div className="text-slate-400 uppercase font-bold">
                               Courier & Tracking
                             </div>
-                            <div className="font-bold">Provider: {ord.courierProvider}</div>
+                            <div className="font-bold text-sm mt-0.5">
+                              Provider: {ord.courierProvider}
+                            </div>
                             <div>Tracking #: {ord.trackingNumber || "Assigning soon"}</div>
                           </div>
                           <div>
-                            <div className="text-slate-400 uppercase font-semibold">
+                            <div className="text-slate-400 uppercase font-bold">
                               Payment Summary
                             </div>
-                            <div className="font-bold">
+                            <div className="font-bold text-sm mt-0.5">
                               Total: {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
                             </div>
                             <div>Status: {ord.paymentStatus}</div>
@@ -2763,12 +3167,12 @@ ${queueOrders
                         </div>
 
                         <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                          <div className="text-xs font-semibold mb-2">Status Timeline:</div>
+                          <div className="text-xs font-bold mb-2">Fulfillment Timeline:</div>
                           <div className="space-y-1.5">
                             {ord.history.map((h) => (
                               <div key={h.id} className="text-xs flex items-center gap-2">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                <span className="font-semibold">{h.newState}</span>
+                                <span className="font-bold">{h.newState}</span>
                                 <span className="text-slate-500">— {h.note}</span>
                                 <span className="text-slate-400 ml-auto">{h.createdAt}</span>
                               </div>
@@ -2781,23 +3185,338 @@ ${queueOrders
               </div>
             )}
 
+            {/* ============================================================== */}
+            {/* UNIFIED AUTHENTICATION & SUPERUSER SETUP PORTAL                */}
+            {/* ============================================================== */}
+            {storePage === "AUTH" && (
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xl">
+                  <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200 dark:border-slate-800 text-xs font-bold">
+                    <button
+                      onClick={() => setAuthMode("STAFF_LOGIN")}
+                      className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
+                        authMode === "STAFF_LOGIN"
+                          ? "bg-slate-900 text-white dark:bg-indigo-600"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>1. Staff & Admin Sign In</span>
+                    </button>
+                    <button
+                      onClick={() => setAuthMode("SUPERUSER_SETUP")}
+                      className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
+                        authMode === "SUPERUSER_SETUP"
+                          ? "bg-amber-500 text-slate-950 font-black"
+                          : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                      }`}
+                    >
+                      <Crown className="w-4 h-4" />
+                      <span>2. Create / Set Superuser</span>
+                    </button>
+                    <button
+                      onClick={() => setAuthMode("CUSTOMER_LOGIN")}
+                      className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
+                        authMode === "CUSTOMER_LOGIN"
+                          ? "bg-slate-900 text-white dark:bg-indigo-600"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>3. Customer Account</span>
+                    </button>
+                  </div>
+
+                  <div className="p-8">
+                    {authMode === "STAFF_LOGIN" && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <form onSubmit={handleStaffLoginSubmit} className="space-y-4">
+                          <div>
+                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">
+                              Protected RBAC Staff Portal
+                            </span>
+                            <h2 className="text-2xl font-black mt-1">
+                              Sign In to Admin & Staff ERP
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Normal customers never see the admin menu. Sign in below to unlock the Admin Dashboard for your role.
+                            </p>
+                          </div>
+
+                          <div className="space-y-3 text-xs">
+                            <div>
+                              <label className="font-bold block mb-1">Staff Email Address</label>
+                              <input
+                                type="email"
+                                required
+                                value={staffLoginEmail}
+                                onChange={(e) => setStaffLoginEmail(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent font-medium"
+                              />
+                            </div>
+                            <div>
+                              <label className="font-bold block mb-1">Password</label>
+                              <input
+                                type="password"
+                                required
+                                value={staffLoginPassword}
+                                onChange={(e) => setStaffLoginPassword(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent font-medium"
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg transition"
+                          >
+                            Unlock Admin & Staff Dashboard →
+                          </button>
+                        </form>
+
+                        <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                          <div className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                            1-Click Instant Role Login (Pre-Seeded Staff)
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            Click any staff account below to immediately sign in and test that role&apos;s permissions:
+                          </p>
+                          <div className="space-y-2">
+                            {staffList.map((stf) => {
+                              const r = roles.find((rl) => rl.id === stf.roleId);
+                              return (
+                                <button
+                                  key={stf.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveStaffId(stf.id);
+                                    setIsStaffLoggedIn(true);
+                                    setPortalMode("ADMIN");
+                                    setAdminTab("DASHBOARD");
+                                    showToast(`Signed in as ${stf.name} (${r?.name})`);
+                                  }}
+                                  className="w-full p-3 rounded-xl bg-white dark:bg-slate-900 hover:border-indigo-500 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-left text-xs transition"
+                                >
+                                  <div>
+                                    <div className="font-bold flex items-center gap-1.5">
+                                      <span>{stf.name}</span>
+                                      {(stf.isSuperuser || r?.slug === "SUPER_ADMIN") && (
+                                        <Crown className="w-3.5 h-3.5 text-amber-500" />
+                                      )}
+                                    </div>
+                                    <div className="text-[11px] text-slate-400">{stf.email}</div>
+                                  </div>
+                                  <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold text-[11px]">
+                                    {r?.name} →
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {authMode === "SUPERUSER_SETUP" && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <form onSubmit={handleCreateOrPromoteSuperuser} className="space-y-4">
+                          <div>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full">
+                              <Crown className="w-3.5 h-3.5" /> Superuser Configuration
+                            </span>
+                            <h2 className="text-2xl font-black mt-2">
+                              Create or Promote a Superuser (`SUPER_ADMIN`)
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Create your own personal Superuser account with full unrestricted access to all 28 permissions, financial reports, custom roles, and staff management.
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div className="sm:col-span-2">
+                              <label className="font-bold block mb-1">Your Full Name *</label>
+                              <input
+                                type="text"
+                                required
+                                value={superuserForm.name}
+                                onChange={(e) =>
+                                  setSuperuserForm({ ...superuserForm, name: e.target.value })
+                                }
+                                placeholder="e.g. Md. Rakibul Islam"
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="font-bold block mb-1">Superuser Email *</label>
+                              <input
+                                type="email"
+                                required
+                                value={superuserForm.email}
+                                onChange={(e) =>
+                                  setSuperuserForm({ ...superuserForm, email: e.target.value })
+                                }
+                                placeholder="owner@yourdomain.com"
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="font-bold block mb-1">Phone Number</label>
+                              <input
+                                type="text"
+                                value={superuserForm.phone}
+                                onChange={(e) =>
+                                  setSuperuserForm({ ...superuserForm, phone: e.target.value })
+                                }
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="font-bold block mb-1">Password *</label>
+                              <input
+                                type="password"
+                                required
+                                value={superuserForm.password}
+                                onChange={(e) =>
+                                  setSuperuserForm({ ...superuserForm, password: e.target.value })
+                                }
+                                placeholder="Enter strong password"
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-2"
+                          >
+                            <Crown className="w-4 h-4" />
+                            <span>Create Superuser & Launch Admin Dashboard</span>
+                          </button>
+                        </form>
+
+                        <div className="bg-slate-950 text-slate-200 p-6 rounded-2xl border border-slate-800 space-y-4 text-xs">
+                          <div className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <KeyRound className="w-4 h-4" /> How to Set a Superuser in PostgreSQL / CLI
+                          </div>
+                          <p className="text-slate-400 leading-relaxed">
+                            When running locally with PostgreSQL, you have three ways to set or create a Superuser:
+                          </p>
+                          <div className="space-y-3">
+                            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                              <div className="font-bold text-white">
+                                Way 1: Pre-Seeded Superuser Account
+                              </div>
+                              <div className="font-mono text-[11px] text-emerald-400 mt-1">
+                                Email: superadmin@nexusmart.com.bd
+                                <br />
+                                Password: Password123!
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                              <div className="font-bold text-white">
+                                Way 2: Run the Superuser CLI Command
+                              </div>
+                              <div className="font-mono text-[11px] text-indigo-300 mt-1">
+                                npm run create-superuser -- your@email.com &quot;Your Name&quot; &quot;MyPass123!&quot;
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                              <div className="font-bold text-white">
+                                Way 3: Visual Prisma Studio GUI
+                              </div>
+                              <div className="font-mono text-[11px] text-slate-300 mt-1">
+                                Run `npx prisma studio` → open `User` table → set `isStaff = true` and assign `SUPER_ADMIN` in `UserRole`.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {authMode === "CUSTOMER_LOGIN" && (
+                      <div className="max-w-md mx-auto space-y-4">
+                        <h2 className="text-2xl font-black">Customer Account Sign In</h2>
+                        <p className="text-xs text-slate-500">
+                          Customers can browse products, place orders, and track deliveries. (Admin menus remain hidden for customer accounts).
+                        </p>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            setLoggedInCustomer({
+                              id: `cust-${Date.now()}`,
+                              name: customerLoginName,
+                              email: customerLoginEmail,
+                              phone: customerLoginPhone,
+                              loyaltyPoints: 500
+                            });
+                            setIsStaffLoggedIn(false);
+                            setPortalMode("STOREFRONT");
+                            setStorePage("CUSTOMER_DASHBOARD");
+                            showToast(`Signed in as customer ${customerLoginName}`);
+                          }}
+                          className="space-y-3 text-xs"
+                        >
+                          <div>
+                            <label className="font-bold block mb-1">Full Name</label>
+                            <input
+                              type="text"
+                              required
+                              value={customerLoginName}
+                              onChange={(e) => setCustomerLoginName(e.target.value)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                            />
+                          </div>
+                          <div>
+                            <label className="font-bold block mb-1">Email</label>
+                            <input
+                              type="email"
+                              required
+                              value={customerLoginEmail}
+                              onChange={(e) => setCustomerLoginEmail(e.target.value)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                            />
+                          </div>
+                          <div>
+                            <label className="font-bold block mb-1">Mobile Phone</label>
+                            <input
+                              type="text"
+                              required
+                              value={customerLoginPhone}
+                              onChange={(e) => setCustomerLoginPhone(e.target.value)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            className="w-full py-3 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white font-bold"
+                          >
+                            Continue as Customer
+                          </button>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STATIC INFORMATION PAGES: ABOUT, CONTACT, PRIVACY, TERMS */}
             {(storePage === "ABOUT" ||
               storePage === "CONTACT" ||
               storePage === "PRIVACY" ||
-              storePage === "TERMS" ||
-              storePage === "AUTH") && (
+              storePage === "TERMS") && (
               <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-3xl mx-auto space-y-4">
                 {storePage === "ABOUT" && (
                   <>
-                    <h2 className="text-2xl font-bold">About {settings.companyName}</h2>
+                    <h2 className="text-2xl font-black">About {settings.companyName}</h2>
                     <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                      {settings.companyName} ({settings.companyNameBn}) is an enterprise multi-role eCommerce platform engineered with Next.js App Router, Prisma ORM, PostgreSQL, and granular Role-Based Access Control. Every product in our catalog is backed by real-time warehouse stock reservation and bilingual invoice generation.
+                      {settings.companyName} ({settings.companyNameBn}) is a flagship multi-role eCommerce platform engineered with Next.js App Router, Prisma ORM, PostgreSQL, and granular Role-Based Access Control.
                     </p>
                   </>
                 )}
                 {storePage === "CONTACT" && (
                   <>
-                    <h2 className="text-2xl font-bold">Contact & Showroom Support</h2>
+                    <h2 className="text-2xl font-black">Showroom & Support</h2>
                     <p className="text-sm text-slate-500">
                       Address: {settings.companyAddress} ({settings.companyAddressBn})
                     </p>
@@ -2808,7 +3527,7 @@ ${queueOrders
                 )}
                 {storePage === "PRIVACY" && (
                   <>
-                    <h2 className="text-2xl font-bold">Privacy Policy</h2>
+                    <h2 className="text-2xl font-black">Privacy Policy</h2>
                     <p className="text-sm text-slate-500">
                       Customer phone numbers, addresses, and payment transaction references are encrypted, validated via Zod schemas, and restricted strictly to authorized order fulfillment personnel under RBAC audit logging.
                     </p>
@@ -2816,31 +3535,24 @@ ${queueOrders
                 )}
                 {storePage === "TERMS" && (
                   <>
-                    <h2 className="text-2xl font-bold">Terms & Conditions</h2>
+                    <h2 className="text-2xl font-black">Terms & Conditions</h2>
                     <p className="text-sm text-slate-500">{settings.invoiceTermsEn}</p>
                     <p className="text-sm text-slate-500">{settings.invoiceTermsBn}</p>
-                  </>
-                )}
-                {storePage === "AUTH" && (
-                  <>
-                    <h2 className="text-2xl font-bold">Customer & Staff Authentication</h2>
-                    <p className="text-xs text-slate-500">
-                      Use the top header <strong>Active Session</strong> selector at any time to switch immediately between Super Admin, Admin/Manager, Moderator, Order Processing Staff, and Delivery Staff accounts.
-                    </p>
                   </>
                 )}
               </div>
             )}
           </main>
 
-          <footer className="bg-slate-900 text-slate-400 text-xs py-8 px-4 border-t border-slate-800 mt-12">
-            <div className="max-w-7xl mx-auto flex flex-wrap justify-between gap-6">
-              <div>
-                <div className="text-white font-bold text-sm">{settings.companyName}</div>
-                <p className="mt-1">{settings.companyAddress}</p>
-                <p>Hotline: {settings.companyPhone}</p>
+          {/* Luxury Storefront Footer with subtle Staff Portal Entry Link */}
+          <footer className="bg-slate-950 text-slate-400 text-xs py-12 px-4 border-t border-slate-900 mt-16">
+            <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-6">
+              <div className="space-y-1">
+                <div className="text-white font-black text-base">{settings.companyName}</div>
+                <p>{settings.companyAddress}</p>
+                <p>Hotline: {settings.companyPhone} • {settings.companyEmail}</p>
               </div>
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-wrap gap-5 items-center">
                 <button onClick={() => setStorePage("ABOUT")} className="hover:text-white">
                   About Us
                 </button>
@@ -2853,30 +3565,52 @@ ${queueOrders
                 <button onClick={() => setStorePage("TERMS")} className="hover:text-white">
                   Terms & Conditions
                 </button>
+                <button
+                  onClick={() => {
+                    setAuthMode("STAFF_LOGIN");
+                    setStorePage("AUTH");
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-slate-200 hover:text-white border border-slate-800 font-semibold transition flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Staff & Superuser Portal</span>
+                </button>
               </div>
             </div>
           </footer>
         </div>
       )}
 
-      {/* PORTAL 2: MULTI-ROLE ADMIN & STAFF ERP DASHBOARD */}
-      {portalMode === "ADMIN" && (
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-          <aside className="no-print w-full lg:w-64 shrink-0 space-y-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 shadow-sm">
-              <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                  Logged-In Role
+      {/* ==================================================================== */}
+      {/* PORTAL 2: REDESIGNED EXECUTIVE ADMIN & STAFF ERP DASHBOARD           */}
+      {/* (Strictly accessible ONLY when `isStaffLoggedIn === true`)           */}
+      {/* ==================================================================== */}
+      {isStaffLoggedIn && portalMode === "ADMIN" && (
+        <div className="max-w-[1440px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+          {/* Sleek Executive Sidebar */}
+          <aside className="no-print w-full lg:w-64 shrink-0">
+            <div className="bg-slate-950 text-slate-200 rounded-3xl border border-slate-800/90 p-4 space-y-5 shadow-2xl sticky top-[68px]">
+              {/* Active Staff Profile Card */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-600/25 via-violet-600/15 to-slate-900 border border-indigo-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
+                    {activeStaff.employeeCode}
+                  </span>
+                  {(activeStaff.isSuperuser || activeRole.slug === "SUPER_ADMIN") && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full">
+                      <Crown className="w-3 h-3" /> SUPERUSER
+                    </span>
+                  )}
                 </div>
-                <div className="font-bold text-sm mt-0.5">{activeStaff.name}</div>
-                <div className="text-xs text-slate-500">
-                  {activeRole.name} ({activeStaff.employeeCode})
-                </div>
-                <div className="text-[11px] text-emerald-600 font-semibold mt-1">
-                  {activePermissions.size} Active Permissions
+                <div className="font-black text-sm text-white truncate">{activeStaff.name}</div>
+                <div className="text-[11px] text-slate-400 truncate">{activeRole.name}</div>
+                <div className="pt-1 flex items-center justify-between text-[11px] text-emerald-400 font-semibold border-t border-white/10">
+                  <span>Effective Perms</span>
+                  <span>{activePermissions.size} / 28</span>
                 </div>
               </div>
 
+              {/* Grouped Sidebar Navigation */}
               <nav className="space-y-1 text-xs font-semibold">
                 {[
                   { id: "DASHBOARD", label: "Dashboard & KPIs", icon: BarChart3, perm: "dashboard.view" },
@@ -2886,7 +3620,7 @@ ${queueOrders
                   { id: "CATEGORIES", label: "Categories", icon: Layers, perm: "categories.manage" },
                   { id: "INVENTORY", label: "Inventory & Ledger", icon: RefreshCw, perm: "inventory.view" },
                   { id: "ASSIGNMENTS", label: "Order Assignments & COD", icon: Truck, perm: ["orders.assign", "delivery.view", "orders.view_assigned"] },
-                  { id: "STAFF", label: "Staff & Audit Logs", icon: Users, perm: "staff.manage" },
+                  { id: "STAFF", label: "Staff & Superuser", icon: Users, perm: "staff.manage" },
                   { id: "ROLES", label: "Roles & Permissions", icon: KeyRound, perm: "roles.manage" },
                   { id: "PAYMENTS", label: "Payments & Gateways", icon: CreditCard, perm: "payments.verify" },
                   { id: "SHIPPING", label: "Shipping & Couriers", icon: MapPin, perm: ["shipping.manage", "delivery.view"] },
@@ -2900,19 +3634,19 @@ ${queueOrders
                     <button
                       key={item.id}
                       onClick={() => setAdminTab(item.id as any)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition ${
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition ${
                         adminTab === item.id
-                          ? "bg-indigo-600 text-white shadow-sm"
+                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/25 font-bold"
                           : allowed
-                          ? "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                          : "text-slate-400 dark:text-slate-600 opacity-60 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          ? "text-slate-300 hover:bg-slate-900 hover:text-white"
+                          : "text-slate-600 opacity-55 hover:bg-slate-900"
                       }`}
                     >
                       <span className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4" />
-                        <span>{item.label}</span>
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
                       </span>
-                      {!allowed && <Lock className="w-3.5 h-3.5 text-rose-400" />}
+                      {!allowed && <Lock className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
                     </button>
                   );
                 })}
@@ -2920,100 +3654,148 @@ ${queueOrders
             </div>
           </aside>
 
+          {/* Main Admin Workspace Content */}
           <div className="flex-1 min-w-0 space-y-6">
+            {/* ============================================================== */}
+            {/* TAB 1: REDESIGNED EXECUTIVE ADMIN DASHBOARD                    */}
+            {/* ============================================================== */}
             {adminTab === "DASHBOARD" && (
               <div className="space-y-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                  <div>
-                    <h1 className="text-xl font-bold">
-                      Executive eCommerce Dashboard — {activeRole.name} View
+                {/* Hero Command Header */}
+                <div className="rounded-3xl bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 text-white p-7 border border-slate-800 shadow-xl flex flex-wrap items-center justify-between gap-6">
+                  <div className="space-y-1.5">
+                    <div className="inline-flex items-center gap-2 text-xs font-bold text-indigo-300">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>PostgreSQL & Prisma ORM Connected • Live Telemetry</span>
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+                      Executive Command Center — {activeRole.name}
                     </h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Financial metrics and cost margins are dynamically filtered by server-side RBAC permissions.
+                    <p className="text-xs text-slate-300 max-w-2xl">
+                      All KPIs, purchase cost margins, and order queues below are dynamically scoped to your active role permissions.
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2.5">
+                    <button
+                      onClick={() => setAdminTab("STAFF")}
+                      className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-lg transition"
+                    >
+                      <Crown className="w-4 h-4" /> Set / Manage Superusers
+                    </button>
                     <button
                       onClick={() => setAdminTab("ORDERS")}
-                      className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
+                      className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 transition"
                     >
                       Manage Orders
                     </button>
                     <button
                       onClick={() => setAdminTab("INVOICES")}
-                      className="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5"
+                      className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg transition"
                     >
-                      <Printer className="w-3.5 h-3.5" /> Print Order Memos
+                      <Printer className="w-4 h-4" /> Print Order Memos
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs text-slate-500 font-medium">Total Revenue</div>
-                    <div className="text-2xl font-extrabold mt-1">
+                {/* 4 Luxury KPI Stat Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Total Revenue
+                      </span>
+                      <div className="w-9 h-9 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                        <DollarSign className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black mt-3">
                       {hasPerm("financials.view") ? (
                         formatBDT(kpiMetrics.totalRevenue)
                       ) : (
-                        <span className="text-sm text-rose-500 flex items-center gap-1">
-                          <Lock className="w-3.5 h-3.5" /> Restricted by RBAC
+                        <span className="text-sm text-rose-500 flex items-center gap-1.5 py-1">
+                          <Lock className="w-4 h-4" /> Restricted by RBAC
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-emerald-600 mt-1">
-                      Active non-cancelled orders
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold mt-2">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      <span>+18.4% vs last 7 days</span>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs text-slate-500 font-medium">Net Gross Profit</div>
-                    <div className="text-2xl font-extrabold mt-1 text-emerald-600">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Net Gross Profit
+                      </span>
+                      <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black mt-3 text-emerald-600">
                       {hasPerm(["financials.view", "products.purchase_price"]) ? (
                         formatBDT(kpiMetrics.grossProfit)
                       ) : (
-                        <span className="text-sm text-rose-500 flex items-center gap-1">
-                          <Lock className="w-3.5 h-3.5" /> Cost Price Hidden
+                        <span className="text-sm text-rose-500 flex items-center gap-1.5 py-1">
+                          <Lock className="w-4 h-4" /> Cost Price Masked
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-1">
-                      Requires financials.view
+                    <div className="text-xs text-slate-400 mt-2">
+                      Protected by <code>financials.view</code>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs text-slate-500 font-medium">Visible Orders</div>
-                    <div className="text-2xl font-extrabold mt-1">{visibleOrders.length}</div>
-                    <div className="text-[11px] text-amber-600 mt-1">
-                      {kpiMetrics.pendingCount} Pending | {kpiMetrics.confirmedCount} Confirmed
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Order Pipeline
+                      </span>
+                      <div className="w-9 h-9 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                        <ClipboardList className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black mt-3">
+                      {visibleOrders.length} Orders
+                    </div>
+                    <div className="text-xs text-amber-600 font-semibold mt-2">
+                      {kpiMetrics.pendingCount} Pending • {kpiMetrics.confirmedCount} Confirmed
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs text-slate-500 font-medium">Low-Stock Alerts</div>
-                    <div className="text-2xl font-extrabold mt-1 text-amber-500">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Low-Stock Alerts
+                      </span>
+                      <div className="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                        <AlertTriangle className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black mt-3 text-amber-500">
                       {kpiMetrics.lowStockProducts.length} SKUs
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-1">
-                      Out of {products.length} catalog products
+                    <div className="text-xs text-slate-400 mt-2">
+                      Across {products.length} active products
                     </div>
                   </div>
                 </div>
 
+                {/* Analytics Charts Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="font-bold text-sm">7-Day Revenue & Order Volume Trend</h3>
+                        <h3 className="font-black text-base">7-Day Revenue & Profit Velocity</h3>
                         <p className="text-xs text-slate-500">
-                          Real-time aggregation across storefront & courier deliveries
+                          Real-time financial trajectory across storefront and courier channels
                         </p>
                       </div>
                     </div>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={REVENUE_CHART_DATA}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
                           <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
@@ -3022,6 +3804,7 @@ ${queueOrders
                             dataKey="revenue"
                             name="Revenue (BDT)"
                             stroke="#6366f1"
+                            strokeWidth={2.5}
                             fill="#6366f1"
                             fillOpacity={0.2}
                           />
@@ -3031,6 +3814,7 @@ ${queueOrders
                               dataKey="profit"
                               name="Net Profit (BDT)"
                               stroke="#10b981"
+                              strokeWidth={2.5}
                               fill="#10b981"
                               fillOpacity={0.2}
                             />
@@ -3040,9 +3824,9 @@ ${queueOrders
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <h3 className="font-bold text-sm mb-1">Order Status Distribution</h3>
-                    <p className="text-xs text-slate-500 mb-3">Current fulfillment pipeline</p>
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <h3 className="font-black text-base mb-1">Order Status Breakdown</h3>
+                    <p className="text-xs text-slate-500 mb-3">Live fulfillment distribution</p>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -3052,7 +3836,9 @@ ${queueOrders
                             nameKey="name"
                             cx="50%"
                             cy="50%"
+                            innerRadius={45}
                             outerRadius={75}
+                            paddingAngle={3}
                             label
                           >
                             {kpiMetrics.statusPie.map((_, idx) => (
@@ -3067,9 +3853,10 @@ ${queueOrders
                   </div>
                 </div>
 
+                {/* Staff Performance & Low Stock Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <h3 className="font-bold text-sm mb-3">Staff Order Fulfillment Performance</h3>
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <h3 className="font-black text-base mb-3">Staff Order Fulfillment KPIs</h3>
                     <div className="h-56 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={staffList}>
@@ -3077,38 +3864,38 @@ ${queueOrders
                           <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
-                          <Bar dataKey="ordersAssigned" name="Assigned" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="ordersCompleted" name="Completed" fill="#10b981" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="ordersAssigned" name="Assigned" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="ordersCompleted" name="Completed" fill="#10b981" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-sm">Low-Stock Inventory Alerts</h3>
+                      <h3 className="font-black text-base">Low-Stock Warehouse Alerts</h3>
                       <button
                         onClick={() => setAdminTab("INVENTORY")}
-                        className="text-xs text-indigo-600 font-semibold hover:underline"
+                        className="text-xs text-indigo-600 font-bold hover:underline"
                       >
-                        Restock Now →
+                        Restock Ledger →
                       </button>
                     </div>
                     {kpiMetrics.lowStockProducts.map((p) => (
                       <div
                         key={p.id}
-                        className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs"
+                        className="flex items-center justify-between p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs"
                       >
                         <div>
-                          <div className="font-bold">{p.name}</div>
-                          <div className="text-slate-500">SKU: {p.sku}</div>
+                          <div className="font-bold text-sm">{p.name}</div>
+                          <div className="text-slate-500 font-mono">SKU: {p.sku}</div>
                         </div>
                         <div className="text-right">
-                          <div className="font-extrabold text-amber-600">
+                          <div className="font-black text-sm text-amber-600">
                             {p.stockQuantity} left
                           </div>
                           <div className="text-[11px] text-slate-400">
-                            Alert Threshold: {p.lowStockThreshold}
+                            Min Threshold: {p.lowStockThreshold}
                           </div>
                         </div>
                       </div>
@@ -3118,12 +3905,15 @@ ${queueOrders
               </div>
             )}
 
+            {/* ============================================================== */}
+            {/* TAB 2: ADVANCED ORDER MANAGEMENT                               */}
+            {/* ============================================================== */}
             {adminTab === "ORDERS" && (
               <div className="space-y-5">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-lg font-bold">Advanced Order Management</h2>
+                      <h2 className="text-xl font-black">Advanced Order Management</h2>
                       <p className="text-xs text-slate-500">
                         {hasPerm("orders.view_all")
                           ? "Showing all platform orders"
@@ -3134,9 +3924,9 @@ ${queueOrders
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleBulkPrintMemos(selectedOrderIds)}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm"
+                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm"
                       >
-                        <Printer className="w-3.5 h-3.5" />
+                        <Printer className="w-4 h-4" />
                         Bulk Print Memos ({selectedOrderIds.length})
                       </button>
                     </div>
@@ -3144,19 +3934,19 @@ ${queueOrders
 
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="relative flex-1 min-w-[200px]">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
                       <input
                         type="text"
                         value={orderSearch}
                         onChange={(e) => setOrderSearch(e.target.value)}
                         placeholder="Search by Order Number, Customer Name, or Phone..."
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="w-full pl-9 pr-3 py-2 text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       />
                     </div>
                     <select
                       value={orderStatusFilter}
                       onChange={(e) => setOrderStatusFilter(e.target.value)}
-                      className="px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent font-semibold"
+                      className="px-3.5 py-2 text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent font-bold"
                     >
                       <option value="ALL">All Statuses (9)</option>
                       <option value="PENDING">1. Pending</option>
@@ -3174,7 +3964,7 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
                           <th className="py-3 px-2">
                             <input
                               type="checkbox"
@@ -3206,7 +3996,7 @@ ${queueOrders
                               key={ord.id}
                               className="hover:bg-slate-50 dark:hover:bg-slate-800/40"
                             >
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <input
                                   type="checkbox"
                                   checked={selectedOrderIds.includes(ord.id)}
@@ -3219,26 +4009,26 @@ ${queueOrders
                                   }
                                 />
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <div className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
                                   {ord.orderNumber}
                                 </div>
                                 <div className="text-[11px] text-slate-400">{ord.createdAt}</div>
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <div className="font-bold">{ord.customerName}</div>
                                 <div className="text-slate-500">{ord.customerPhone}</div>
                                 <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
                                   {ord.deliveryAddress}
                                 </div>
                               </td>
-                              <td className="py-3 px-2">
-                                <div className="font-bold">{formatBDT(ord.grandTotal)}</div>
+                              <td className="py-3.5 px-2">
+                                <div className="font-black">{formatBDT(ord.grandTotal)}</div>
                                 <div className="text-[11px] text-slate-500">
                                   {ord.paymentMethod} ({ord.paymentStatus})
                                 </div>
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <select
                                   aria-label={`Change status for ${ord.orderNumber}`}
                                   value={ord.orderStatus}
@@ -3260,7 +4050,7 @@ ${queueOrders
                                   <option value="REFUNDED">REFUNDED</option>
                                 </select>
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <div className="text-[11px]">
                                   Mod: <span className="font-semibold">{mod?.name || "Unassigned"}</span>
                                 </div>
@@ -3268,21 +4058,21 @@ ${queueOrders
                                   Courier: {ord.courierProvider}
                                 </div>
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-[11px]">
                                   <Printer className="w-3 h-3" /> {ord.memoPrintCount}x
                                 </span>
                               </td>
-                              <td className="py-3 px-2 text-right space-x-1.5">
+                              <td className="py-3.5 px-2 text-right space-x-1.5">
                                 <button
                                   onClick={() => setInspectingOrderId(ord.id)}
-                                  className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  className="px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
                                   Details
                                 </button>
                                 <button
                                   onClick={() => handleBulkPrintMemos([ord.id])}
-                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
+                                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
                                 >
                                   Print Memo
                                 </button>
@@ -3299,10 +4089,10 @@ ${queueOrders
                   const ord = orders.find((o) => o.id === inspectingOrderId);
                   if (!ord) return null;
                   return (
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border-2 border-indigo-500/40 space-y-4">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-indigo-500/40 space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-base font-bold">
+                          <h3 className="text-base font-black">
                             Order Details & Audit History — {ord.orderNumber}
                           </h3>
                           <p className="text-xs text-slate-500">
@@ -3313,7 +4103,7 @@ ${queueOrders
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleBulkPrintMemos([ord.id])}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1"
+                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-1"
                           >
                             <Printer className="w-3.5 h-3.5" /> Open in Memo Printer
                           </button>
@@ -3327,7 +4117,7 @@ ${queueOrders
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
                           <div className="font-bold text-slate-400 uppercase">
                             Internal Staff Notes (RBAC Protected)
                           </div>
@@ -3343,7 +4133,7 @@ ${queueOrders
                                   )
                                 );
                               }}
-                              className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                              className="w-full p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                             />
                           ) : (
                             <p className="text-rose-500">
@@ -3352,7 +4142,7 @@ ${queueOrders
                           )}
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1.5">
+                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1.5">
                           <div className="font-bold text-slate-400 uppercase">
                             Status Audit Trail
                           </div>
@@ -3372,16 +4162,18 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 3: PROFESSIONAL ORDER MEMO & INVOICE PRINTING SYSTEM */}
+            {/* ============================================================== */}
+            {/* TAB 3: PROFESSIONAL ORDER MEMO & INVOICE PRINTING SYSTEM       */}
+            {/* ============================================================== */}
             {adminTab === "INVOICES" && (
               <div className="space-y-6">
-                <div className="no-print bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="no-print bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
                         High-Priority Printing Engine
                       </span>
-                      <h2 className="text-lg font-bold mt-1">
+                      <h2 className="text-xl font-black mt-1">
                         Order Memo & Invoice Printing Center
                       </h2>
                       <p className="text-xs text-slate-500">
@@ -3392,14 +4184,14 @@ ${queueOrders
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={handleTriggerBrowserPrint}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow"
                       >
                         <Printer className="w-4 h-4" />
                         Print Now ({printQueueIds.length} Memo{printQueueIds.length > 1 ? "s" : ""})
                       </button>
                       <button
                         onClick={handleDownloadInvoiceHtml}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow"
                       >
                         <Download className="w-4 h-4" />
                         Download Invoice File
@@ -3748,13 +4540,15 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 4: PRODUCTS CATALOG MANAGEMENT */}
+            {/* ============================================================== */}
+            {/* TAB 4: PRODUCTS CATALOG MANAGEMENT                             */}
+            {/* ============================================================== */}
             {adminTab === "PRODUCTS" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-lg font-bold">Product Catalog & SKU Management</h2>
+                      <h2 className="text-xl font-black">Product Catalog & SKU Management</h2>
                       <p className="text-xs text-slate-500">
                         Purchase cost prices are strictly protected by the{" "}
                         <code className="font-mono text-indigo-500">products.purchase_price</code>{" "}
@@ -3763,7 +4557,7 @@ ${queueOrders
                     </div>
                     <button
                       onClick={handleExportProductsCsv}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-600 text-white text-xs font-bold"
                     >
                       <Download className="w-3.5 h-3.5" /> Export Excel / CSV
                     </button>
@@ -3813,7 +4607,7 @@ ${queueOrders
                         setNewProductForm({ ...newProductForm, name: "", nameBn: "", sku: "" });
                         showToast(`Created product ${created.name} (${created.sku})`);
                       }}
-                      className="grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
+                      className="grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
                     >
                       <input
                         type="text"
@@ -3823,7 +4617,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, name: e.target.value })
                         }
                         placeholder="Product Name (EN)"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="text"
@@ -3832,7 +4626,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, nameBn: e.target.value })
                         }
                         placeholder="নাম (বাংলা)"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="text"
@@ -3842,7 +4636,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, sku: e.target.value })
                         }
                         placeholder="SKU (e.g. NX-700)"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="number"
@@ -3855,7 +4649,7 @@ ${queueOrders
                           })
                         }
                         placeholder="Sale Price"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="number"
@@ -3868,11 +4662,11 @@ ${queueOrders
                           })
                         }
                         placeholder="Initial Stock"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
                       >
                         + Add Product
                       </button>
@@ -3882,7 +4676,7 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
                           <th className="py-2.5 px-2">Product / বাংলা নাম</th>
                           <th className="py-2.5 px-2">SKU & Barcode</th>
                           <th className="py-2.5 px-2">Sale Price</th>
@@ -3894,20 +4688,20 @@ ${queueOrders
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                         {products.map((p) => (
                           <tr key={p.id}>
-                            <td className="py-2.5 px-2">
+                            <td className="py-3 px-2">
                               <div className="font-bold">{p.name}</div>
                               <div className="text-slate-500">{p.nameBn}</div>
                             </td>
-                            <td className="py-2.5 px-2 font-mono">
+                            <td className="py-3 px-2 font-mono">
                               <div>{p.sku}</div>
                               <div className="text-[10px] text-slate-400">{p.barcode}</div>
                             </td>
-                            <td className="py-2.5 px-2 font-bold text-indigo-600">
+                            <td className="py-3 px-2 font-black text-indigo-600">
                               {formatBDT(p.salePrice)}
                             </td>
-                            <td className="py-2.5 px-2">
+                            <td className="py-3 px-2">
                               {hasPerm("products.purchase_price") ? (
-                                <span className="font-mono font-semibold text-emerald-600">
+                                <span className="font-mono font-bold text-emerald-600">
                                   {formatBDT(p.purchasePrice)}
                                 </span>
                               ) : (
@@ -3916,7 +4710,7 @@ ${queueOrders
                                 </span>
                               )}
                             </td>
-                            <td className="py-2.5 px-2">
+                            <td className="py-3 px-2">
                               <span
                                 className={`px-2 py-0.5 rounded-full font-bold ${
                                   p.stockQuantity <= p.lowStockThreshold
@@ -3927,7 +4721,7 @@ ${queueOrders
                                 {p.stockQuantity} pcs
                               </span>
                             </td>
-                            <td className="py-2.5 px-2 text-right">
+                            <td className="py-3 px-2 text-right">
                               <button
                                 onClick={() =>
                                   setProducts((prev) =>
@@ -3958,8 +4752,8 @@ ${queueOrders
 
             {/* TAB 5: CATEGORIES */}
             {adminTab === "CATEGORIES" && (
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <h2 className="text-lg font-bold">Product Categories & Bilingual Labels</h2>
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <h2 className="text-xl font-black">Product Categories & Bilingual Labels</h2>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -3988,7 +4782,7 @@ ${queueOrders
                       setNewCategoryForm({ ...newCategoryForm, name: e.target.value })
                     }
                     placeholder="Category Name (English)"
-                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                    className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                   />
                   <input
                     type="text"
@@ -3997,11 +4791,11 @@ ${queueOrders
                       setNewCategoryForm({ ...newCategoryForm, nameBn: e.target.value })
                     }
                     placeholder="ক্যাটাগরি নাম (বাংলা)"
-                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                    className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold"
+                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
                   >
                     + Create Category
                   </button>
@@ -4011,7 +4805,7 @@ ${queueOrders
                   {categories.map((c) => (
                     <div
                       key={c.id}
-                      className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center"
+                      className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center"
                     >
                       <div>
                         <div className="font-bold text-sm">{c.name}</div>
@@ -4029,8 +4823,8 @@ ${queueOrders
             {/* TAB 6: INVENTORY & STOCK LEDGER */}
             {adminTab === "INVENTORY" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h2 className="text-lg font-bold">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                  <h2 className="text-xl font-black">
                     Atomic Inventory Adjustment & Movement Ledger
                   </h2>
                   <form
@@ -4063,7 +4857,7 @@ ${queueOrders
                         referenceId: `ADJ-${Date.now().toString().slice(-4)}`,
                         note: stockAdjustForm.note,
                         performedBy: activeStaff.name,
-                        createdAt: "2026-11-10 02:32 PM"
+                        createdAt: "2026-11-10 04:25 PM"
                       };
                       setInventoryTx((prev) => [tx, ...prev]);
                       logAction(
@@ -4074,14 +4868,14 @@ ${queueOrders
                       );
                       showToast(`Updated ${target.name} stock to ${nextStock} units!`);
                     }}
-                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
+                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
                   >
                     <select
                       value={stockAdjustForm.productId}
                       onChange={(e) =>
                         setStockAdjustForm({ ...stockAdjustForm, productId: e.target.value })
                       }
-                      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     >
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -4097,7 +4891,7 @@ ${queueOrders
                           type: e.target.value as InventoryTx["type"]
                         })
                       }
-                      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     >
                       <option value="PURCHASE_RESTOCK">PURCHASE_RESTOCK (+)</option>
                       <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (+/-)</option>
@@ -4113,7 +4907,7 @@ ${queueOrders
                         })
                       }
                       placeholder="Qty Delta (e.g. 15 or -3)"
-                      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     />
                     <input
                       type="text"
@@ -4122,11 +4916,11 @@ ${queueOrders
                         setStockAdjustForm({ ...stockAdjustForm, note: e.target.value })
                       }
                       placeholder="Reason / PO Reference"
-                      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
                     >
                       Record Movement
                     </button>
@@ -4135,7 +4929,7 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
                           <th className="py-2.5 px-2">Timestamp</th>
                           <th className="py-2.5 px-2">Product & SKU</th>
                           <th className="py-2.5 px-2">Movement Type</th>
@@ -4184,8 +4978,8 @@ ${queueOrders
 
             {/* TAB 7: ORDER ASSIGNMENTS & DELIVERY STAFF COD PORTAL */}
             {adminTab === "ASSIGNMENTS" && (
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <h2 className="text-lg font-bold">
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <h2 className="text-xl font-black">
                   Moderator, Order Processor & Delivery Rider Assignments
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -4196,7 +4990,7 @@ ${queueOrders
                   {visibleOrders.map((ord) => (
                     <div
                       key={ord.id}
-                      className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-xs"
+                      className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-xs"
                     >
                       <div>
                         <div className="font-mono font-bold text-indigo-600">
@@ -4223,7 +5017,7 @@ ${queueOrders
                             );
                             showToast(`Assigned moderator for ${ord.orderNumber}`);
                           }}
-                          className="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full mt-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         >
                           {staffList.map((s) => (
                             <option key={s.id} value={s.id}>
@@ -4249,7 +5043,7 @@ ${queueOrders
                             );
                             showToast(`Assigned delivery rider for ${ord.orderNumber}`);
                           }}
-                          className="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full mt-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         >
                           {staffList.map((s) => (
                             <option key={s.id} value={s.id}>
@@ -4269,7 +5063,7 @@ ${queueOrders
                               ord.grandTotal
                             )
                           }
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold"
                         >
                           Mark Delivered + Collect {formatBDT(ord.grandTotal)}
                         </button>
@@ -4281,7 +5075,7 @@ ${queueOrders
                               "Customer unavailable / returned parcel"
                             )
                           }
-                          className="px-3 py-1.5 rounded-lg border border-rose-500/40 text-rose-500 font-semibold"
+                          className="px-3 py-1.5 rounded-xl border border-rose-500/40 text-rose-500 font-bold"
                         >
                           Mark Returned (Auto-Restock)
                         </button>
@@ -4292,11 +5086,88 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 8: STAFF MANAGEMENT & ACTIVITY AUDIT LOGS */}
+            {/* ============================================================== */}
+            {/* TAB 8: STAFF MANAGEMENT, SUPERUSER PROMOTION & AUDIT LOGS      */}
+            {/* ============================================================== */}
             {adminTab === "STAFF" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h2 className="text-lg font-bold">Multi-Role Staff Management</h2>
+                {/* Dedicated Superuser Setup & Promotion Box */}
+                <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-6 border border-amber-500/30 shadow-xl space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-3 py-1 rounded-full">
+                        <Crown className="w-3.5 h-3.5" /> Superuser (`SUPER_ADMIN`) Management
+                      </span>
+                      <h2 className="text-xl font-black mt-2">
+                        Where to Set or Create a Superuser
+                      </h2>
+                      <p className="text-xs text-slate-300 mt-0.5">
+                        Create a new Superuser account directly below, or click <strong>&quot;Make Superuser&quot;</strong> next to any staff member in the table.
+                      </p>
+                    </div>
+                  </div>
+
+                  {hasPerm("staff.manage") ? (
+                    <form
+                      onSubmit={handleCreateOrPromoteSuperuser}
+                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs"
+                    >
+                      <input
+                        type="text"
+                        required
+                        value={superuserForm.name}
+                        onChange={(e) =>
+                          setSuperuserForm({ ...superuserForm, name: e.target.value })
+                        }
+                        placeholder="Superuser Full Name"
+                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                      />
+                      <input
+                        type="email"
+                        required
+                        value={superuserForm.email}
+                        onChange={(e) =>
+                          setSuperuserForm({ ...superuserForm, email: e.target.value })
+                        }
+                        placeholder="Superuser Email"
+                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                      />
+                      <input
+                        type="text"
+                        value={superuserForm.phone}
+                        onChange={(e) =>
+                          setSuperuserForm({ ...superuserForm, phone: e.target.value })
+                        }
+                        placeholder="Phone Number"
+                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                      />
+                      <input
+                        type="password"
+                        required
+                        value={superuserForm.password}
+                        onChange={(e) =>
+                          setSuperuserForm({ ...superuserForm, password: e.target.value })
+                        }
+                        placeholder="Password"
+                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black flex items-center justify-center gap-1.5"
+                      >
+                        <Crown className="w-4 h-4" /> + Create Superuser
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-rose-500/20 text-rose-200 text-xs">
+                      Switch to a Super Admin session to create or promote Superusers.
+                    </div>
+                  )}
+                </div>
+
+                {/* Regular Staff Creation & Directory */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                  <h2 className="text-lg font-black">Staff Directory & Role Assignments</h2>
                   {hasPerm("staff.manage") ? (
                     <form
                       onSubmit={(e) => {
@@ -4311,6 +5182,7 @@ ${queueOrders
                           department: newStaffForm.department,
                           designation: newStaffForm.designation,
                           roleId: newStaffForm.roleId,
+                          isSuperuser: newStaffForm.roleId === "role-super-admin",
                           directPermissions: [],
                           status: "ACTIVE",
                           ordersAssigned: 0,
@@ -4328,7 +5200,7 @@ ${queueOrders
                         setNewStaffForm({ ...newStaffForm, name: "", email: "" });
                         showToast(`Added staff member ${created.name}!`);
                       }}
-                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs"
+                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 text-xs"
                     >
                       <input
                         type="text"
@@ -4338,7 +5210,7 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, name: e.target.value })
                         }
                         placeholder="Full Name"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="email"
@@ -4348,7 +5220,7 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, email: e.target.value })
                         }
                         placeholder="Email Address"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="text"
@@ -4357,14 +5229,14 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, designation: e.target.value })
                         }
                         placeholder="Designation"
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       />
                       <select
                         value={newStaffForm.roleId}
                         onChange={(e) =>
                           setNewStaffForm({ ...newStaffForm, roleId: e.target.value })
                         }
-                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                       >
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
@@ -4374,7 +5246,7 @@ ${queueOrders
                       </select>
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
                       >
                         + Create Staff
                       </button>
@@ -4388,45 +5260,61 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
                           <th className="py-2.5 px-2">Staff Member</th>
-                          <th className="py-2.5 px-2">Role</th>
+                          <th className="py-2.5 px-2">Role & Superuser Status</th>
                           <th className="py-2.5 px-2">Assigned / Completed / Cancelled</th>
                           <th className="py-2.5 px-2">COD Collected</th>
-                          <th className="py-2.5 px-2 text-right">Switch Session</th>
+                          <th className="py-2.5 px-2 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                         {staffList.map((stf) => {
                           const r = roles.find((rl) => rl.id === stf.roleId);
+                          const isSu = stf.isSuperuser || r?.slug === "SUPER_ADMIN";
                           return (
                             <tr key={stf.id}>
-                              <td className="py-2.5 px-2">
-                                <div className="font-bold">
-                                  {stf.name} ({stf.employeeCode})
+                              <td className="py-3 px-2">
+                                <div className="font-bold flex items-center gap-1.5">
+                                  <span>
+                                    {stf.name} ({stf.employeeCode})
+                                  </span>
+                                  {isSu && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-black">
+                                      <Crown className="w-3 h-3" /> SUPERUSER
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="text-slate-500">{stf.email}</div>
                               </td>
-                              <td className="py-2.5 px-2 font-semibold text-indigo-600">
+                              <td className="py-3 px-2 font-bold text-indigo-600">
                                 {r?.name}
                               </td>
-                              <td className="py-2.5 px-2 font-mono">
+                              <td className="py-3 px-2 font-mono">
                                 {stf.ordersAssigned} /{" "}
                                 <span className="text-emerald-600 font-bold">
                                   {stf.ordersCompleted}
                                 </span>{" "}
                                 / <span className="text-rose-500">{stf.ordersCancelled}</span>
                               </td>
-                              <td className="py-2.5 px-2 font-bold">
+                              <td className="py-3 px-2 font-bold">
                                 {formatBDT(stf.cashCollected)}
                               </td>
-                              <td className="py-2.5 px-2 text-right">
+                              <td className="py-3 px-2 text-right space-x-2">
+                                {!isSu && (
+                                  <button
+                                    onClick={() => handlePromoteStaffToSuperuser(stf.id)}
+                                    className="px-3 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-600 hover:text-slate-950 font-bold transition"
+                                  >
+                                    Make Superuser
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => {
                                     setActiveStaffId(stf.id);
                                     showToast(`Switched active session to ${stf.name}`);
                                   }}
-                                  className="px-3 py-1 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white font-semibold"
+                                  className="px-3 py-1 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white font-semibold"
                                 >
                                   Test Role
                                 </button>
@@ -4439,13 +5327,13 @@ ${queueOrders
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                  <h3 className="font-bold text-sm">Immutable Staff Activity Audit Log</h3>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3">
+                  <h3 className="font-black text-sm">Immutable Staff Activity Audit Log</h3>
                   <div className="space-y-2">
                     {activityLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
+                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
                       >
                         <div>
                           <span className="font-bold">{log.staffName}</span>{" "}
@@ -4466,9 +5354,9 @@ ${queueOrders
             {/* TAB 9: CUSTOM ROLES & GRANULAR PERMISSION BUILDER */}
             {adminTab === "ROLES" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
                   <div>
-                    <h2 className="text-lg font-bold">
+                    <h2 className="text-xl font-black">
                       Custom Role Builder & 28-Permission Matrix
                     </h2>
                     <p className="text-xs text-slate-500">
@@ -4508,7 +5396,7 @@ ${queueOrders
                         });
                         showToast(`Created custom role "${created.name}"!`);
                       }}
-                      className="space-y-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
+                      className="space-y-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
                     >
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input
@@ -4519,7 +5407,7 @@ ${queueOrders
                             setNewRoleForm({ ...newRoleForm, name: e.target.value })
                           }
                           placeholder="Custom Role Name (e.g. Night Shift Supervisor)"
-                          className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                          className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                         />
                         <input
                           type="text"
@@ -4528,11 +5416,11 @@ ${queueOrders
                             setNewRoleForm({ ...newRoleForm, description: e.target.value })
                           }
                           placeholder="Role description"
-                          className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                          className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                         />
                         <button
                           type="submit"
-                          className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold"
+                          className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold"
                         >
                           + Save Custom Role ({newRoleForm.permissions.length} Perms)
                         </button>
@@ -4544,7 +5432,7 @@ ${queueOrders
                           return (
                             <label
                               key={perm.code}
-                              className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer ${
+                              className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer ${
                                 checked
                                   ? "border-indigo-500 bg-indigo-500/10"
                                   : "border-slate-200 dark:border-slate-700"
@@ -4585,11 +5473,11 @@ ${queueOrders
                     {roles.map((r) => (
                       <div
                         key={r.id}
-                        className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2"
+                        className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2"
                       >
                         <div className="flex justify-between items-center">
-                          <span className="font-bold text-sm">{r.name}</span>
-                          <span className="text-[11px] font-mono bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded">
+                          <span className="font-black text-sm">{r.name}</span>
+                          <span className="text-[11px] font-mono bg-indigo-500/10 text-indigo-500 px-2.5 py-0.5 rounded-full font-bold">
                             {r.permissions.length} permissions
                           </span>
                         </div>
@@ -4625,8 +5513,8 @@ ${queueOrders
               adminTab === "CUSTOMERS") && (
               <div className="space-y-6">
                 {adminTab === "PAYMENTS" && (
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-lg font-bold">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <h2 className="text-xl font-black">
                       Payment Verification & Gateway Architecture (SSLCommerz, bKash, Nagad, Stripe)
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
@@ -4638,7 +5526,7 @@ ${queueOrders
                       ].map((gw) => (
                         <div
                           key={gw.name}
-                          className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800"
+                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800"
                         >
                           <div className="font-bold">{gw.name}</div>
                           <div className="text-emerald-600 font-semibold mt-0.5">{gw.status}</div>
@@ -4651,7 +5539,7 @@ ${queueOrders
                       {orders.map((o) => (
                         <div
                           key={o.id}
-                          className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
+                          className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
                         >
                           <div>
                             <span className="font-mono font-bold">{o.orderNumber}</span> —{" "}
@@ -4673,7 +5561,7 @@ ${queueOrders
                                 );
                                 showToast(`Verified payment for ${o.orderNumber}`);
                               }}
-                              className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-semibold"
+                              className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-semibold"
                             >
                               Mark Paid
                             </button>
@@ -4685,15 +5573,15 @@ ${queueOrders
                 )}
 
                 {adminTab === "SHIPPING" && (
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-lg font-bold">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <h2 className="text-xl font-black">
                       Courier Integration & Dispatch (Steadfast, Pathao Courier, RedX)
                     </h2>
                     <div className="space-y-3">
                       {orders.map((o) => (
                         <div
                           key={o.id}
-                          className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs"
+                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs"
                         >
                           <div>
                             <div className="font-bold">
@@ -4729,7 +5617,7 @@ ${queueOrders
                                     `Dispatched ${o.orderNumber} to ${provider} (Tracking: ${trk})`
                                   );
                                 }}
-                                className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 font-semibold hover:bg-indigo-600 hover:text-white"
+                                className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold hover:bg-indigo-600 hover:text-white"
                               >
                                 Send to {provider}
                               </button>
@@ -4742,8 +5630,8 @@ ${queueOrders
                 )}
 
                 {adminTab === "COUPONS" && (
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-lg font-bold">Coupons & Promotional Discounts</h2>
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <h2 className="text-xl font-black">Coupons & Promotional Discounts</h2>
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -4773,7 +5661,7 @@ ${queueOrders
                           setNewCouponForm({ ...newCouponForm, code: e.target.value })
                         }
                         placeholder="Code (e.g. WINTER20)"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       />
                       <select
                         value={newCouponForm.discountType}
@@ -4783,7 +5671,7 @@ ${queueOrders
                             discountType: e.target.value as any
                           })
                         }
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       >
                         <option value="PERCENTAGE">Percentage (%)</option>
                         <option value="FIXED_AMOUNT">Fixed Amount (৳)</option>
@@ -4798,7 +5686,7 @@ ${queueOrders
                           })
                         }
                         placeholder="Discount Value"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       />
                       <input
                         type="number"
@@ -4810,11 +5698,11 @@ ${queueOrders
                           })
                         }
                         placeholder="Min Purchase"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold"
+                        className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold"
                       >
                         + Create Coupon
                       </button>
@@ -4824,7 +5712,7 @@ ${queueOrders
                       {coupons.map((c) => (
                         <div
                           key={c.id}
-                          className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center"
+                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center"
                         >
                           <div>
                             <div className="font-mono font-bold text-sm text-indigo-600">
@@ -4847,25 +5735,25 @@ ${queueOrders
                 )}
 
                 {adminTab === "REPORTS" && (
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-lg font-bold">Financial & Profitability Reports</h2>
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <h2 className="text-xl font-black">Financial & Profitability Reports</h2>
                     {hasPerm("financials.view") ? (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800">
+                        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800">
                           <div className="text-slate-500">Gross Revenue</div>
-                          <div className="text-xl font-extrabold mt-1">
+                          <div className="text-2xl font-black mt-1">
                             {formatBDT(kpiMetrics.totalRevenue)}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800">
+                        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800">
                           <div className="text-slate-500">Net Profit Margin</div>
-                          <div className="text-xl font-extrabold text-emerald-600 mt-1">
+                          <div className="text-2xl font-black text-emerald-600 mt-1">
                             {formatBDT(kpiMetrics.grossProfit)}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800">
+                        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800">
                           <div className="text-slate-500">Delivered Orders</div>
-                          <div className="text-xl font-extrabold mt-1">
+                          <div className="text-2xl font-black mt-1">
                             {kpiMetrics.deliveredCount}
                           </div>
                         </div>
@@ -4879,46 +5767,46 @@ ${queueOrders
                 )}
 
                 {adminTab === "SETTINGS" && (
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-lg font-bold">
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <h2 className="text-xl font-black">
                       Website & Bilingual Invoice Header Configuration
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div>
-                        <label className="font-semibold block mb-1">Company Name (English)</label>
+                        <label className="font-bold block mb-1">Company Name (English)</label>
                         <input
                           type="text"
                           value={settings.companyName}
                           onChange={(e) =>
                             setSettings({ ...settings, companyName: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-semibold block mb-1">Company Name (বাংলা)</label>
+                        <label className="font-bold block mb-1">Company Name (বাংলা)</label>
                         <input
                           type="text"
                           value={settings.companyNameBn}
                           onChange={(e) =>
                             setSettings({ ...settings, companyNameBn: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-semibold block mb-1">Hotline Phone</label>
+                        <label className="font-bold block mb-1">Hotline Phone</label>
                         <input
                           type="text"
                           value={settings.companyPhone}
                           onChange={(e) =>
                             setSettings({ ...settings, companyPhone: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-semibold block mb-1">
+                        <label className="font-bold block mb-1">
                           Promotional Storefront Banner
                         </label>
                         <input
@@ -4927,13 +5815,13 @@ ${queueOrders
                           onChange={(e) =>
                             setSettings({ ...settings, promoBannerText: e.target.value })
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
                         />
                       </div>
                     </div>
                     <button
                       onClick={() => showToast("Website & Invoice settings updated!")}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
+                      className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold"
                     >
                       Save Configuration
                     </button>
@@ -4945,11 +5833,13 @@ ${queueOrders
         </div>
       )}
 
-      {/* PORTAL 3: ARCHITECTURE, PRISMA SCHEMA & FOLDER STRUCTURE VIEWER */}
-      {portalMode === "ARCHITECTURE" && (
+      {/* ==================================================================== */}
+      {/* PORTAL 3: ARCHITECTURE, PRISMA SCHEMA & FOLDER STRUCTURE VIEWER      */}
+      {/* ==================================================================== */}
+      {isStaffLoggedIn && portalMode === "ARCHITECTURE" && (
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-            <h1 className="text-2xl font-bold">
+          <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <h1 className="text-2xl font-black">
               System Architecture, 29-Model Prisma Schema & Next.js App Router Blueprint
             </h1>
             <p className="text-xs text-slate-500">
@@ -4957,7 +5847,7 @@ ${queueOrders
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="font-bold text-indigo-600 uppercase">
                   1. Normalized 29-Model Prisma Schema
                 </div>
@@ -4965,7 +5855,7 @@ ${queueOrders
                   User, Account, Session, Role, Permission, RolePermission, UserRole, CustomerProfile, StaffProfile, Address, Category, Product, ProductVariant, ProductImage, Inventory, InventoryTransaction, Cart, CartItem, Wishlist, Order, OrderItem, OrderStatusHistory, OrderAssignment, Payment, Shipping, Coupon, Review, StaffActivityLog, WebsiteSettings.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="font-bold text-emerald-600 uppercase">
                   2. Server-Side RBAC Enforcement
                 </div>
@@ -4973,7 +5863,7 @@ ${queueOrders
                   Every Server Action and API Route calls <code>requirePermission()</code> to verify role permissions and user-level overrides against PostgreSQL before mutating data or returning cost prices.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="font-bold text-purple-600 uppercase">
                   3. Bilingual 3-Layout Order Memo Engine
                 </div>
