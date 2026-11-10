@@ -41,12 +41,8 @@ import {
   Mail,
   LayoutGrid,
   List,
-  ChevronLeft,
   Bell,
   User,
-  Eye,
-  FileText,
-  Check,
   Menu,
   ZoomIn
 } from "lucide-react";
@@ -1140,7 +1136,6 @@ const REVENUE_CHART_DATA = [
   { day: "10 Nov", revenue: 96400, profit: 33800, orders: 21 }
 ];
 
-// Official Brand Palette Chart Colors (Navy, Teal, Sky Blue, Semantic Accents)
 const BRAND_PIE_COLORS = ["#2F4156", "#567C8D", "#8BA9BC", "#0D9488", "#D97706", "#E11D48"];
 
 function formatBDT(amount: number): string {
@@ -1150,87 +1145,83 @@ function formatBDT(amount: number): string {
   })}`;
 }
 
-/**
- * Exact Semantic Status Badges per Section 6.B:
- * - Pending: Orange
- * - Confirmed: Blue
- * - Processing: Teal (#567C8D)
- * - Ready for Shipment: Indigo
- * - Shipped: Purple
- * - Delivered: Green
- * - Cancelled: Red
- * - Returned: Neutral
- * - Refunded: Warning/Success
- */
 function getStatusBadgeStyle(status: OrderStatus): string {
   switch (status) {
     case "PENDING":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+      return "bg-amber-500/15 text-amber-800 border-amber-500/30";
     case "CONFIRMED":
-      return "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30";
+      return "bg-sky-500/15 text-sky-800 border-sky-500/30";
     case "PROCESSING":
-      return "bg-[#567C8D]/20 text-[#2F4156] dark:text-[#C8D9E6] border-[#567C8D]/40";
+      return "bg-[#567C8D]/20 text-[#2F4156] border-[#567C8D]/40";
     case "READY_FOR_SHIPMENT":
-      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30";
+      return "bg-indigo-500/15 text-indigo-800 border-indigo-500/30";
     case "SHIPPED":
-      return "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30";
+      return "bg-purple-500/15 text-purple-800 border-purple-500/30";
     case "DELIVERED":
-      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-500/15 text-emerald-800 border-emerald-500/30";
     case "CANCELLED":
-      return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
+      return "bg-rose-500/15 text-rose-800 border-rose-500/30";
     case "RETURNED":
-      return "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-400/40";
+      return "bg-slate-500/15 text-slate-700 border-slate-400/40";
     case "REFUNDED":
-      return "bg-teal-500/15 text-teal-800 dark:text-teal-300 border-teal-500/30";
+      return "bg-teal-500/15 text-teal-800 border-teal-500/30";
     default:
       return "bg-slate-500/15 text-slate-600 border-slate-500/30";
   }
 }
 
 /**
- * Clean Architectural Product Illustration in Official Palette
- * (#2F4156 Navy, #567C8D Teal, #C8D9E6 Sky Blue, #F5F1EE Beige)
+ * High-Precision Architectural Product Illustration in Official Palette
+ * Always renders crisp Beige (#F5F1EE), Sky Blue (#C8D9E6), Teal (#567C8D), and Navy (#2F4156)
  */
 function ProductVisualArtwork({ sku, categoryId }: { sku: string; categoryId: string }) {
   return (
-    <div className="w-full h-full bg-[#F5F1EE] dark:bg-[#1B2634] flex items-center justify-center relative overflow-hidden p-6">
-      <div className="w-36 h-36 rounded-full bg-[#C8D9E6]/55 dark:bg-[#567C8D]/25 flex items-center justify-center border border-[#C8D9E6] dark:border-[#567C8D]/40 transition-transform duration-300 group-hover:scale-105">
+    <div className="w-full h-full bg-[#F5F1EE] flex items-center justify-center relative overflow-hidden p-6 select-none">
+      {/* Subtle architectural studio grid backdrop */}
+      <div className="absolute inset-3 rounded-xl border border-[#C8D9E6]/60 bg-gradient-to-b from-white/70 to-[#C8D9E6]/25" />
+      <div className="relative z-10 w-36 h-36 rounded-full bg-[#C8D9E6]/55 flex items-center justify-center border border-[#C8D9E6] shadow-inner transition-transform duration-300 group-hover:scale-105">
         {categoryId === "cat-2" && sku.includes("AUD") && (
-          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M18 44V38a22 22 0 0 1 44 0v6" />
-            <rect x="12" y="42" width="12" height="20" rx="6" fill="#567C8D" />
-            <rect x="56" y="42" width="12" height="20" rx="6" fill="#567C8D" />
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M18 44V38a22 22 0 0 1 44 0v6" stroke="#2F4156" strokeWidth="3.5" />
+            <rect x="12" y="40" width="13" height="22" rx="6.5" fill="#2F4156" />
+            <rect x="55" y="40" width="13" height="22" rx="6.5" fill="#2F4156" />
+            <rect x="15" y="43" width="7" height="16" rx="3.5" fill="#567C8D" />
+            <rect x="58" y="43" width="7" height="16" rx="3.5" fill="#567C8D" />
           </svg>
         )}
         {categoryId === "cat-2" && sku.includes("WTC") && (
-          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <rect x="24" y="20" width="32" height="40" rx="8" fill="#FFFFFF" stroke="#2F4156" strokeWidth="3" />
-            <path d="M30 20V10h20v10M30 60v10h20V60" stroke="#567C8D" strokeWidth="3" />
-            <circle cx="40" cy="40" r="9" stroke="#567C8D" strokeWidth="2.5" />
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M31 20L33 9h14l2 11M31 60l2 11h14l2-11" fill="#567C8D" stroke="#2F4156" strokeWidth="2.5" />
+            <rect x="23" y="19" width="34" height="42" rx="9" fill="#2F4156" stroke="#2F4156" strokeWidth="2.5" />
+            <rect x="27" y="23" width="26" height="34" rx="6" fill="#FFFFFF" />
+            <circle cx="40" cy="40" r="8" stroke="#567C8D" strokeWidth="2.5" />
+            <path d="M40 35v5l3.5 3.5" stroke="#2F4156" strokeWidth="2.2" strokeLinecap="round" />
           </svg>
         )}
         {categoryId === "cat-4" && sku.includes("KBD") && (
-          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <rect x="10" y="24" width="60" height="32" rx="5" fill="#FFFFFF" stroke="#2F4156" strokeWidth="3" />
-            <path d="M18 33h6M28 33h6M38 33h6M48 33h6M58 33h4M18 41h8M30 41h20M54 41h8M22 49h36" stroke="#567C8D" strokeWidth="2.5" strokeLinecap="round" />
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="8" y="23" width="64" height="34" rx="6" fill="#2F4156" />
+            <rect x="11" y="26" width="58" height="28" rx="4" fill="#FFFFFF" />
+            <path d="M16 33h6M26 33h6M36 33h6M46 33h6M56 33h8M16 40h8M28 40h22M54 40h10M20 47h40" stroke="#567C8D" strokeWidth="3" strokeLinecap="round" />
           </svg>
         )}
         {categoryId === "cat-1" && (
-          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <rect x="22" y="14" width="36" height="52" rx="6" fill="#FFFFFF" stroke="#2F4156" strokeWidth="3" />
-            <path d="M42 26l-8 14h12l-8 14" stroke="#567C8D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="22" y="13" width="36" height="54" rx="7" fill="#2F4156" />
+            <rect x="26" y="18" width="28" height="44" rx="4" fill="#FFFFFF" />
+            <path d="M42 26l-8 14h12l-6 14" stroke="#567C8D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
         {categoryId === "cat-3" && (
-          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M28 16l12 6 12-6 12 10-8 10v28H24V36l-8-10 12-10z" fill="#FFFFFF" stroke="#2F4156" strokeWidth="2.8" />
-            <path d="M40 22v22" stroke="#567C8D" strokeWidth="2.5" />
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M28 16l12 6 12-6 13 10-8 10v28H23V36l-8-10 13-10z" fill="#FFFFFF" stroke="#2F4156" strokeWidth="2.8" />
+            <path d="M40 22v22" stroke="#567C8D" strokeWidth="2.8" strokeLinecap="round" />
           </svg>
         )}
         {categoryId === "cat-4" && !sku.includes("KBD") && (
-          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M16 24h48" stroke="#2F4156" strokeWidth="4" strokeLinecap="round" />
-            <path d="M40 24v32M26 56h28" stroke="#567C8D" strokeWidth="3" strokeLinecap="round" />
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M14 24h52" stroke="#2F4156" strokeWidth="4.5" strokeLinecap="round" />
+            <path d="M40 24v32M26 56h28" stroke="#567C8D" strokeWidth="3.5" strokeLinecap="round" />
           </svg>
         )}
       </div>
@@ -1239,7 +1230,9 @@ function ProductVisualArtwork({ sku, categoryId }: { sku: string; categoryId: st
 }
 
 export default function App() {
+  // Default is Light Mode (#F5F1EE Beige + #FFFFFF White + #2F4156 Navy + #567C8D Teal + #C8D9E6 Sky Blue)
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   // Strict Customer vs Staff Separation:
   // Normal customers NEVER see Admin menus; only signed-in Staff see the ERP bar & dashboard.
@@ -1250,7 +1243,6 @@ export default function App() {
   );
   const [activeStaffId, setActiveStaffId] = useState<string>("stf-1");
 
-  // Storefront Navigation & Filters
   const [storePage, setStorePage] = useState<
     | "HOME"
     | "SHOP"
@@ -1279,7 +1271,6 @@ export default function App() {
   const [zoomActive, setZoomActive] = useState<boolean>(false);
   const [newsletterEmail, setNewsletterEmail] = useState<string>("");
 
-  // Auth Page Sub-Tabs
   const [authMode, setAuthMode] = useState<"CUSTOMER_LOGIN" | "STAFF_LOGIN" | "SUPERUSER_SETUP">(
     "STAFF_LOGIN"
   );
@@ -1297,7 +1288,6 @@ export default function App() {
     employeeCode: "SU-001"
   });
 
-  // Admin Sidebar Navigation (All 15 Modules + Role-Specific Operational Views)
   const [adminTab, setAdminTab] = useState<
     | "DASHBOARD"
     | "MODERATOR_DESK"
@@ -1323,7 +1313,7 @@ export default function App() {
 
   const [roles, setRoles] = useState<RoleDef[]>(INITIAL_ROLES);
   const [staffList, setStaffList] = useState<StaffUser[]>(INITIAL_STAFF);
-  const [customers, setCustomers] = useState<CustomerRecord[]>(INITIAL_CUSTOMERS);
+  const [customers] = useState<CustomerRecord[]>(INITIAL_CUSTOMERS);
   const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
   const [products, setProducts] = useState<ProductItem[]>(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<OrderRecord[]>(INITIAL_ORDERS);
@@ -1461,6 +1451,23 @@ export default function App() {
     comment: ""
   });
 
+  /**
+   * Clicking ANY Product Card opens its Product Description / Details page
+   * and scrolls to the top smoothly.
+   */
+  const openProductDetail = (productId: string) => {
+    const prod = products.find((p) => p.id === productId);
+    if (!prod) return;
+    setSelectedProductId(prod.id);
+    setSelectedVariantId(prod.variants[0]?.id || "");
+    setDetailQty(1);
+    setDetailTab("DESCRIPTION");
+    setStorePage("PRODUCT_DETAIL");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const activeStaff = useMemo(
     () => staffList.find((s) => s.id === activeStaffId) || staffList[0],
     [staffList, activeStaffId]
@@ -1497,7 +1504,7 @@ export default function App() {
       module,
       targetId,
       details,
-      createdAt: "2026-11-10 05:18 PM"
+      createdAt: "2026-11-10 05:45 PM"
     };
     setActivityLogs((prev) => [entry, ...prev]);
   };
@@ -1780,7 +1787,7 @@ export default function App() {
           referenceId: newOrderNum,
           note: `Deducted for checkout order ${newOrderNum}`,
           performedBy: checkoutForm.customerName,
-          createdAt: "2026-11-10 05:20 PM"
+          createdAt: "2026-11-10 05:46 PM"
         });
         return { ...p, stockQuantity: nextStock };
       })
@@ -1816,7 +1823,7 @@ export default function App() {
       customerNotes: checkoutForm.customerNotes,
       internalNotes: "New customer order placed via storefront.",
       memoPrintCount: 0,
-      createdAt: "2026-11-10 05:20 PM",
+      createdAt: "2026-11-10 05:46 PM",
       items: cartDetails.lines.map((l) => ({
         productId: l.product.id,
         productName: l.product.name,
@@ -1834,7 +1841,7 @@ export default function App() {
           newState: "PENDING",
           note: "Order placed by customer via Checkout.",
           changedBy: checkoutForm.customerName,
-          createdAt: "2026-11-10 05:20 PM"
+          createdAt: "2026-11-10 05:46 PM"
         }
       ]
     };
@@ -1908,7 +1915,7 @@ export default function App() {
             referenceId: target.orderNumber,
             note: `Automatic stock restoration on order ${newStatus}`,
             performedBy: activeStaff.name,
-            createdAt: "2026-11-10 05:22 PM"
+            createdAt: "2026-11-10 05:48 PM"
           });
           return { ...p, stockQuantity: nextStock };
         })
@@ -1938,7 +1945,7 @@ export default function App() {
               newState: newStatus,
               note: note || `Updated to ${newStatus} by ${activeStaff.name}`,
               changedBy: activeStaff.name,
-              createdAt: "2026-11-10 05:22 PM"
+              createdAt: "2026-11-10 05:48 PM"
             }
           ]
         };
@@ -1974,7 +1981,7 @@ export default function App() {
           ? {
               ...o,
               memoPrintCount: o.memoPrintCount + 1,
-              lastPrintedAt: "2026-11-10 05:25 PM",
+              lastPrintedAt: "2026-11-10 05:50 PM",
               lastPrintedBy: activeStaff.name
             }
           : o
@@ -2158,7 +2165,6 @@ ${queueOrders
     };
   }, [orders, products]);
 
-  // Group permissions by module for Section 8 Permission Matrix
   const groupedPermissions = useMemo(() => {
     const map = new Map<string, PermissionDef[]>();
     for (const p of ALL_PERMISSIONS) {
@@ -2169,14 +2175,17 @@ ${queueOrders
     return Array.from(map.entries());
   }, []);
 
+  // Explicit theme tokens so OS dark mode NEVER overrides the Beige/White/SkyBlue/Teal/Navy palette
+  const pageBg = darkMode ? "bg-[#1B2634] text-[#F5F1EE]" : "bg-[#F5F1EE] text-[#2F4156]";
+  const surfaceCard = darkMode
+    ? "bg-[#243344] text-[#F5F1EE] border-[#567C8D]/40"
+    : "bg-white text-[#2F4156] border-[#C8D9E6]";
+  const subtleBox = darkMode
+    ? "bg-[#1B2634] text-[#F5F1EE] border-[#567C8D]/40"
+    : "bg-[#F5F1EE] text-[#2F4156] border-[#C8D9E6]";
+
   return (
-    <div
-      className={
-        darkMode
-          ? "dark bg-[#1B2634] text-[#F5F1EE] min-h-screen font-sans selection:bg-[#567C8D] selection:text-white"
-          : "bg-[#F5F1EE] text-[#2F4156] min-h-screen font-sans selection:bg-[#2F4156] selection:text-white"
-      }
-    >
+    <div className={`${pageBg} min-h-screen font-sans selection:bg-[#2F4156] selection:text-white`}>
       <style>{`
         @media print {
           .no-print {
@@ -2212,40 +2221,35 @@ ${queueOrders
 
       {/* ==================================================================== */}
       {/* STAFF EXECUTIVE TOPBAR — STRICTLY HIDDEN FROM NORMAL CUSTOMERS       */}
-      {/* Uses Official Brand Navy (#2F4156) & Teal (#567C8D)                  */}
+      {/* Single-line layout on desktop                                        */}
       {/* ==================================================================== */}
       {isStaffLoggedIn && (
-        <header className="no-print sticky top-0 z-50 bg-[#2F4156] text-white border-b border-[#567C8D]/40 px-4 py-2.5 shadow-md">
-          <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#567C8D] flex items-center justify-center font-bold text-base text-white border border-[#C8D9E6]/30">
+        <header className="no-print sticky top-0 z-50 bg-[#2F4156] text-white border-b border-[#567C8D]/40 px-4 h-14 flex items-center shadow-md">
+          <div className="max-w-[1440px] w-full mx-auto flex items-center justify-between gap-3 flex-nowrap">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#567C8D] flex items-center justify-center font-bold text-sm text-white border border-[#C8D9E6]/30">
                 N
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold tracking-tight text-sm">
-                    {settings.companyName} Enterprise SaaS
+              <div className="flex items-center gap-2">
+                <span className="font-bold tracking-tight text-xs sm:text-sm whitespace-nowrap">
+                  {settings.companyName} ERP
+                </span>
+                {activeStaff.isSuperuser || activeRole.slug === "SUPER_ADMIN" ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] bg-[#C8D9E6] text-[#2F4156] px-2 py-0.5 rounded font-bold whitespace-nowrap">
+                    <Crown className="w-3 h-3" /> SUPERUSER
                   </span>
-                  {activeStaff.isSuperuser || activeRole.slug === "SUPER_ADMIN" ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] bg-[#C8D9E6] text-[#2F4156] px-2.5 py-0.5 rounded-md font-bold">
-                      <Crown className="w-3 h-3" /> SUPERUSER
-                    </span>
-                  ) : (
-                    <span className="text-[11px] bg-[#567C8D] text-white px-2.5 py-0.5 rounded-md font-semibold">
-                      {activeRole.name}
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] text-[#C8D9E6] hidden sm:block">
-                  Active Staff Session: {activeStaff.name} ({activeStaff.email})
-                </p>
+                ) : (
+                  <span className="text-[10px] bg-[#567C8D] text-white px-2 py-0.5 rounded font-semibold whitespace-nowrap">
+                    {activeRole.name}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-[#243344] p-1 rounded-lg border border-[#567C8D]/40">
+            <div className="flex items-center gap-1 bg-[#243344] p-1 rounded-lg border border-[#567C8D]/40 shrink-0">
               <button
                 onClick={() => setPortalMode("STOREFRONT")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap transition ${
                   portalMode === "STOREFRONT"
                     ? "bg-[#567C8D] text-white shadow-sm"
                     : "text-[#C8D9E6] hover:text-white"
@@ -2256,7 +2260,7 @@ ${queueOrders
               </button>
               <button
                 onClick={() => setPortalMode("ADMIN")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap transition ${
                   portalMode === "ADMIN"
                     ? "bg-[#567C8D] text-white shadow-sm"
                     : "text-[#C8D9E6] hover:text-white"
@@ -2270,7 +2274,7 @@ ${queueOrders
                   setPortalMode("ADMIN");
                   setAdminTab("INVOICES");
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap transition ${
                   portalMode === "ADMIN" && adminTab === "INVOICES"
                     ? "bg-[#C8D9E6] text-[#2F4156] font-bold"
                     : "text-[#C8D9E6] hover:text-white"
@@ -2281,7 +2285,7 @@ ${queueOrders
               </button>
               <button
                 onClick={() => setPortalMode("ARCHITECTURE")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap transition ${
                   portalMode === "ARCHITECTURE"
                     ? "bg-[#567C8D] text-white"
                     : "text-[#C8D9E6] hover:text-white"
@@ -2292,10 +2296,9 @@ ${queueOrders
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-[#243344] px-2.5 py-1.5 rounded-lg border border-[#567C8D]/40 text-xs">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="hidden lg:flex items-center gap-1.5 bg-[#243344] px-2.5 py-1 rounded-lg border border-[#567C8D]/40 text-xs">
                 <UserCheck className="w-3.5 h-3.5 text-[#C8D9E6]" />
-                <span className="text-[#C8D9E6] hidden xl:inline">Role View:</span>
                 <select
                   aria-label="Switch Active Staff Role Session"
                   value={activeStaffId}
@@ -2321,17 +2324,9 @@ ${queueOrders
               </div>
 
               <button
-                onClick={() => setDarkMode(!darkMode)}
-                title="Toggle Dark/Light Theme"
-                className="p-2 rounded-lg bg-[#243344] hover:bg-[#567C8D] border border-[#567C8D]/40 text-white transition"
-              >
-                {darkMode ? <Sun className="w-4 h-4 text-[#C8D9E6]" /> : <Moon className="w-4 h-4" />}
-              </button>
-
-              <button
                 onClick={handleStaffLogout}
                 title="Sign Out of Staff Portal"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 text-xs font-semibold transition"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 text-xs font-semibold whitespace-nowrap transition"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Sign Out</span>
@@ -2345,110 +2340,116 @@ ${queueOrders
       {/* PORTAL 1: CUSTOMER STOREFRONT (Official Navy, Teal, Sky Blue, Beige) */}
       {/* ==================================================================== */}
       {(portalMode === "STOREFRONT" || !isStaffLoggedIn) && (
-        <div className="min-h-screen flex flex-col bg-[#F5F1EE] dark:bg-[#1B2634]">
+        <div className="min-h-screen flex flex-col">
           {/* Top Announcement Bar in Navy (#2F4156) */}
           {settings.promoBannerActive && (
-            <div className="bg-[#2F4156] text-[#F5F1EE] text-xs font-medium py-2.5 px-4 text-center border-b border-[#567C8D]/30">
+            <div className="bg-[#2F4156] text-[#F5F1EE] text-xs font-medium py-2 px-4 text-center border-b border-[#567C8D]/30">
               <span>{settings.promoBannerText}</span>
             </div>
           )}
 
-          {/* Main Sticky Storefront Header in White (#FFFFFF) with Navy (#2F4156) & Teal (#567C8D) */}
+          {/* ================================================================ */}
+          {/* SINGLE-LINE STICKY STOREFRONT HEADER (Never wraps onto 2 lines!) */}
+          {/* ================================================================ */}
           <nav
-            className={`bg-white dark:bg-[#243344] border-b border-[#C8D9E6] dark:border-[#567C8D]/40 px-4 py-4 sticky ${
-              isStaffLoggedIn ? "top-[53px]" : "top-0"
+            className={`${
+              darkMode
+                ? "bg-[#243344] border-[#567C8D]/40 text-white"
+                : "bg-white border-[#C8D9E6] text-[#2F4156]"
+            } border-b px-4 h-16 flex items-center sticky ${
+              isStaffLoggedIn ? "top-14" : "top-0"
             } z-30 shadow-sm`}
           >
-            <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-8">
+            <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 flex-nowrap">
+              {/* Left: Brand Logo (shrink-0) */}
+              <button
+                onClick={() => setStorePage("HOME")}
+                className="flex items-center gap-2.5 text-left shrink-0"
+              >
+                <div className="w-9 h-9 rounded-lg bg-[#2F4156] text-white flex items-center justify-center font-serif font-bold text-lg shrink-0">
+                  N
+                </div>
+                <div className="leading-tight">
+                  <span className="text-lg font-bold tracking-tight block whitespace-nowrap">
+                    {settings.companyName}
+                  </span>
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#567C8D] block whitespace-nowrap">
+                    Architectural Store
+                  </span>
+                </div>
+              </button>
+
+              {/* Center: Single-Line Navigation Links (never wraps) */}
+              <div className="hidden lg:flex items-center gap-1 text-xs xl:text-sm font-medium shrink-0">
                 <button
                   onClick={() => setStorePage("HOME")}
-                  className="flex items-center gap-3 text-left"
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+                    storePage === "HOME"
+                      ? "bg-[#2F4156] text-white font-semibold"
+                      : "hover:bg-[#C8D9E6]/35"
+                  }`}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[#2F4156] text-white flex items-center justify-center font-serif font-bold text-xl">
-                    N
-                  </div>
-                  <div>
-                    <span className="text-xl font-bold tracking-tight text-[#2F4156] dark:text-white block leading-none">
-                      {settings.companyName}
-                    </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#567C8D] dark:text-[#C8D9E6] mt-1 block">
-                      Architectural Commerce
-                    </span>
-                  </div>
+                  Home
                 </button>
-
-                {/* Main Navigation Links (Preserving exact button labels & adding requested links) */}
-                <div className="hidden lg:flex items-center gap-1 text-sm font-medium">
-                  <button
-                    onClick={() => setStorePage("HOME")}
-                    className={
-                      storePage === "HOME"
-                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
-                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
-                    }
-                  >
-                    Home
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStoreCategory("ALL");
-                      setStorePage("SHOP");
-                    }}
-                    className={
-                      storePage === "SHOP"
-                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
-                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
-                    }
-                  >
-                    Shop Catalog
-                  </button>
-                  <button
-                    onClick={() => setStorePage("TRACK_ORDER")}
-                    className={
-                      storePage === "TRACK_ORDER"
-                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
-                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
-                    }
-                  >
-                    Track Order
-                  </button>
-                  <button
-                    onClick={() => setStorePage("CUSTOMER_DASHBOARD")}
-                    className={
-                      storePage === "CUSTOMER_DASHBOARD"
-                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
-                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
-                    }
-                  >
-                    My Account
-                  </button>
-                  <button
-                    onClick={() => setStorePage("ABOUT")}
-                    className={
-                      storePage === "ABOUT"
-                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
-                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
-                    }
-                  >
-                    About
-                  </button>
-                  <button
-                    onClick={() => setStorePage("CONTACT")}
-                    className={
-                      storePage === "CONTACT"
-                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
-                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
-                    }
-                  >
-                    Contact
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    setStoreCategory("ALL");
+                    setStorePage("SHOP");
+                  }}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+                    storePage === "SHOP"
+                      ? "bg-[#2F4156] text-white font-semibold"
+                      : "hover:bg-[#C8D9E6]/35"
+                  }`}
+                >
+                  Shop Catalog
+                </button>
+                <button
+                  onClick={() => setStorePage("TRACK_ORDER")}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+                    storePage === "TRACK_ORDER"
+                      ? "bg-[#2F4156] text-white font-semibold"
+                      : "hover:bg-[#C8D9E6]/35"
+                  }`}
+                >
+                  Track Order
+                </button>
+                <button
+                  onClick={() => setStorePage("CUSTOMER_DASHBOARD")}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+                    storePage === "CUSTOMER_DASHBOARD"
+                      ? "bg-[#2F4156] text-white font-semibold"
+                      : "hover:bg-[#C8D9E6]/35"
+                  }`}
+                >
+                  My Account
+                </button>
+                <button
+                  onClick={() => setStorePage("ABOUT")}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+                    storePage === "ABOUT"
+                      ? "bg-[#2F4156] text-white font-semibold"
+                      : "hover:bg-[#C8D9E6]/35"
+                  }`}
+                >
+                  About
+                </button>
+                <button
+                  onClick={() => setStorePage("CONTACT")}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+                    storePage === "CONTACT"
+                      ? "bg-[#2F4156] text-white font-semibold"
+                      : "hover:bg-[#C8D9E6]/35"
+                  }`}
+                >
+                  Contact
+                </button>
               </div>
 
-              <div className="flex items-center gap-2.5">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-[#567C8D] absolute left-3.5 top-2.5" />
+              {/* Right: Compact Search + Icons + Cart + Sign In (all on the exact same 1 line!) */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="relative hidden sm:block">
+                  <Search className="w-3.5 h-3.5 text-[#567C8D] absolute left-3 top-2.5" />
                   <input
                     type="text"
                     value={storeSearch}
@@ -2456,22 +2457,26 @@ ${queueOrders
                       setStoreSearch(e.target.value);
                       if (storePage !== "SHOP") setStorePage("SHOP");
                     }}
-                    placeholder="Search products or SKU..."
-                    className="pl-9 pr-4 py-2 text-xs rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] bg-[#F5F1EE] dark:bg-[#1B2634] text-[#2F4156] dark:text-white focus:outline-none focus:border-[#2F4156] w-44 sm:w-60"
+                    placeholder="Search products..."
+                    className={`pl-8 pr-3 py-1.5 text-xs rounded-lg border ${
+                      darkMode
+                        ? "border-[#567C8D] bg-[#1B2634] text-white"
+                        : "border-[#C8D9E6] bg-[#F5F1EE] text-[#2F4156]"
+                    } focus:outline-none focus:border-[#2F4156] w-36 xl:w-48 transition`}
                   />
                 </div>
 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
                   title="Toggle Light / Dark Mode"
-                  className="p-2.5 rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] hover:bg-[#C8D9E6]/30 text-[#2F4156] dark:text-[#C8D9E6]"
+                  className="p-2 rounded-lg border border-[#C8D9E6] hover:bg-[#C8D9E6]/30 shrink-0"
                 >
                   {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </button>
 
                 <button
                   onClick={() => setStorePage("WISHLIST")}
-                  className="relative p-2.5 rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] hover:bg-[#C8D9E6]/30 text-[#2F4156] dark:text-[#C8D9E6]"
+                  className="relative p-2 rounded-lg border border-[#C8D9E6] hover:bg-[#C8D9E6]/30 shrink-0"
                   title="Wishlist"
                 >
                   <Heart className="w-4 h-4 text-[#567C8D]" />
@@ -2484,24 +2489,44 @@ ${queueOrders
 
                 <button
                   onClick={() => setStorePage("CART")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold whitespace-nowrap shrink-0 transition"
                 >
-                  <ShoppingBag className="w-4 h-4" />
+                  <ShoppingBag className="w-3.5 h-3.5" />
                   <span>Cart ({cartDetails.lines.reduce((s, l) => s + l.quantity, 0)})</span>
-                  <span className="hidden sm:inline font-bold pl-1 border-l border-white/20">
+                  <span className="hidden xl:inline font-bold pl-1 border-l border-white/20">
                     {formatBDT(cartDetails.grandTotal)}
                   </span>
                 </button>
 
                 <button
                   onClick={() => setStorePage("AUTH")}
-                  className="px-3.5 py-2 rounded-lg border border-[#2F4156] dark:border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] hover:bg-[#2F4156] hover:text-white text-xs font-semibold transition"
+                  className="px-3 py-1.5 rounded-lg border border-[#2F4156] bg-white text-[#2F4156] hover:bg-[#2F4156] hover:text-white text-xs font-semibold whitespace-nowrap shrink-0 transition"
                 >
                   Login / Register
+                </button>
+
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="lg:hidden p-2 rounded-lg border border-[#C8D9E6]"
+                  title="Toggle Navigation Menu"
+                >
+                  <Menu className="w-4 h-4" />
                 </button>
               </div>
             </div>
           </nav>
+
+          {/* Mobile Drawer Menu (Only visible on small screens when toggled) */}
+          {mobileMenuOpen && (
+            <div className="lg:hidden bg-white border-b border-[#C8D9E6] px-4 py-3 flex flex-wrap gap-2 text-xs font-semibold text-[#2F4156]">
+              <button onClick={() => { setStorePage("HOME"); setMobileMenuOpen(false); }} className="px-3 py-1.5 rounded bg-[#F5F1EE]">Home</button>
+              <button onClick={() => { setStorePage("SHOP"); setMobileMenuOpen(false); }} className="px-3 py-1.5 rounded bg-[#F5F1EE]">Shop Catalog</button>
+              <button onClick={() => { setStorePage("TRACK_ORDER"); setMobileMenuOpen(false); }} className="px-3 py-1.5 rounded bg-[#F5F1EE]">Track Order</button>
+              <button onClick={() => { setStorePage("CUSTOMER_DASHBOARD"); setMobileMenuOpen(false); }} className="px-3 py-1.5 rounded bg-[#F5F1EE]">My Account</button>
+              <button onClick={() => { setStorePage("ABOUT"); setMobileMenuOpen(false); }} className="px-3 py-1.5 rounded bg-[#F5F1EE]">About</button>
+              <button onClick={() => { setStorePage("CONTACT"); setMobileMenuOpen(false); }} className="px-3 py-1.5 rounded bg-[#F5F1EE]">Contact</button>
+            </div>
+          )}
 
           {/* Storefront Content Body */}
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
@@ -2509,18 +2534,18 @@ ${queueOrders
             {/* 4.B HOMEPAGE (All 10 Commercial Sections in Official Palette)  */}
             {/* ============================================================== */}
             {storePage === "HOME" && (
-              <div className="space-y-16">
+              <div className="space-y-14">
                 {/* Section 1: Hero Section */}
-                <section className="rounded-2xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12">
+                <section className={`rounded-2xl border overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 ${surfaceCard}`}>
                   <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-between space-y-6">
                     <div className="space-y-4">
-                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#C8D9E6]/50 dark:bg-[#567C8D]/30 text-[#2F4156] dark:text-[#C8D9E6] text-xs font-semibold uppercase tracking-widest">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#C8D9E6]/60 text-[#2F4156] text-xs font-bold uppercase tracking-widest">
                         2026 Architectural Edition
                       </span>
-                      <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#2F4156] dark:text-white leading-[1.15]">
+                      <h1 className="font-serif text-3xl sm:text-5xl font-bold leading-[1.15]">
                         Timeless Precision for Modern Work & Living.
                       </h1>
-                      <p className="text-sm sm:text-base text-[#567C8D] dark:text-[#C8D9E6] leading-relaxed max-w-xl">
+                      <p className="text-sm sm:text-base text-[#567C8D] leading-relaxed max-w-xl">
                         Thoughtfully engineered acoustics, titanium wearables, and Giza cotton executive apparel—backed by serialized warehouse inventory and same-day Dhaka dispatch.
                       </p>
                     </div>
@@ -2540,62 +2565,55 @@ ${queueOrders
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[#C8D9E6] dark:border-[#567C8D]/40 text-xs">
+                    <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[#C8D9E6] text-xs">
                       <div>
-                        <div className="font-bold text-sm text-[#2F4156] dark:text-white">
-                          Official Warranty
-                        </div>
-                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
-                          100% Serialized Stock
-                        </div>
+                        <div className="font-bold text-sm">Official Warranty</div>
+                        <div className="text-[#567C8D]">100% Serialized Stock</div>
                       </div>
                       <div>
-                        <div className="font-bold text-sm text-[#2F4156] dark:text-white">
-                          Express Courier
-                        </div>
-                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
-                          Steadfast, Pathao & RedX
-                        </div>
+                        <div className="font-bold text-sm">Express Courier</div>
+                        <div className="text-[#567C8D]">Steadfast, Pathao & RedX</div>
                       </div>
                       <div>
-                        <div className="font-bold text-sm text-[#2F4156] dark:text-white">
-                          Flexible Payment
-                        </div>
-                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
-                          COD, bKash, Nagad & Card
-                        </div>
+                        <div className="font-bold text-sm">Flexible Payment</div>
+                        <div className="text-[#567C8D]">COD, bKash, Nagad & Card</div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="lg:col-span-5 bg-[#C8D9E6]/45 dark:bg-[#2F4156] p-8 sm:p-10 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-[#C8D9E6] dark:border-[#567C8D]/40">
+                  {/* Clickable Hero Product Card -> Opens Product Description Page */}
+                  <div
+                    onClick={() => openProductDetail("prd-1")}
+                    className="lg:col-span-5 bg-[#C8D9E6]/45 p-8 sm:p-10 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-[#C8D9E6] cursor-pointer group"
+                  >
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#2F4156] dark:text-[#C8D9E6]">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#2F4156]">
                         Flagship Highlight
                       </span>
                       <span className="px-3 py-1 rounded-md bg-[#2F4156] text-white text-xs font-semibold">
                         Save ৳1,010
                       </span>
                     </div>
-                    <div className="my-6 rounded-xl overflow-hidden border border-[#C8D9E6] bg-white">
+                    <div className="my-6 rounded-xl overflow-hidden border border-[#C8D9E6] bg-white h-52">
                       <ProductVisualArtwork sku="NX-AUD-101" categoryId="cat-2" />
                     </div>
                     <div className="space-y-2">
-                      <div className="text-xs font-semibold text-[#567C8D] dark:text-[#C8D9E6]">
+                      <div className="text-xs font-semibold text-[#567C8D]">
                         অরাপ্রো এএনসি ওয়্যারলেস হেডফোন
                       </div>
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-[#2F4156] dark:text-white">
+                        <h3 className="text-lg font-bold text-[#2F4156] group-hover:underline">
                           AuraPro ANC Wireless
                         </h3>
-                        <span className="text-lg font-bold text-[#2F4156] dark:text-white">
+                        <span className="text-lg font-bold text-[#2F4156]">
                           {formatBDT(5490)}
                         </span>
                       </div>
                       <button
-                        onClick={() => {
-                          setSelectedProductId("prd-1");
-                          setStorePage("PRODUCT_DETAIL");
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openProductDetail("prd-1");
                         }}
                         className="w-full py-2.5 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white text-xs font-semibold transition"
                       >
@@ -2612,7 +2630,7 @@ ${queueOrders
                       <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
                         Departments
                       </span>
-                      <h2 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                      <h2 className="font-serif text-2xl font-bold mt-1">
                         Featured Categories
                       </h2>
                     </div>
@@ -2632,18 +2650,14 @@ ${queueOrders
                           setStoreCategory(cat.id);
                           setStorePage("SHOP");
                         }}
-                        className="p-6 rounded-xl bg-white dark:bg-[#243344] hover:bg-[#C8D9E6]/35 border border-[#C8D9E6] dark:border-[#567C8D]/40 text-left transition group shadow-sm"
+                        className={`p-6 rounded-xl border text-left transition group shadow-sm hover:bg-[#C8D9E6]/35 ${surfaceCard}`}
                       >
-                        <div className="w-10 h-10 rounded-lg bg-[#C8D9E6]/50 text-[#2F4156] flex items-center justify-center mb-4 group-hover:bg-[#2F4156] group-hover:text-white transition">
+                        <div className="w-10 h-10 rounded-lg bg-[#C8D9E6]/60 text-[#2F4156] flex items-center justify-center mb-4 group-hover:bg-[#2F4156] group-hover:text-white transition">
                           <Layers className="w-5 h-5" />
                         </div>
-                        <div className="font-bold text-base text-[#2F4156] dark:text-white">
-                          {cat.name}
-                        </div>
-                        <div className="text-xs text-[#567C8D] dark:text-[#C8D9E6] mt-0.5">
-                          {cat.nameBn}
-                        </div>
-                        <div className="text-[11px] font-semibold text-[#567C8D] mt-3 flex items-center justify-between pt-3 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                        <div className="font-bold text-base">{cat.name}</div>
+                        <div className="text-xs text-[#567C8D] mt-0.5">{cat.nameBn}</div>
+                        <div className="text-[11px] font-semibold text-[#567C8D] mt-3 flex items-center justify-between pt-3 border-t border-[#C8D9E6]/50">
                           <span>{cat.itemCount} Products</span>
                           <span>Browse →</span>
                         </div>
@@ -2652,14 +2666,14 @@ ${queueOrders
                   </div>
                 </section>
 
-                {/* Section 3: Best-Selling Products */}
+                {/* Section 3: Best-Selling Products (Entire Card Clickable -> Opens Description Page!) */}
                 <section className="space-y-6">
                   <div className="flex items-end justify-between">
                     <div>
                       <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
-                        Most Popular
+                        Most Popular • Click Any Product Card for Full Specs & Reviews
                       </span>
-                      <h2 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                      <h2 className="font-serif text-2xl font-bold mt-1">
                         Best-Selling Products
                       </h2>
                     </div>
@@ -2673,14 +2687,15 @@ ${queueOrders
                       return (
                         <div
                           key={product.id}
-                          className="group rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col"
+                          onClick={() => openProductDetail(product.id)}
+                          className={`group rounded-xl border overflow-hidden shadow-sm hover:shadow-md hover:border-[#567C8D] transition flex flex-col cursor-pointer ${surfaceCard}`}
                         >
-                          <div className="h-52 relative border-b border-[#F5F1EE] dark:border-[#567C8D]/30">
+                          <div className="h-52 relative border-b border-[#C8D9E6]/60">
                             <ProductVisualArtwork
                               sku={product.sku}
                               categoryId={product.categoryId}
                             />
-                            <div className="absolute top-3 left-3 flex gap-1.5">
+                            <div className="absolute top-3 left-3 flex gap-1.5 z-20">
                               {product.badgeText && (
                                 <span className="text-[10px] font-bold uppercase tracking-wider bg-[#2F4156] text-white px-2.5 py-1 rounded">
                                   {product.badgeText}
@@ -2693,14 +2708,16 @@ ${queueOrders
                               )}
                             </div>
                             <button
-                              onClick={() =>
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setWishlist((prev) =>
                                   prev.includes(product.id)
                                     ? prev.filter((id) => id !== product.id)
                                     : [...prev, product.id]
-                                )
-                              }
-                              className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white border border-[#C8D9E6] text-[#2F4156]"
+                                );
+                              }}
+                              className="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/90 hover:bg-white border border-[#C8D9E6] text-[#2F4156]"
                             >
                               <Heart
                                 className={`w-4 h-4 ${
@@ -2714,27 +2731,25 @@ ${queueOrders
 
                           <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                             <div>
-                              <div className="flex items-center justify-between text-xs text-[#567C8D] dark:text-[#C8D9E6]">
+                              <div className="flex items-center justify-between text-xs text-[#567C8D]">
                                 <span className="font-mono">{product.sku}</span>
                                 <span className="font-semibold text-amber-600">
                                   ★ {product.rating} ({product.reviewCount})
                                 </span>
                               </div>
-                              <h3 className="font-bold text-base text-[#2F4156] dark:text-white mt-1">
+                              <h3 className="font-bold text-base mt-1 group-hover:text-[#567C8D] group-hover:underline transition">
                                 {product.name}
                               </h3>
-                              <p className="text-xs text-[#567C8D] dark:text-[#C8D9E6]">
-                                {product.nameBn}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-300 line-clamp-2 mt-2">
+                              <p className="text-xs text-[#567C8D]">{product.nameBn}</p>
+                              <p className="text-xs opacity-75 line-clamp-2 mt-2">
                                 {product.description}
                               </p>
                             </div>
 
-                            <div className="space-y-3 pt-3 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                            <div className="space-y-3 pt-3 border-t border-[#C8D9E6]/50">
                               <div className="flex items-baseline justify-between">
                                 <div>
-                                  <span className="text-lg font-bold text-[#2F4156] dark:text-white">
+                                  <span className="text-lg font-bold">
                                     {formatBDT(product.salePrice)}
                                   </span>
                                   <span className="text-xs text-slate-400 line-through ml-2">
@@ -2745,7 +2760,7 @@ ${queueOrders
                                   className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
                                     product.stockQuantity <= product.lowStockThreshold
                                       ? "bg-amber-500/15 text-amber-700"
-                                      : "bg-[#C8D9E6]/50 text-[#2F4156]"
+                                      : "bg-[#C8D9E6]/60 text-[#2F4156]"
                                   }`}
                                 >
                                   {product.stockQuantity} in stock
@@ -2754,19 +2769,21 @@ ${queueOrders
 
                               <div className="flex gap-2">
                                 <button
-                                  onClick={() => {
-                                    setSelectedProductId(product.id);
-                                    setSelectedVariantId(product.variants[0]?.id || "");
-                                    setStorePage("PRODUCT_DETAIL");
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openProductDetail(product.id);
                                   }}
-                                  className="flex-1 py-2 px-3 rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] text-xs font-semibold text-[#2F4156] dark:text-white hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                                  className="flex-1 py-2 px-3 rounded-lg border border-[#C8D9E6] text-xs font-semibold hover:bg-[#C8D9E6]/35 transition"
                                 >
                                   View Details
                                 </button>
                                 <button
-                                  onClick={() =>
-                                    handleAddToCart(product.id, product.variants[0]?.id)
-                                  }
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToCart(product.id, product.variants[0]?.id);
+                                  }}
                                   className="flex-1 py-2 px-3 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold transition"
                                 >
                                   Add to Cart
@@ -2808,84 +2825,81 @@ ${queueOrders
 
                 {/* Section 5, 6 & 7: New Arrivals, Featured Collections & Special Offers */}
                 <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-6 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-3">
+                  <div
+                    onClick={() => openProductDetail("prd-3")}
+                    className={`p-6 rounded-xl border space-y-3 cursor-pointer hover:border-[#567C8D] transition ${surfaceCard}`}
+                  >
                     <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
                       New Arrivals
                     </span>
-                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                    <h3 className="font-serif text-lg font-bold">
                       Acoustic & Desk Releases
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-[#C8D9E6]">
+                    <p className="text-xs text-[#567C8D]">
                       Explore our latest CNC aluminum mechanical keyboards and full-spectrum studio monitor lighting.
                     </p>
-                    <button
-                      onClick={() => setStorePage("SHOP")}
-                      className="text-xs font-bold text-[#567C8D] hover:text-[#2F4156]"
-                    >
+                    <span className="text-xs font-bold text-[#2F4156] inline-block pt-1">
                       Explore New Arrivals →
-                    </button>
+                    </span>
                   </div>
 
-                  <div className="p-6 rounded-xl bg-[#C8D9E6]/40 dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-3">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F4156] dark:text-[#C8D9E6]">
+                  <div
+                    onClick={() => openProductDetail("prd-5")}
+                    className="p-6 rounded-xl bg-[#C8D9E6]/50 border border-[#C8D9E6] text-[#2F4156] space-y-3 cursor-pointer hover:bg-[#C8D9E6]/70 transition"
+                  >
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F4156]">
                       Featured Collection
                     </span>
-                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                    <h3 className="font-serif text-lg font-bold">
                       The Giza Cotton Sartorial Line
                     </h3>
-                    <p className="text-xs text-[#2F4156]/80 dark:text-[#C8D9E6]">
+                    <p className="text-xs text-[#2F4156]/80">
                       Tailored Egyptian cotton panjabis crafted for executive gatherings and seasonal celebrations.
                     </p>
-                    <button
-                      onClick={() => {
-                        setStoreCategory("cat-3");
-                        setStorePage("SHOP");
-                      }}
-                      className="text-xs font-bold text-[#2F4156] dark:text-white underline"
-                    >
-                      Shop Executive Apparel →
-                    </button>
+                    <span className="text-xs font-bold underline inline-block pt-1">
+                      Inspect Sartorial Line →
+                    </span>
                   </div>
 
-                  <div className="p-6 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-3">
+                  <div
+                    onClick={() => setStorePage("CART")}
+                    className={`p-6 rounded-xl border space-y-3 cursor-pointer hover:border-[#567C8D] transition ${surfaceCard}`}
+                  >
                     <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
                       Special Offers
                     </span>
-                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                    <h3 className="font-serif text-lg font-bold">
                       ৳500 Welcome Privilege
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-[#C8D9E6]">
+                    <p className="text-xs text-[#567C8D]">
                       First-time customers enjoy ৳500 off orders above ৳3,000 using code{" "}
                       <strong>WELCOME500</strong>.
                     </p>
-                    <button
-                      onClick={() => setStorePage("CART")}
-                      className="text-xs font-bold text-[#567C8D] hover:text-[#2F4156]"
-                    >
+                    <span className="text-xs font-bold text-[#2F4156] inline-block pt-1">
                       Redeem in Cart →
-                    </button>
+                    </span>
                   </div>
                 </section>
 
                 {/* Section 8 & 9: Customer Testimonials & Newsletter Subscription */}
                 <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-7 bg-white dark:bg-[#243344] p-7 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-4">
+                  <div className={`lg:col-span-7 p-7 rounded-xl border space-y-4 ${surfaceCard}`}>
                     <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
                       Verified Buyer Voices
                     </span>
-                    <h3 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                    <h3 className="font-serif text-xl font-bold">
                       Customer Testimonials
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {reviews.map((rev) => (
                         <div
                           key={rev.id}
-                          className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6]/60 space-y-2"
+                          className={`p-4 rounded-lg border space-y-2 ${subtleBox}`}
                         >
                           <div className="text-xs text-amber-600 font-bold">
                             {"★".repeat(rev.rating)}
                           </div>
-                          <p className="text-xs text-[#2F4156] dark:text-[#F5F1EE] italic">
+                          <p className="text-xs italic">
                             &ldquo;{rev.comment}&rdquo;
                           </p>
                           <div className="text-[11px] font-bold text-[#567C8D]">
@@ -2896,15 +2910,15 @@ ${queueOrders
                     </div>
                   </div>
 
-                  <div className="lg:col-span-5 bg-[#C8D9E6]/45 dark:bg-[#243344] p-7 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 flex flex-col justify-between space-y-4">
+                  <div className="lg:col-span-5 bg-[#C8D9E6]/50 text-[#2F4156] p-7 rounded-xl border border-[#C8D9E6] flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-widest text-[#2F4156] dark:text-[#C8D9E6]">
-                        Private Dispatch Dispatch
+                      <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
+                        Private Dispatch
                       </span>
-                      <h3 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                      <h3 className="font-serif text-xl font-bold">
                         Subscribe to Our Newsletter
                       </h3>
-                      <p className="text-xs text-[#2F4156]/80 dark:text-[#C8D9E6]">
+                      <p className="text-xs text-[#2F4156]/80">
                         Receive early access to restocked flagship electronics and seasonal lookbooks.
                       </p>
                     </div>
@@ -2923,7 +2937,7 @@ ${queueOrders
                         value={newsletterEmail}
                         onChange={(e) => setNewsletterEmail(e.target.value)}
                         placeholder="Enter your email address..."
-                        className="flex-1 px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
+                        className="flex-1 px-3.5 py-2.5 rounded-lg bg-white border border-[#C8D9E6] text-xs text-[#2F4156]"
                       />
                       <button
                         type="submit"
@@ -2938,29 +2952,26 @@ ${queueOrders
             )}
 
             {/* ============================================================== */}
-            {/* 4.C PRODUCT LISTING PAGE (Category Sidebar, Price/Stock, Grid) */}
+            {/* 4.C PRODUCT LISTING PAGE (Entire Card Clickable -> Details!)   */}
             {/* ============================================================== */}
             {storePage === "SHOP" && (
               <div className="space-y-6">
-                {/* Breadcrumb & Title */}
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#243344] p-5 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40">
+                <div className={`flex flex-wrap items-center justify-between gap-4 p-5 rounded-xl border ${surfaceCard}`}>
                   <div>
                     <div className="text-xs text-[#567C8D] flex items-center gap-1.5">
                       <button onClick={() => setStorePage("HOME")} className="hover:underline">
                         Home
                       </button>
                       <span>/</span>
-                      <span className="font-semibold text-[#2F4156] dark:text-white">
-                        Shop Catalog
-                      </span>
+                      <span className="font-semibold">Shop Catalog</span>
                     </div>
-                    <h1 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                    <h1 className="font-serif text-2xl font-bold mt-1">
                       Complete Collection ({filteredStoreProducts.length} Products)
                     </h1>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <div className="flex items-center gap-1 bg-[#F5F1EE] dark:bg-[#1B2634] p-1 rounded-lg border border-[#C8D9E6]">
+                    <div className={`flex items-center gap-1 p-1 rounded-lg border ${subtleBox}`}>
                       <button
                         onClick={() => setShopViewMode("GRID")}
                         className={`p-1.5 rounded ${
@@ -2989,7 +3000,7 @@ ${queueOrders
                     <select
                       value={storeSort}
                       onChange={(e) => setStoreSort(e.target.value as any)}
-                      className="rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#1B2634] px-3 py-2 font-semibold text-[#2F4156] dark:text-white"
+                      className={`rounded-lg border px-3 py-2 font-semibold ${subtleBox}`}
                     >
                       <option value="FEATURED">Featured First</option>
                       <option value="PRICE_ASC">Price: Low to High</option>
@@ -3000,11 +3011,10 @@ ${queueOrders
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* Category, Price & Availability Filter Sidebar */}
                   <aside className="lg:col-span-3 space-y-4">
-                    <div className="bg-white dark:bg-[#243344] p-5 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-5 text-xs">
+                    <div className={`p-5 rounded-xl border space-y-5 text-xs ${surfaceCard}`}>
                       <div>
-                        <div className="font-bold uppercase tracking-wider text-[#2F4156] dark:text-white mb-2.5">
+                        <div className="font-bold uppercase tracking-wider mb-2.5">
                           Categories
                         </div>
                         <div className="space-y-1.5">
@@ -3013,7 +3023,7 @@ ${queueOrders
                             className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition ${
                               storeCategory === "ALL"
                                 ? "bg-[#2F4156] text-white"
-                                : "hover:bg-[#F5F1EE] dark:hover:bg-[#1B2634]"
+                                : "hover:bg-[#C8D9E6]/35"
                             }`}
                           >
                             All Categories
@@ -3025,7 +3035,7 @@ ${queueOrders
                               className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition ${
                                 storeCategory === cat.id
                                   ? "bg-[#2F4156] text-white"
-                                  : "hover:bg-[#F5F1EE] dark:hover:bg-[#1B2634]"
+                                  : "hover:bg-[#C8D9E6]/35"
                               }`}
                             >
                               {cat.name}
@@ -3034,7 +3044,7 @@ ${queueOrders
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                      <div className="pt-4 border-t border-[#C8D9E6]/50">
                         <div className="flex justify-between font-bold mb-2">
                           <span>Max Price</span>
                           <span className="text-[#567C8D]">{formatBDT(maxPriceFilter)}</span>
@@ -3050,7 +3060,7 @@ ${queueOrders
                         />
                       </div>
 
-                      <div className="pt-4 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                      <div className="pt-4 border-t border-[#C8D9E6]/50">
                         <label className="flex items-center gap-2 font-semibold cursor-pointer">
                           <input
                             type="checkbox"
@@ -3063,7 +3073,6 @@ ${queueOrders
                     </div>
                   </aside>
 
-                  {/* Product Grid / List */}
                   <div className="lg:col-span-9">
                     <div
                       className={
@@ -3075,17 +3084,18 @@ ${queueOrders
                       {filteredStoreProducts.map((product) => (
                         <div
                           key={product.id}
-                          className={`group rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 overflow-hidden shadow-sm flex ${
+                          onClick={() => openProductDetail(product.id)}
+                          className={`group rounded-xl border overflow-hidden shadow-sm hover:shadow-md hover:border-[#567C8D] cursor-pointer flex ${
                             shopViewMode === "LIST"
                               ? "flex-col sm:flex-row items-center"
                               : "flex-col"
-                          }`}
+                          } ${surfaceCard}`}
                         >
                           <div
                             className={
                               shopViewMode === "LIST"
                                 ? "w-full sm:w-56 h-48 shrink-0"
-                                : "h-48 w-full border-b border-[#F5F1EE]"
+                                : "h-48 w-full border-b border-[#C8D9E6]/50"
                             }
                           >
                             <ProductVisualArtwork
@@ -3099,15 +3109,15 @@ ${queueOrders
                                 <span className="font-mono">{product.sku}</span>
                                 <span>★ {product.rating} ({product.reviewCount})</span>
                               </div>
-                              <div className="font-bold text-base text-[#2F4156] dark:text-white mt-1">
+                              <div className="font-bold text-base mt-1 group-hover:text-[#567C8D] group-hover:underline">
                                 {product.name}
                               </div>
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                              <p className="text-xs opacity-75 mt-1 line-clamp-2">
                                 {product.description}
                               </p>
                             </div>
                             <div className="flex items-center justify-between pt-2">
-                              <span className="text-lg font-bold text-[#2F4156] dark:text-white">
+                              <span className="text-lg font-bold">
                                 {formatBDT(product.salePrice)}
                               </span>
                               <span className="text-xs text-[#567C8D]">
@@ -3116,19 +3126,21 @@ ${queueOrders
                             </div>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => {
-                                  setSelectedProductId(product.id);
-                                  setSelectedVariantId(product.variants[0]?.id || "");
-                                  setStorePage("PRODUCT_DETAIL");
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openProductDetail(product.id);
                                 }}
-                                className="flex-1 py-2 rounded-lg border border-[#C8D9E6] text-xs font-semibold"
+                                className="flex-1 py-2 rounded-lg border border-[#C8D9E6] text-xs font-semibold hover:bg-[#C8D9E6]/35"
                               >
                                 Details
                               </button>
                               <button
-                                onClick={() =>
-                                  handleAddToCart(product.id, product.variants[0]?.id)
-                                }
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(product.id, product.variants[0]?.id);
+                                }}
                                 className="flex-1 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold"
                               >
                                 Add to Cart
@@ -3161,8 +3173,7 @@ ${queueOrders
                     ← Back to Shop Catalog
                   </button>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-[#243344] p-7 rounded-2xl border border-[#C8D9E6] dark:border-[#567C8D]/40 shadow-sm">
-                    {/* Left: Image & Thumbnail Gallery + Zoom */}
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 p-7 rounded-2xl border shadow-sm ${surfaceCard}`}>
                     <div className="space-y-3">
                       <div
                         onClick={() => setZoomActive(!zoomActive)}
@@ -3182,7 +3193,7 @@ ${queueOrders
                         {["Front Studio View", "Side Profile", "Packaging & Box"].map((lbl, idx) => (
                           <div
                             key={idx}
-                            className="p-2.5 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-center text-[11px] font-medium text-[#567C8D]"
+                            className={`p-2.5 rounded-lg border text-center text-[11px] font-medium text-[#567C8D] ${subtleBox}`}
                           >
                             {lbl}
                           </div>
@@ -3190,7 +3201,6 @@ ${queueOrders
                       </div>
                     </div>
 
-                    {/* Right: Product Info, Variants, Quantity, Add to Cart, Buy Now */}
                     <div className="space-y-5">
                       <div>
                         <div className="flex items-center justify-between text-xs">
@@ -3201,17 +3211,17 @@ ${queueOrders
                             ★★★★★ {product.rating} ({product.reviewCount} reviews)
                           </span>
                         </div>
-                        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#2F4156] dark:text-white mt-2">
+                        <h1 className="font-serif text-2xl sm:text-3xl font-bold mt-2">
                           {product.name}
                         </h1>
                         <p className="text-xs text-[#567C8D] mt-0.5">{product.nameBn}</p>
-                        <p className="text-sm text-slate-600 dark:text-[#C8D9E6] mt-3 leading-relaxed">
+                        <p className="text-sm opacity-85 mt-3 leading-relaxed">
                           {product.description}
                         </p>
                       </div>
 
                       <div className="flex items-baseline gap-3">
-                        <span className="text-3xl font-bold text-[#2F4156] dark:text-white">
+                        <span className="text-3xl font-bold">
                           {formatBDT(product.salePrice)}
                         </span>
                         <span className="text-base text-slate-400 line-through">
@@ -3235,7 +3245,7 @@ ${queueOrders
                                 className={`px-3.5 py-2 rounded-lg text-xs font-semibold border transition ${
                                   selectedVariantId === v.id
                                     ? "border-[#2F4156] bg-[#2F4156] text-white"
-                                    : "border-[#C8D9E6] text-[#2F4156] dark:text-white"
+                                    : "border-[#C8D9E6]"
                                 }`}
                               >
                                 {v.name} ({v.stock} in stock)
@@ -3245,9 +3255,8 @@ ${queueOrders
                         </div>
                       )}
 
-                      {/* Quantity Selector & Primary Actions */}
                       <div className="flex flex-wrap items-center gap-3 pt-2">
-                        <div className="flex items-center border border-[#C8D9E6] rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634]">
+                        <div className={`flex items-center border rounded-lg ${subtleBox}`}>
                           <button
                             onClick={() => setDetailQty(Math.max(1, detailQty - 1))}
                             className="px-3 py-2.5 font-bold text-sm"
@@ -3284,11 +3293,11 @@ ${queueOrders
                         </button>
                       </div>
 
-                      <div className="p-3.5 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs space-y-1">
-                        <div className="font-semibold text-[#2F4156] dark:text-white">
+                      <div className={`p-3.5 rounded-lg border text-xs space-y-1 ${subtleBox}`}>
+                        <div className="font-semibold">
                           Delivery & Return Information:
                         </div>
-                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
+                        <div className="text-[#567C8D]">
                           Inside Dhaka: ৳{settings.insideDhakaShipping} (24h) • Outside Dhaka: ৳{settings.outsideDhakaShipping} (48-72h) • Free over ৳{settings.freeShippingThreshold}
                         </div>
                       </div>
@@ -3296,7 +3305,7 @@ ${queueOrders
                   </div>
 
                   {/* Below: Tabs for Description, Specifications, Reviews */}
-                  <div className="bg-white dark:bg-[#243344] p-7 rounded-2xl border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-5">
+                  <div className={`p-7 rounded-2xl border space-y-5 ${surfaceCard}`}>
                     <div className="flex gap-2 border-b border-[#C8D9E6] pb-3 text-xs font-bold">
                       <button
                         onClick={() => setDetailTab("DESCRIPTION")}
@@ -3331,7 +3340,7 @@ ${queueOrders
                     </div>
 
                     {detailTab === "DESCRIPTION" && (
-                      <p className="text-sm text-slate-600 dark:text-[#C8D9E6] leading-relaxed">
+                      <p className="text-sm opacity-85 leading-relaxed">
                         {product.description}
                       </p>
                     )}
@@ -3341,7 +3350,7 @@ ${queueOrders
                         {Object.entries(product.specs || {}).map(([k, v]) => (
                           <div key={k} className="py-2.5 flex justify-between gap-4">
                             <span className="font-semibold text-[#567C8D]">{k}</span>
-                            <span className="font-bold text-[#2F4156] dark:text-white">{v}</span>
+                            <span className="font-bold">{v}</span>
                           </div>
                         ))}
                       </div>
@@ -3353,15 +3362,13 @@ ${queueOrders
                           {prodReviews.map((rev) => (
                             <div
                               key={rev.id}
-                              className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6]"
+                              className={`p-4 rounded-xl border ${subtleBox}`}
                             >
                               <div className="flex justify-between text-xs mb-1">
                                 <span className="font-bold">{rev.customerName}</span>
                                 <span className="text-amber-500">{"★".repeat(rev.rating)}</span>
                               </div>
-                              <p className="text-xs text-slate-600 dark:text-slate-300">
-                                {rev.comment}
-                              </p>
+                              <p className="text-xs opacity-85">{rev.comment}</p>
                             </div>
                           ))}
                         </div>
@@ -3434,18 +3441,13 @@ ${queueOrders
 
                   {/* Related Products */}
                   <div className="space-y-4">
-                    <h3 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
-                      Related Products
-                    </h3>
+                    <h3 className="font-serif text-xl font-bold">Related Products</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                       {relatedProducts.map((rp) => (
                         <div
                           key={rp.id}
-                          onClick={() => {
-                            setSelectedProductId(rp.id);
-                            setSelectedVariantId(rp.variants[0]?.id || "");
-                          }}
-                          className="p-4 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] cursor-pointer hover:border-[#2F4156] transition flex items-center justify-between"
+                          onClick={() => openProductDetail(rp.id)}
+                          className={`p-4 rounded-xl border cursor-pointer hover:border-[#2F4156] transition flex items-center justify-between ${surfaceCard}`}
                         >
                           <div>
                             <div className="font-bold text-xs">{rp.name}</div>
@@ -3462,14 +3464,12 @@ ${queueOrders
               );
             })()}
 
-            {/* ============================================================== */}
-            {/* 4.E & 4.F SHOPPING CART & DISTRACTION-FREE CHECKOUT            */}
-            {/* ============================================================== */}
+            {/* SHOPPING CART & CHECKOUT */}
             {(storePage === "CART" || storePage === "CHECKOUT") && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
-                    <h2 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                  <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
+                    <h2 className="font-serif text-xl font-bold">
                       Shopping Cart & Stock Verification
                     </h2>
                     {cartDetails.lines.length === 0 ? (
@@ -3487,15 +3487,20 @@ ${queueOrders
                         {cartDetails.lines.map((line, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between gap-4 p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6]"
+                            className={`flex items-center justify-between gap-4 p-4 rounded-lg border ${subtleBox}`}
                           >
-                            <div>
-                              <div className="font-bold text-sm">{line.product.name}</div>
+                            <div
+                              onClick={() => openProductDetail(line.product.id)}
+                              className="cursor-pointer"
+                            >
+                              <div className="font-bold text-sm hover:underline">
+                                {line.product.name}
+                              </div>
                               <div className="text-xs text-[#567C8D]">
                                 SKU: {line.product.sku}{" "}
                                 {line.variant ? `| Variant: ${line.variant.name}` : ""}
                               </div>
-                              <div className="text-xs font-semibold text-[#2F4156] dark:text-[#C8D9E6] mt-0.5">
+                              <div className="text-xs font-semibold mt-0.5">
                                 {formatBDT(line.unitPrice)} each
                               </div>
                             </div>
@@ -3514,7 +3519,7 @@ ${queueOrders
                                       .filter((item) => item.quantity > 0)
                                   )
                                 }
-                                className="w-7 h-7 rounded border border-[#C8D9E6] bg-white dark:bg-[#243344] font-bold"
+                                className="w-7 h-7 rounded border border-[#C8D9E6] bg-white text-[#2F4156] font-bold"
                               >
                                 -
                               </button>
@@ -3525,7 +3530,7 @@ ${queueOrders
                                 onClick={() =>
                                   handleAddToCart(line.productId, line.variantId)
                                 }
-                                className="w-7 h-7 rounded border border-[#C8D9E6] bg-white dark:bg-[#243344] font-bold"
+                                className="w-7 h-7 rounded border border-[#C8D9E6] bg-white text-[#2F4156] font-bold"
                               >
                                 +
                               </button>
@@ -3560,9 +3565,9 @@ ${queueOrders
 
                   <form
                     onSubmit={handlePlaceOrder}
-                    className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4"
+                    className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}
                   >
-                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                    <h3 className="font-serif text-lg font-bold">
                       Delivery & Payment Information
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -3690,7 +3695,7 @@ ${queueOrders
                   </form>
                 </div>
 
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] h-fit space-y-3 text-sm">
+                <div className={`p-6 rounded-xl border h-fit space-y-3 text-sm ${surfaceCard}`}>
                   <h3 className="font-serif font-bold text-base border-b border-[#C8D9E6] pb-2">
                     Order Summary
                   </h3>
@@ -3710,9 +3715,7 @@ ${queueOrders
                   </div>
                   <div className="flex justify-between text-base font-extrabold border-t border-[#C8D9E6] pt-2">
                     <span>Grand Total</span>
-                    <span className="text-[#2F4156] dark:text-[#C8D9E6]">
-                      {formatBDT(cartDetails.grandTotal)}
-                    </span>
+                    <span>{formatBDT(cartDetails.grandTotal)}</span>
                   </div>
                 </div>
               </div>
@@ -3720,7 +3723,7 @@ ${queueOrders
 
             {/* WISHLIST VIEW */}
             {storePage === "WISHLIST" && (
-              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+              <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                 <h2 className="font-serif text-xl font-bold">Saved Wishlist ({wishlist.length})</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {products
@@ -3728,26 +3731,33 @@ ${queueOrders
                     .map((p) => (
                       <div
                         key={p.id}
-                        className="p-4 rounded-lg border border-[#C8D9E6] flex flex-col justify-between gap-3"
+                        onClick={() => openProductDetail(p.id)}
+                        className="p-4 rounded-lg border border-[#C8D9E6] flex flex-col justify-between gap-3 cursor-pointer hover:border-[#2F4156]"
                       >
                         <div>
-                          <div className="font-bold text-sm">{p.name}</div>
+                          <div className="font-bold text-sm hover:underline">{p.name}</div>
                           <div className="text-xs text-[#567C8D]">{p.nameBn}</div>
-                          <div className="text-sm font-bold text-[#2F4156] dark:text-white mt-1">
+                          <div className="text-sm font-bold mt-1">
                             {formatBDT(p.salePrice)}
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleAddToCart(p.id, p.variants[0]?.id)}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCart(p.id, p.variants[0]?.id);
+                            }}
                             className="flex-1 py-1.5 rounded bg-[#2F4156] text-white text-xs font-semibold"
                           >
                             Move to Cart
                           </button>
                           <button
-                            onClick={() =>
-                              setWishlist((prev) => prev.filter((id) => id !== p.id))
-                            }
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setWishlist((prev) => prev.filter((id) => id !== p.id));
+                            }}
                             className="px-3 py-1.5 rounded border border-[#C8D9E6] text-xs"
                           >
                             Remove
@@ -3759,14 +3769,12 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* 4.G DEDICATED CUSTOMER ACCOUNT DASHBOARD & ORDER TRACKING      */}
-            {/* ============================================================== */}
+            {/* CUSTOMER ACCOUNT DASHBOARD & ORDER TRACKING */}
             {(storePage === "CUSTOMER_DASHBOARD" || storePage === "TRACK_ORDER") && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <aside className="lg:col-span-3">
-                  <div className="bg-white dark:bg-[#243344] rounded-xl border border-[#C8D9E6] p-4 space-y-1 text-xs font-semibold">
-                    <div className="p-3 rounded-lg bg-[#C8D9E6]/40 text-[#2F4156] dark:text-white mb-2">
+                  <div className={`rounded-xl border p-4 space-y-1 text-xs font-semibold ${surfaceCard}`}>
+                    <div className="p-3 rounded-lg bg-[#C8D9E6]/50 text-[#2F4156] mb-2">
                       <div className="font-bold text-sm">{customerLoginName}</div>
                       <div className="text-[11px] text-[#567C8D]">{customerLoginEmail}</div>
                     </div>
@@ -3785,7 +3793,7 @@ ${queueOrders
                         className={`w-full text-left px-3 py-2 rounded-lg transition ${
                           customerDashTab === t.id
                             ? "bg-[#2F4156] text-white"
-                            : "hover:bg-[#F5F1EE] dark:hover:bg-[#1B2634]"
+                            : "hover:bg-[#C8D9E6]/35"
                         }`}
                       >
                         {t.label}
@@ -3795,7 +3803,7 @@ ${queueOrders
                 </aside>
 
                 <div className="lg:col-span-9 space-y-6">
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                     <h2 className="font-serif text-xl font-bold">
                       Real-Time Order & Courier Tracking
                     </h2>
@@ -3818,11 +3826,11 @@ ${queueOrders
                       .map((ord) => (
                         <div
                           key={ord.id}
-                          className="p-5 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] space-y-4"
+                          className={`p-5 rounded-xl border space-y-4 ${subtleBox}`}
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                              <span className="font-mono font-bold text-base text-[#2F4156] dark:text-white">
+                              <span className="font-mono font-bold text-base">
                                 {ord.orderNumber}
                               </span>
                               <span className="text-xs text-[#567C8D] ml-3">{ord.createdAt}</span>
@@ -3891,19 +3899,17 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* UNIFIED AUTHENTICATION & SUPERUSER SETUP PORTAL                */}
-            {/* ============================================================== */}
+            {/* UNIFIED AUTHENTICATION & SUPERUSER SETUP PORTAL */}
             {storePage === "AUTH" && (
               <div className="max-w-4xl mx-auto space-y-6">
-                <div className="bg-white dark:bg-[#243344] rounded-2xl border border-[#C8D9E6] overflow-hidden shadow-md">
+                <div className={`rounded-2xl border overflow-hidden shadow-md ${surfaceCard}`}>
                   <div className="grid grid-cols-1 md:grid-cols-3 border-b border-[#C8D9E6] text-xs font-bold">
                     <button
                       onClick={() => setAuthMode("STAFF_LOGIN")}
                       className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
                         authMode === "STAFF_LOGIN"
                           ? "bg-[#2F4156] text-white"
-                          : "text-[#567C8D] hover:bg-[#F5F1EE]"
+                          : "text-[#567C8D] hover:bg-[#C8D9E6]/30"
                       }`}
                     >
                       <ShieldCheck className="w-4 h-4" />
@@ -3914,7 +3920,7 @@ ${queueOrders
                       className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
                         authMode === "SUPERUSER_SETUP"
                           ? "bg-[#567C8D] text-white"
-                          : "text-[#2F4156] dark:text-[#C8D9E6] hover:bg-[#C8D9E6]/30"
+                          : "text-[#2F4156] hover:bg-[#C8D9E6]/30"
                       }`}
                     >
                       <Crown className="w-4 h-4" />
@@ -3925,7 +3931,7 @@ ${queueOrders
                       className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
                         authMode === "CUSTOMER_LOGIN"
                           ? "bg-[#2F4156] text-white"
-                          : "text-[#567C8D] hover:bg-[#F5F1EE]"
+                          : "text-[#567C8D] hover:bg-[#C8D9E6]/30"
                       }`}
                     >
                       <ShoppingBag className="w-4 h-4" />
@@ -3980,8 +3986,8 @@ ${queueOrders
                           </button>
                         </form>
 
-                        <div className="bg-[#F5F1EE] dark:bg-[#1B2634] p-5 rounded-xl border border-[#C8D9E6] space-y-3">
-                          <div className="text-xs font-bold uppercase tracking-wider text-[#2F4156] dark:text-[#C8D9E6]">
+                        <div className={`p-5 rounded-xl border space-y-3 ${subtleBox}`}>
+                          <div className="text-xs font-bold uppercase tracking-wider">
                             1-Click Instant Role Login (Pre-Seeded Staff)
                           </div>
                           <div className="space-y-2">
@@ -4001,7 +4007,7 @@ ${queueOrders
                                     else setAdminTab("DASHBOARD");
                                     showToast(`Signed in as ${stf.name} (${r?.name})`);
                                   }}
-                                  className="w-full p-3 rounded-lg bg-white dark:bg-[#243344] hover:border-[#2F4156] border border-[#C8D9E6] flex items-center justify-between text-left text-xs transition"
+                                  className={`w-full p-3 rounded-lg border hover:border-[#2F4156] flex items-center justify-between text-left text-xs transition ${surfaceCard}`}
                                 >
                                   <div>
                                     <div className="font-bold flex items-center gap-1.5">
@@ -4012,7 +4018,7 @@ ${queueOrders
                                     </div>
                                     <div className="text-[11px] text-[#567C8D]">{stf.email}</div>
                                   </div>
-                                  <span className="px-2.5 py-1 rounded bg-[#C8D9E6]/50 text-[#2F4156] font-bold text-[11px]">
+                                  <span className="px-2.5 py-1 rounded bg-[#C8D9E6]/60 text-[#2F4156] font-bold text-[11px]">
                                     {r?.name} →
                                   </span>
                                 </button>
@@ -4174,11 +4180,11 @@ ${queueOrders
               storePage === "CONTACT" ||
               storePage === "PRIVACY" ||
               storePage === "TERMS") && (
-              <div className="bg-white dark:bg-[#243344] p-8 rounded-2xl border border-[#C8D9E6] max-w-3xl mx-auto space-y-4">
+              <div className={`p-8 rounded-2xl border max-w-3xl mx-auto space-y-4 ${surfaceCard}`}>
                 {storePage === "ABOUT" && (
                   <>
                     <h2 className="font-serif text-2xl font-bold">About {settings.companyName}</h2>
-                    <p className="text-sm text-[#567C8D] dark:text-[#C8D9E6] leading-relaxed">
+                    <p className="text-sm text-[#567C8D] leading-relaxed">
                       {settings.companyName} ({settings.companyNameBn}) is a flagship multi-role eCommerce platform engineered with Next.js App Router, Prisma ORM, PostgreSQL, and granular Role-Based Access Control.
                     </p>
                   </>
@@ -4254,17 +4260,15 @@ ${queueOrders
 
       {/* ==================================================================== */}
       {/* PORTAL 2: ENTERPRISE SAAS ADMIN, MODERATOR & DELIVERY DASHBOARDS     */}
-      {/* Uses Official Navy (#2F4156) Sidebar & Teal (#567C8D) Active States  */}
       {/* ==================================================================== */}
       {isStaffLoggedIn && portalMode === "ADMIN" && (
         <div className="max-w-[1440px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-          {/* Collapsible Navy (#2F4156) Sidebar Navigation */}
           <aside
             className={`no-print shrink-0 transition-all ${
               sidebarCollapsed ? "w-full lg:w-20" : "w-full lg:w-64"
             }`}
           >
-            <div className="bg-[#2F4156] text-white rounded-2xl border border-[#567C8D]/40 p-4 space-y-4 shadow-lg sticky top-[68px]">
+            <div className="bg-[#2F4156] text-white rounded-2xl border border-[#567C8D]/40 p-4 space-y-4 shadow-lg sticky top-20">
               <div className="flex items-center justify-between pb-3 border-b border-[#567C8D]/40">
                 {!sidebarCollapsed && (
                   <div>
@@ -4335,14 +4339,13 @@ ${queueOrders
             </div>
           </aside>
 
-          {/* Main Admin Content Area */}
           <div className="flex-1 min-w-0 space-y-6">
             {/* Breadcrumb & Global Search Topbar */}
-            <div className="no-print bg-white dark:bg-[#243344] px-5 py-3.5 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+            <div className={`no-print px-5 py-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-4 shadow-sm ${surfaceCard}`}>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-[#567C8D]">Admin Portal</span>
                 <span>/</span>
-                <span className="font-bold text-[#2F4156] dark:text-white">{adminTab}</span>
+                <span className="font-bold">{adminTab}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -4352,12 +4355,12 @@ ${queueOrders
                     value={orderSearch}
                     onChange={(e) => setOrderSearch(e.target.value)}
                     placeholder="Quick search order ID or phone..."
-                    className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#C8D9E6] bg-[#F5F1EE] dark:bg-[#1B2634] w-48 sm:w-64"
+                    className={`pl-8 pr-3 py-1.5 text-xs rounded-lg border w-48 sm:w-64 ${subtleBox}`}
                   />
                 </div>
                 <button
                   onClick={() => setAdminTab("ORDERS")}
-                  className="p-2 rounded-lg bg-[#C8D9E6]/40 text-[#2F4156] relative"
+                  className="p-2 rounded-lg bg-[#C8D9E6]/50 text-[#2F4156] relative"
                   title="Pending Order Alerts"
                 >
                   <Bell className="w-4 h-4" />
@@ -4368,14 +4371,12 @@ ${queueOrders
               </div>
             </div>
 
-            {/* ============================================================== */}
-            {/* 5.B ADMIN DASHBOARD OVERVIEW (10 Statistic Cards + Charts)     */}
-            {/* ============================================================== */}
+            {/* ADMIN DASHBOARD OVERVIEW */}
             {adminTab === "DASHBOARD" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-4 shadow-sm">
+                <div className={`p-6 rounded-xl border flex flex-wrap items-center justify-between gap-4 shadow-sm ${surfaceCard}`}>
                   <div>
-                    <h1 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white">
+                    <h1 className="font-serif text-2xl font-bold">
                       Executive eCommerce Dashboard — {activeRole.name} View
                     </h1>
                     <p className="text-xs text-[#567C8D] mt-0.5">
@@ -4398,7 +4399,6 @@ ${queueOrders
                   </div>
                 </div>
 
-                {/* 10 Requested Statistic Cards in Official Palette */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
                   {[
                     {
@@ -4466,17 +4466,17 @@ ${queueOrders
                     return (
                       <div
                         key={i}
-                        className="bg-white dark:bg-[#243344] p-4 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 shadow-sm flex flex-col justify-between"
+                        className={`p-4 rounded-xl border shadow-sm flex flex-col justify-between ${surfaceCard}`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-semibold text-[#567C8D] dark:text-[#C8D9E6]">
+                          <span className="text-[11px] font-semibold text-[#567C8D]">
                             {stat.label}
                           </span>
-                          <div className="w-7 h-7 rounded-lg bg-[#C8D9E6]/50 text-[#2F4156] flex items-center justify-center">
+                          <div className="w-7 h-7 rounded-lg bg-[#C8D9E6]/60 text-[#2F4156] flex items-center justify-center">
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                         </div>
-                        <div className="text-xl font-bold text-[#2F4156] dark:text-white mt-2">
+                        <div className="text-xl font-bold mt-2">
                           {stat.value}
                         </div>
                         <div className="text-[10px] text-[#567C8D] mt-1">{stat.sub}</div>
@@ -4485,10 +4485,9 @@ ${queueOrders
                   })}
                 </div>
 
-                {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm">
-                    <h3 className="font-bold text-sm text-[#2F4156] dark:text-white mb-1">
+                  <div className={`lg:col-span-2 p-6 rounded-xl border shadow-sm ${surfaceCard}`}>
+                    <h3 className="font-bold text-sm mb-1">
                       7-Day Revenue & Order Volume Trend
                     </h3>
                     <p className="text-xs text-[#567C8D] mb-4">
@@ -4526,10 +4525,8 @@ ${queueOrders
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm">
-                    <h3 className="font-bold text-sm text-[#2F4156] dark:text-white mb-1">
-                      Order Status Distribution
-                    </h3>
+                  <div className={`p-6 rounded-xl border shadow-sm ${surfaceCard}`}>
+                    <h3 className="font-bold text-sm mb-1">Order Status Distribution</h3>
                     <p className="text-xs text-[#567C8D] mb-3">Live pipeline donut chart</p>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
@@ -4556,10 +4553,9 @@ ${queueOrders
                   </div>
                 </div>
 
-                {/* Staff Performance Bar Chart & Low Stock Alerts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm">
-                    <h3 className="font-bold text-sm text-[#2F4156] dark:text-white mb-3">
+                  <div className={`p-6 rounded-xl border shadow-sm ${surfaceCard}`}>
+                    <h3 className="font-bold text-sm mb-3">
                       Staff Order Fulfillment Performance
                     </h3>
                     <div className="h-56 w-full">
@@ -4576,11 +4572,9 @@ ${queueOrders
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm space-y-3">
+                  <div className={`p-6 rounded-xl border shadow-sm space-y-3 ${surfaceCard}`}>
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-sm text-[#2F4156] dark:text-white">
-                        Low-Stock Inventory Alerts
-                      </h3>
+                      <h3 className="font-bold text-sm">Low-Stock Inventory Alerts</h3>
                       <button
                         onClick={() => setAdminTab("INVENTORY")}
                         className="text-xs text-[#567C8D] font-semibold hover:underline"
@@ -4591,7 +4585,7 @@ ${queueOrders
                     {kpiMetrics.lowStockProducts.map((p) => (
                       <div
                         key={p.id}
-                        className="flex items-center justify-between p-3.5 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
+                        className={`flex items-center justify-between p-3.5 rounded-lg border text-xs ${subtleBox}`}
                       >
                         <div>
                           <div className="font-bold">{p.name}</div>
@@ -4612,17 +4606,15 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 9: SIMPLIFIED MODERATOR DASHBOARD                      */}
-            {/* ============================================================== */}
+            {/* MODERATOR WORKSPACE */}
             {adminTab === "MODERATOR_DESK" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-4">
+                <div className={`p-6 rounded-xl border flex flex-wrap items-center justify-between gap-4 ${surfaceCard}`}>
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
                       Rapid Order Verification Desk
                     </span>
-                    <h2 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white mt-0.5">
+                    <h2 className="font-serif text-xl font-bold mt-0.5">
                       Moderator Operational Workspace
                     </h2>
                     <p className="text-xs text-[#567C8D]">
@@ -4640,12 +4632,10 @@ ${queueOrders
                   ].map((c, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6]"
+                      className={`p-4 rounded-xl border ${surfaceCard}`}
                     >
                       <div className="text-xs text-[#567C8D]">{c.label}</div>
-                      <div className="text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
-                        {c.val}
-                      </div>
+                      <div className="text-2xl font-bold mt-1">{c.val}</div>
                     </div>
                   ))}
                 </div>
@@ -4654,11 +4644,11 @@ ${queueOrders
                   {visibleOrders.map((ord) => (
                     <div
                       key={ord.id}
-                      className="bg-white dark:bg-[#243344] p-5 rounded-xl border border-[#C8D9E6] grid grid-cols-1 lg:grid-cols-12 gap-4 items-center text-xs"
+                      className={`p-5 rounded-xl border grid grid-cols-1 lg:grid-cols-12 gap-4 items-center text-xs ${surfaceCard}`}
                     >
                       <div className="lg:col-span-4 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-sm text-[#2F4156] dark:text-white">
+                          <span className="font-mono font-bold text-sm">
                             {ord.orderNumber}
                           </span>
                           <span
@@ -4673,7 +4663,7 @@ ${queueOrders
                         <div className="text-[#567C8D] font-semibold">
                           Phone: {ord.customerPhone} • {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
                         </div>
-                        <div className="text-slate-500">{ord.deliveryAddress}</div>
+                        <div className="opacity-75">{ord.deliveryAddress}</div>
                       </div>
 
                       <div className="lg:col-span-4">
@@ -4691,7 +4681,7 @@ ${queueOrders
                               )
                             );
                           }}
-                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-[#F5F1EE] dark:bg-[#1B2634]"
+                          className={`w-full px-3 py-2 rounded-lg border ${subtleBox}`}
                         />
                       </div>
 
@@ -4722,7 +4712,7 @@ ${queueOrders
                         </button>
                         <button
                           onClick={() => handleBulkPrintMemos([ord.id])}
-                          className="px-3.5 py-2.5 rounded-lg border border-[#2F4156] text-[#2F4156] dark:text-white font-semibold flex items-center gap-1"
+                          className="px-3.5 py-2.5 rounded-lg border border-[#2F4156] font-semibold flex items-center gap-1"
                         >
                           <Printer className="w-3.5 h-3.5" /> Memo
                         </button>
@@ -4733,16 +4723,14 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 10: MOBILE-FIRST DELIVERY STAFF DASHBOARD              */}
-            {/* ============================================================== */}
+            {/* DELIVERY RIDER MOBILE DISPATCH */}
             {adminTab === "DELIVERY_DESK" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6]">
+                <div className={`p-6 rounded-xl border ${surfaceCard}`}>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
                     One-Handed Field Logistics
                   </span>
-                  <h2 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white mt-0.5">
+                  <h2 className="font-serif text-xl font-bold mt-0.5">
                     Delivery Rider Mobile Dispatch Cards
                   </h2>
                 </div>
@@ -4751,10 +4739,10 @@ ${queueOrders
                   {visibleOrders.map((ord) => (
                     <div
                       key={ord.id}
-                      className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4 shadow-sm"
+                      className={`p-6 rounded-xl border space-y-4 shadow-sm ${surfaceCard}`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-base text-[#2F4156] dark:text-white">
+                        <span className="font-mono font-bold text-base">
                           {ord.orderNumber}
                         </span>
                         <span
@@ -4766,15 +4754,13 @@ ${queueOrders
                         </span>
                       </div>
 
-                      <div className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] space-y-1 text-xs">
+                      <div className={`p-4 rounded-lg border space-y-1 text-xs ${subtleBox}`}>
                         <div className="font-bold text-sm">{ord.customerName}</div>
                         <div className="font-semibold text-[#567C8D]">
                           Phone: {ord.customerPhone}
                         </div>
-                        <div className="text-slate-600 dark:text-[#C8D9E6]">
-                          {ord.deliveryAddress}
-                        </div>
-                        <div className="pt-2 font-bold text-sm text-[#2F4156] dark:text-white">
+                        <div className="opacity-85">{ord.deliveryAddress}</div>
+                        <div className="pt-2 font-bold text-sm">
                           COD Amount to Collect: {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
                         </div>
                       </div>
@@ -4812,12 +4798,10 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 6: ORDER MANAGEMENT UI                                 */}
-            {/* ============================================================== */}
+            {/* ORDERS */}
             {adminTab === "ORDERS" && (
               <div className="space-y-5">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4 shadow-sm">
+                <div className={`p-6 rounded-xl border space-y-4 shadow-sm ${surfaceCard}`}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h2 className="font-serif text-xl font-bold">Advanced Order Management</h2>
@@ -4866,22 +4850,12 @@ ${queueOrders
                       <option value="RETURNED">8. Returned</option>
                       <option value="REFUNDED">9. Refunded</option>
                     </select>
-                    <select
-                      value={orderPaymentFilter}
-                      onChange={(e) => setOrderPaymentFilter(e.target.value)}
-                      className="px-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent font-semibold"
-                    >
-                      <option value="ALL">All Payment States</option>
-                      <option value="PAID">Paid</option>
-                      <option value="UNPAID">Unpaid (COD)</option>
-                      <option value="PENDING_VERIFICATION">Pending Verification</option>
-                    </select>
                   </div>
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                        <tr className={`border-b uppercase ${subtleBox}`}>
                           <th className="py-3 px-2.5">
                             <input
                               type="checkbox"
@@ -4927,7 +4901,7 @@ ${queueOrders
                                 />
                               </td>
                               <td className="py-3 px-2.5">
-                                <div className="font-mono font-bold text-[#2F4156] dark:text-white">
+                                <div className="font-mono font-bold">
                                   {ord.orderNumber}
                                 </div>
                                 <div className="text-[11px] text-[#567C8D]">{ord.createdAt}</div>
@@ -4935,7 +4909,7 @@ ${queueOrders
                               <td className="py-3 px-2.5">
                                 <div className="font-bold">{ord.customerName}</div>
                                 <div className="text-[#567C8D]">{ord.customerPhone}</div>
-                                <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                                <div className="text-[11px] opacity-70 truncate max-w-[180px]">
                                   {ord.deliveryAddress}
                                 </div>
                               </td>
@@ -4976,14 +4950,14 @@ ${queueOrders
                                 </div>
                               </td>
                               <td className="py-3 px-2.5">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F5F1EE] dark:bg-[#1B2634] font-mono text-[11px]">
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-[11px] ${subtleBox}`}>
                                   <Printer className="w-3 h-3" /> {ord.memoPrintCount}x
                                 </span>
                               </td>
                               <td className="py-3 px-2.5 text-right space-x-1.5">
                                 <button
                                   onClick={() => setInspectingOrderId(ord.id)}
-                                  className="px-2.5 py-1.5 rounded-lg border border-[#C8D9E6] font-semibold hover:bg-[#F5F1EE]"
+                                  className="px-2.5 py-1.5 rounded-lg border border-[#C8D9E6] font-semibold hover:bg-[#C8D9E6]/30"
                                 >
                                   Details
                                 </button>
@@ -5002,12 +4976,11 @@ ${queueOrders
                   </div>
                 </div>
 
-                {/* Two-Column Order Details Inspector (Section 6.C) */}
                 {inspectingOrderId && (() => {
                   const ord = orders.find((o) => o.id === inspectingOrderId);
                   if (!ord) return null;
                   return (
-                    <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border-2 border-[#567C8D] space-y-4">
+                    <div className={`p-6 rounded-xl border-2 border-[#567C8D] space-y-4 ${surfaceCard}`}>
                       <div className="flex items-center justify-between border-b border-[#C8D9E6] pb-3">
                         <div>
                           <h3 className="font-serif text-lg font-bold">
@@ -5035,7 +5008,7 @@ ${queueOrders
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] space-y-1">
+                        <div className={`p-4 rounded-lg space-y-1 ${subtleBox}`}>
                           <div className="font-bold text-[#567C8D] uppercase">
                             Internal Staff Notes (RBAC Protected)
                           </div>
@@ -5051,7 +5024,7 @@ ${queueOrders
                                   )
                                 );
                               }}
-                              className="w-full p-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                              className={`w-full p-2 rounded-lg border ${surfaceCard}`}
                             />
                           ) : (
                             <p className="text-rose-500">
@@ -5060,7 +5033,7 @@ ${queueOrders
                           )}
                         </div>
 
-                        <div className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] space-y-1.5">
+                        <div className={`p-4 rounded-lg space-y-1.5 ${subtleBox}`}>
                           <div className="font-bold text-[#567C8D] uppercase">
                             Status Audit Trail
                           </div>
@@ -5080,12 +5053,10 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 7: PROFESSIONAL ORDER MEMO & INVOICE PRINTING          */}
-            {/* ============================================================== */}
+            {/* INVOICES */}
             {adminTab === "INVOICES" && (
               <div className="space-y-6">
-                <div className="no-print bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4 shadow-sm">
+                <div className={`no-print p-6 rounded-xl border space-y-4 shadow-sm ${surfaceCard}`}>
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F4156] bg-[#C8D9E6] px-2.5 py-0.5 rounded">
@@ -5203,7 +5174,7 @@ ${queueOrders
                         })}
                         <button
                           onClick={() => setPrintQueueIds(visibleOrders.map((o) => o.id))}
-                          className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#C8D9E6]/50 text-[#2F4156]"
+                          className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#C8D9E6]/60 text-[#2F4156]"
                         >
                           Select All
                         </button>
@@ -5212,7 +5183,6 @@ ${queueOrders
                   </div>
                 </div>
 
-                {/* Printable Commercial Invoice Surface */}
                 <div className="print-only-area space-y-8">
                   {orders
                     .filter((o) => printQueueIds.includes(o.id))
@@ -5459,12 +5429,10 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 11: PRODUCT & INVENTORY MANAGEMENT UI                  */}
-            {/* ============================================================== */}
+            {/* PRODUCTS */}
             {adminTab === "PRODUCTS" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h2 className="font-serif text-xl font-bold">
@@ -5472,10 +5440,7 @@ ${queueOrders
                       </h2>
                       <p className="text-xs text-[#567C8D]">
                         Purchase cost prices are strictly protected by the{" "}
-                        <code className="font-mono text-[#2F4156] dark:text-[#C8D9E6]">
-                          products.purchase_price
-                        </code>{" "}
-                        permission.
+                        <code className="font-mono">products.purchase_price</code> permission.
                       </p>
                     </div>
                     <button
@@ -5530,7 +5495,7 @@ ${queueOrders
                         setNewProductForm({ ...newProductForm, name: "", nameBn: "", sku: "" });
                         showToast(`Created product ${created.name} (${created.sku})`);
                       }}
-                      className="grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
+                      className={`grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-xl border text-xs ${subtleBox}`}
                     >
                       <input
                         type="text"
@@ -5540,7 +5505,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, name: e.target.value })
                         }
                         placeholder="Product Name (EN)"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <input
                         type="text"
@@ -5549,7 +5514,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, nameBn: e.target.value })
                         }
                         placeholder="নাম (বাংলা)"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <input
                         type="text"
@@ -5559,7 +5524,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, sku: e.target.value })
                         }
                         placeholder="SKU (e.g. NX-700)"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <input
                         type="number"
@@ -5572,7 +5537,7 @@ ${queueOrders
                           })
                         }
                         placeholder="Sale Price"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <input
                         type="number"
@@ -5585,7 +5550,7 @@ ${queueOrders
                           })
                         }
                         placeholder="Initial Stock"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <button
                         type="submit"
@@ -5599,7 +5564,7 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                        <tr className={`border-b uppercase ${subtleBox}`}>
                           <th className="py-2.5 px-2.5">Product / বাংলা নাম</th>
                           <th className="py-2.5 px-2.5">SKU & Barcode</th>
                           <th className="py-2.5 px-2.5">Sale Price</th>
@@ -5619,7 +5584,7 @@ ${queueOrders
                               <div>{p.sku}</div>
                               <div className="text-[10px] text-[#567C8D]">{p.barcode}</div>
                             </td>
-                            <td className="py-2.5 px-2.5 font-bold text-[#2F4156] dark:text-white">
+                            <td className="py-2.5 px-2.5 font-bold">
                               {formatBDT(p.salePrice)}
                             </td>
                             <td className="py-2.5 px-2.5">
@@ -5638,7 +5603,7 @@ ${queueOrders
                                 className={`px-2 py-0.5 rounded font-bold ${
                                   p.stockQuantity <= p.lowStockThreshold
                                     ? "bg-amber-500/15 text-amber-700"
-                                    : "bg-[#C8D9E6]/50 text-[#2F4156]"
+                                    : "bg-[#C8D9E6]/60 text-[#2F4156]"
                                 }`}
                               >
                                 {p.stockQuantity} pcs
@@ -5675,7 +5640,7 @@ ${queueOrders
 
             {/* CATEGORIES */}
             {adminTab === "CATEGORIES" && (
-              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+              <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                 <h2 className="font-serif text-xl font-bold">
                   Product Categories & Bilingual Labels
                 </h2>
@@ -5737,7 +5702,7 @@ ${queueOrders
                         <div className="font-bold text-sm">{c.name}</div>
                         <div className="text-xs text-[#567C8D]">{c.nameBn}</div>
                       </div>
-                      <span className="text-xs font-mono bg-[#F5F1EE] dark:bg-[#1B2634] px-2.5 py-1 rounded">
+                      <span className={`text-xs font-mono px-2.5 py-1 rounded ${subtleBox}`}>
                         /{c.slug}
                       </span>
                     </div>
@@ -5746,10 +5711,10 @@ ${queueOrders
               </div>
             )}
 
-            {/* INVENTORY & STOCK LEDGER */}
+            {/* INVENTORY */}
             {adminTab === "INVENTORY" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                   <h2 className="font-serif text-xl font-bold">
                     Atomic Inventory Adjustment & Movement Ledger
                   </h2>
@@ -5783,7 +5748,7 @@ ${queueOrders
                         referenceId: `ADJ-${Date.now().toString().slice(-4)}`,
                         note: stockAdjustForm.note,
                         performedBy: activeStaff.name,
-                        createdAt: "2026-11-10 05:25 PM"
+                        createdAt: "2026-11-10 05:50 PM"
                       };
                       setInventoryTx((prev) => [tx, ...prev]);
                       logAction(
@@ -5794,14 +5759,14 @@ ${queueOrders
                       );
                       showToast(`Updated ${target.name} stock to ${nextStock} units!`);
                     }}
-                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
+                    className={`grid grid-cols-1 md:grid-cols-5 gap-3 p-4 rounded-xl border text-xs ${subtleBox}`}
                   >
                     <select
                       value={stockAdjustForm.productId}
                       onChange={(e) =>
                         setStockAdjustForm({ ...stockAdjustForm, productId: e.target.value })
                       }
-                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                      className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                     >
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -5817,7 +5782,7 @@ ${queueOrders
                           type: e.target.value as InventoryTx["type"]
                         })
                       }
-                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                      className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                     >
                       <option value="PURCHASE_RESTOCK">PURCHASE_RESTOCK (+)</option>
                       <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (+/-)</option>
@@ -5833,7 +5798,7 @@ ${queueOrders
                         })
                       }
                       placeholder="Qty Delta (e.g. 15 or -3)"
-                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                      className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                     />
                     <input
                       type="text"
@@ -5842,7 +5807,7 @@ ${queueOrders
                         setStockAdjustForm({ ...stockAdjustForm, note: e.target.value })
                       }
                       placeholder="Reason / PO Reference"
-                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                      className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                     />
                     <button
                       type="submit"
@@ -5855,7 +5820,7 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                        <tr className={`border-b uppercase ${subtleBox}`}>
                           <th className="py-2.5 px-2.5">Timestamp</th>
                           <th className="py-2.5 px-2.5">Product & SKU</th>
                           <th className="py-2.5 px-2.5">Movement Type</th>
@@ -5902,18 +5867,16 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 12: CUSTOMER MANAGEMENT UI                             */}
-            {/* ============================================================== */}
+            {/* CUSTOMERS */}
             {adminTab === "CUSTOMERS" && (
-              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+              <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                 <h2 className="font-serif text-xl font-bold">
                   Customer Directory & Purchase History
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                      <tr className={`border-b uppercase ${subtleBox}`}>
                         <th className="py-3 px-2.5">Customer</th>
                         <th className="py-3 px-2.5">Phone & Email</th>
                         <th className="py-3 px-2.5">Total Orders</th>
@@ -5934,12 +5897,12 @@ ${queueOrders
                             <div className="text-[#567C8D]">{c.email}</div>
                           </td>
                           <td className="py-3 px-2.5 font-bold">{c.totalOrders} orders</td>
-                          <td className="py-3 px-2.5 font-bold text-[#2F4156] dark:text-white">
+                          <td className="py-3 px-2.5 font-bold">
                             {formatBDT(c.totalSpent)}
                           </td>
                           <td className="py-3 px-2.5 text-[#567C8D]">{c.registeredAt}</td>
                           <td className="py-3 px-2.5">
-                            <span className="px-2.5 py-0.5 rounded bg-[#C8D9E6]/50 text-[#2F4156] font-bold">
+                            <span className="px-2.5 py-0.5 rounded bg-[#C8D9E6]/60 text-[#2F4156] font-bold">
                               {c.status}
                             </span>
                           </td>
@@ -5953,7 +5916,7 @@ ${queueOrders
 
             {/* ORDER ASSIGNMENTS & COD */}
             {adminTab === "ASSIGNMENTS" && (
-              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+              <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                 <h2 className="font-serif text-xl font-bold">
                   Moderator, Order Processor & Delivery Rider Assignments
                 </h2>
@@ -5964,12 +5927,12 @@ ${queueOrders
                       className="p-4 rounded-xl border border-[#C8D9E6] grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-xs"
                     >
                       <div>
-                        <div className="font-mono font-bold text-[#2F4156] dark:text-white">
+                        <div className="font-mono font-bold">
                           {ord.orderNumber}
                         </div>
                         <div className="font-bold">{ord.customerName}</div>
                         <div className="text-[#567C8D]">{ord.customerPhone}</div>
-                        <div className="text-slate-400">{ord.deliveryAddress}</div>
+                        <div className="opacity-70">{ord.deliveryAddress}</div>
                       </div>
 
                       <div>
@@ -6057,9 +6020,7 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 8: STAFF MANAGEMENT, SUPERUSER & AUDIT LOGS            */}
-            {/* ============================================================== */}
+            {/* STAFF MANAGEMENT, SUPERUSER & AUDIT LOGS */}
             {adminTab === "STAFF" && (
               <div className="space-y-6">
                 <div className="rounded-xl bg-[#2F4156] text-white p-6 border border-[#567C8D] space-y-4">
@@ -6129,7 +6090,7 @@ ${queueOrders
                   )}
                 </div>
 
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                   <h2 className="font-serif text-xl font-bold">Multi-Role Staff Management</h2>
                   {hasPerm("staff.manage") && (
                     <form
@@ -6164,7 +6125,7 @@ ${queueOrders
                         setNewStaffForm({ ...newStaffForm, name: "", email: "" });
                         showToast(`Added staff member ${created.name}!`);
                       }}
-                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] text-xs"
+                      className={`grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-xl border text-xs ${subtleBox}`}
                     >
                       <input
                         type="text"
@@ -6174,7 +6135,7 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, name: e.target.value })
                         }
                         placeholder="Full Name"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <input
                         type="email"
@@ -6184,7 +6145,7 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, email: e.target.value })
                         }
                         placeholder="Email Address"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <input
                         type="text"
@@ -6193,14 +6154,14 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, designation: e.target.value })
                         }
                         placeholder="Designation"
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       />
                       <select
                         value={newStaffForm.roleId}
                         onChange={(e) =>
                           setNewStaffForm({ ...newStaffForm, roleId: e.target.value })
                         }
-                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                        className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                       >
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
@@ -6220,7 +6181,7 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                        <tr className={`border-b uppercase ${subtleBox}`}>
                           <th className="py-2.5 px-2.5">Staff Member</th>
                           <th className="py-2.5 px-2.5">Role</th>
                           <th className="py-2.5 px-2.5">Assigned / Completed / Cancelled</th>
@@ -6285,13 +6246,13 @@ ${queueOrders
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-3">
+                <div className={`p-6 rounded-xl border space-y-3 ${surfaceCard}`}>
                   <h3 className="font-bold text-sm">Immutable Staff Activity Audit Log</h3>
                   <div className="space-y-2">
                     {activityLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-2 text-xs"
+                        className={`p-3 rounded-lg border flex flex-wrap items-center justify-between gap-2 text-xs ${subtleBox}`}
                       >
                         <div>
                           <span className="font-bold">{log.staffName}</span>{" "}
@@ -6309,12 +6270,10 @@ ${queueOrders
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* SECTION 8.B: GROUPED ROLE & PERMISSION MATRIX                  */}
-            {/* ============================================================== */}
+            {/* ROLES & PERMISSIONS */}
             {adminTab === "ROLES" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-5">
+                <div className={`p-6 rounded-xl border space-y-5 ${surfaceCard}`}>
                   <div>
                     <h2 className="font-serif text-xl font-bold">
                       Custom Role Builder & Grouped 28-Permission Matrix
@@ -6356,7 +6315,7 @@ ${queueOrders
                         });
                         showToast(`Created custom role "${created.name}"!`);
                       }}
-                      className="space-y-5 p-5 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
+                      className={`space-y-5 p-5 rounded-xl border text-xs ${subtleBox}`}
                     >
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input
@@ -6367,7 +6326,7 @@ ${queueOrders
                             setNewRoleForm({ ...newRoleForm, name: e.target.value })
                           }
                           placeholder="Custom Role Name (e.g. Night Shift Supervisor)"
-                          className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                          className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                         />
                         <input
                           type="text"
@@ -6376,7 +6335,7 @@ ${queueOrders
                             setNewRoleForm({ ...newRoleForm, description: e.target.value })
                           }
                           placeholder="Role description"
-                          className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                          className={`px-3 py-2 rounded-lg border ${surfaceCard}`}
                         />
                         <button
                           type="submit"
@@ -6400,8 +6359,8 @@ ${queueOrders
                                     key={perm.code}
                                     className={`flex items-start gap-2 p-2.5 rounded-lg border cursor-pointer ${
                                       checked
-                                        ? "border-[#2F4156] bg-[#C8D9E6]/40"
-                                        : "border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                                        ? "border-[#2F4156] bg-[#C8D9E6]/50 text-[#2F4156]"
+                                        : surfaceCard
                                     }`}
                                   >
                                     <input
@@ -6441,7 +6400,7 @@ ${queueOrders
                       >
                         <div className="flex justify-between items-center">
                           <span className="font-bold text-sm">{r.name}</span>
-                          <span className="text-[11px] font-mono bg-[#C8D9E6]/50 text-[#2F4156] px-2 py-0.5 rounded font-semibold">
+                          <span className="text-[11px] font-mono bg-[#C8D9E6]/60 text-[#2F4156] px-2 py-0.5 rounded font-semibold">
                             {r.permissions.length} permissions
                           </span>
                         </div>
@@ -6453,7 +6412,7 @@ ${queueOrders
               </div>
             )}
 
-            {/* PAYMENTS, SHIPPING, COUPONS, REPORTS & 13-SECTION WEBSITE SETTINGS */}
+            {/* PAYMENTS, SHIPPING, COUPONS, REPORTS & SETTINGS */}
             {(adminTab === "PAYMENTS" ||
               adminTab === "SHIPPING" ||
               adminTab === "COUPONS" ||
@@ -6461,7 +6420,7 @@ ${queueOrders
               adminTab === "SETTINGS") && (
               <div className="space-y-6">
                 {adminTab === "PAYMENTS" && (
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                     <h2 className="font-serif text-xl font-bold">
                       Payment Verification & Gateway Architecture (SSLCommerz, bKash, Nagad, Stripe)
                     </h2>
@@ -6498,7 +6457,7 @@ ${queueOrders
                 )}
 
                 {adminTab === "SHIPPING" && (
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                     <h2 className="font-serif text-xl font-bold">
                       Courier Integration & Dispatch (Steadfast, Pathao Courier, RedX)
                     </h2>
@@ -6513,7 +6472,7 @@ ${queueOrders
                               {o.orderNumber} — {o.customerName} ({o.deliveryZone})
                             </div>
                             <div className="text-[#567C8D]">{o.deliveryAddress}</div>
-                            <div className="font-mono text-[#2F4156] dark:text-[#C8D9E6] mt-0.5">
+                            <div className="font-mono mt-0.5">
                               Provider: {o.courierProvider} | Tracking:{" "}
                               {o.trackingNumber || "Not Dispatched"}
                             </div>
@@ -6555,7 +6514,7 @@ ${queueOrders
                 )}
 
                 {adminTab === "COUPONS" && (
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                     <h2 className="font-serif text-xl font-bold">
                       Coupons & Promotional Discounts
                     </h2>
@@ -6660,31 +6619,31 @@ ${queueOrders
                 )}
 
                 {adminTab === "REPORTS" && (
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
                     <h2 className="font-serif text-xl font-bold">
                       Financial & Profitability Reports
                     </h2>
                     {hasPerm("financials.view") ? (
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                        <div className={`p-4 rounded-xl border ${subtleBox}`}>
                           <div className="text-[#567C8D]">Today&apos;s Sales</div>
                           <div className="text-xl font-extrabold mt-1">
                             {formatBDT(kpiMetrics.todayRevenue)}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                        <div className={`p-4 rounded-xl border ${subtleBox}`}>
                           <div className="text-[#567C8D]">Weekly Sales</div>
                           <div className="text-xl font-extrabold mt-1">
                             {formatBDT(kpiMetrics.totalRevenue)}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                        <div className={`p-4 rounded-xl border ${subtleBox}`}>
                           <div className="text-[#567C8D]">Net Profit Margin</div>
                           <div className="text-xl font-extrabold text-emerald-700 mt-1">
                             {formatBDT(kpiMetrics.grossProfit)}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                        <div className={`p-4 rounded-xl border ${subtleBox}`}>
                           <div className="text-[#567C8D]">Delivered Orders</div>
                           <div className="text-xl font-extrabold mt-1">
                             {kpiMetrics.deliveredCount}
@@ -6699,9 +6658,8 @@ ${queueOrders
                   </div>
                 )}
 
-                {/* SECTION 14: TABBED WEBSITE SETTINGS UI */}
                 {adminTab === "SETTINGS" && (
-                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-5">
+                  <div className={`p-6 rounded-xl border space-y-5 ${surfaceCard}`}>
                     <div>
                       <h2 className="font-serif text-xl font-bold">
                         Website & Bilingual Invoice Header Configuration
@@ -6792,12 +6750,10 @@ ${queueOrders
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* PORTAL 3: ARCHITECTURE, PRISMA SCHEMA & FOLDER STRUCTURE VIEWER      */}
-      {/* ==================================================================== */}
+      {/* PORTAL 3: ARCHITECTURE, PRISMA SCHEMA & BRAND PALETTE */}
       {isStaffLoggedIn && portalMode === "ARCHITECTURE" && (
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-          <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+          <div className={`p-6 rounded-xl border space-y-4 ${surfaceCard}`}>
             <h1 className="font-serif text-2xl font-bold">
               System Architecture, 29-Model Prisma Schema & Official Brand Palette
             </h1>
