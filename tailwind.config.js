@@ -8,7 +8,21 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        brand: {
+          navy: "#2F4156",
+          teal: "#567C8D",
+          skyblue: "#C8D9E6",
+          beige: "#F5F1EE",
+          white: "#FFFFFF",
+        },
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["Playfair Display", "Georgia", "serif"],
+      },
+    },
   },
   plugins: [],
 };

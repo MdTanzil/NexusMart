@@ -36,13 +36,19 @@ import {
   ArrowUpRight,
   SlidersHorizontal,
   Star,
-  Check,
-  Eye,
   Plus,
-  FileText,
   Phone,
   Mail,
-  ShieldAlert
+  LayoutGrid,
+  List,
+  ChevronLeft,
+  Bell,
+  User,
+  Eye,
+  FileText,
+  Check,
+  Menu,
+  ZoomIn
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -59,6 +65,15 @@ import {
   Cell,
   Legend
 } from "recharts";
+
+// ============================================================================
+// OFFICIAL BRAND COLOR PALETTE TOKENS
+// Navy:     #2F4156 (Primary brand color, buttons, sidebar, headings)
+// Teal:     #567C8D (Secondary brand color, links, active states, charts)
+// Sky Blue: #C8D9E6 (Soft info backgrounds, highlights, secondary containers)
+// Beige:    #F5F1EE (Main page background, product backdrops, subtle areas)
+// White:    #FFFFFF (Main surfaces, cards, tables, forms, modals)
+// ============================================================================
 
 type OrderStatus =
   | "PENDING"
@@ -115,6 +130,7 @@ interface StaffUser {
   designation: string;
   roleId: string;
   isSuperuser?: boolean;
+  joinDate: string;
   directPermissions: string[];
   status: "ACTIVE" | "INACTIVE";
   ordersAssigned: number;
@@ -123,12 +139,17 @@ interface StaffUser {
   cashCollected: number;
 }
 
-interface CustomerAccount {
+interface CustomerRecord {
   id: string;
   name: string;
   email: string;
   phone: string;
-  loyaltyPoints: number;
+  address: string;
+  totalOrders: number;
+  totalSpent: number;
+  registeredAt: string;
+  status: "ACTIVE" | "VIP";
+  notes: string;
 }
 
 interface CategoryItem {
@@ -136,6 +157,7 @@ interface CategoryItem {
   name: string;
   nameBn: string;
   slug: string;
+  itemCount: number;
   isActive: boolean;
 }
 
@@ -156,16 +178,18 @@ interface ProductItem {
   barcode: string;
   categoryId: string;
   description: string;
+  specs: Record<string, string>;
   regularPrice: number;
   salePrice: number;
   purchasePrice: number;
   stockQuantity: number;
   lowStockThreshold: number;
   isFeatured: boolean;
+  isNewArrival?: boolean;
+  isSpecialOffer?: boolean;
   isActive: boolean;
   rating: number;
   reviewCount: number;
-  imageGrad: string;
   badgeText?: string;
   variants: ProductVariantItem[];
 }
@@ -280,34 +304,34 @@ interface ReviewItem {
 }
 
 const ALL_PERMISSIONS: PermissionDef[] = [
-  { code: "dashboard.view", name: "View Admin Dashboard", module: "DASHBOARD" },
-  { code: "financials.view", name: "View Financial & Profit Reports", module: "REPORTS" },
-  { code: "products.view", name: "View Products", module: "PRODUCTS" },
-  { code: "products.create", name: "Create Products", module: "PRODUCTS" },
-  { code: "products.edit", name: "Edit Products", module: "PRODUCTS" },
-  { code: "products.delete", name: "Delete/Archive Products", module: "PRODUCTS" },
-  { code: "products.purchase_price", name: "View/Edit Purchase Cost Price", module: "PRODUCTS" },
-  { code: "categories.manage", name: "Manage Categories & Subcategories", module: "CATEGORIES" },
-  { code: "inventory.view", name: "View Inventory & Stock Movements", module: "INVENTORY" },
-  { code: "inventory.adjust", name: "Adjust Stock & Excel Import/Export", module: "INVENTORY" },
-  { code: "orders.view_all", name: "View All Customer Orders", module: "ORDERS" },
-  { code: "orders.view_assigned", name: "View Assigned Orders Only", module: "ORDERS" },
-  { code: "orders.confirm", name: "Confirm Pending Orders", module: "ORDERS" },
-  { code: "orders.process", name: "Update Order Processing Status", module: "ORDERS" },
-  { code: "orders.assign", name: "Assign Orders to Staff/Moderators", module: "ORDERS" },
-  { code: "orders.cancel_refund", name: "Cancel Orders & Issue Refunds", module: "ORDERS" },
-  { code: "orders.internal_notes", name: "Add/View Internal Order Notes", module: "ORDERS" },
-  { code: "invoices.print", name: "Print Order Memos & Download PDF", module: "INVOICES" },
-  { code: "invoices.bulk_print", name: "Bulk Print Multiple Order Memos", module: "INVOICES" },
-  { code: "delivery.view", name: "View Assigned Delivery Orders", module: "DELIVERY" },
-  { code: "delivery.update", name: "Mark Delivered/Returned & Record COD", module: "DELIVERY" },
-  { code: "customers.manage", name: "View & Manage Customers", module: "CUSTOMERS" },
-  { code: "staff.manage", name: "Create, Edit & Deactivate Staff", module: "STAFF" },
-  { code: "roles.manage", name: "Create Custom Roles & Permissions", module: "ROLES" },
-  { code: "coupons.manage", name: "Manage Coupons & Promotions", module: "COUPONS" },
-  { code: "payments.verify", name: "Verify Manual Bank/bKash/Nagad Payments", module: "PAYMENTS" },
-  { code: "shipping.manage", name: "Configure Shipping & Courier Dispatch", module: "SHIPPING" },
-  { code: "settings.manage", name: "Manage Website Settings & Audit Logs", module: "SETTINGS" }
+  { code: "dashboard.view", name: "View Admin Dashboard", module: "Dashboard Permissions" },
+  { code: "financials.view", name: "View Financial & Profit Reports", module: "Report Permissions" },
+  { code: "products.view", name: "View Products", module: "Product Permissions" },
+  { code: "products.create", name: "Create Products", module: "Product Permissions" },
+  { code: "products.edit", name: "Edit Products", module: "Product Permissions" },
+  { code: "products.delete", name: "Delete/Archive Products", module: "Product Permissions" },
+  { code: "products.purchase_price", name: "View/Edit Purchase Cost Price", module: "Product Permissions" },
+  { code: "categories.manage", name: "Manage Categories & Subcategories", module: "Product Permissions" },
+  { code: "inventory.view", name: "View Inventory & Stock Movements", module: "Inventory Permissions" },
+  { code: "inventory.adjust", name: "Adjust Stock & Excel Import/Export", module: "Inventory Permissions" },
+  { code: "orders.view_all", name: "View All Customer Orders", module: "Order Permissions" },
+  { code: "orders.view_assigned", name: "View Assigned Orders Only", module: "Order Permissions" },
+  { code: "orders.confirm", name: "Confirm Pending Orders", module: "Order Permissions" },
+  { code: "orders.process", name: "Update Order Processing Status", module: "Order Permissions" },
+  { code: "orders.assign", name: "Assign Orders to Staff/Moderators", module: "Order Permissions" },
+  { code: "orders.cancel_refund", name: "Cancel Orders & Issue Refunds", module: "Order Permissions" },
+  { code: "orders.internal_notes", name: "Add/View Internal Order Notes", module: "Order Permissions" },
+  { code: "invoices.print", name: "Print Order Memos & Download PDF", module: "Invoice Permissions" },
+  { code: "invoices.bulk_print", name: "Bulk Print Multiple Order Memos", module: "Invoice Permissions" },
+  { code: "delivery.view", name: "View Assigned Delivery Orders", module: "Order Permissions" },
+  { code: "delivery.update", name: "Mark Delivered/Returned & Record COD", module: "Order Permissions" },
+  { code: "customers.manage", name: "View & Manage Customers", module: "Customer Permissions" },
+  { code: "staff.manage", name: "Create, Edit & Deactivate Staff", module: "Staff Permissions" },
+  { code: "roles.manage", name: "Create Custom Roles & Permissions", module: "Staff Permissions" },
+  { code: "coupons.manage", name: "Manage Coupons & Promotions", module: "Settings Permissions" },
+  { code: "payments.verify", name: "Verify Manual Bank/bKash/Nagad Payments", module: "Payment Permissions" },
+  { code: "shipping.manage", name: "Configure Shipping & Courier Dispatch", module: "Order Permissions" },
+  { code: "settings.manage", name: "Manage Website Settings & Audit Logs", module: "Settings Permissions" }
 ];
 
 const INITIAL_ROLES: RoleDef[] = [
@@ -405,6 +429,7 @@ const INITIAL_STAFF: StaffUser[] = [
     designation: "Superuser & Chief Systems Architect",
     roleId: "role-super-admin",
     isSuperuser: true,
+    joinDate: "12 Jan 2025",
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 22,
@@ -423,6 +448,7 @@ const INITIAL_STAFF: StaffUser[] = [
     designation: "Senior Operations Manager",
     roleId: "role-admin-manager",
     isSuperuser: false,
+    joinDate: "04 Mar 2025",
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 45,
@@ -441,6 +467,7 @@ const INITIAL_STAFF: StaffUser[] = [
     designation: "Lead Order Moderator",
     roleId: "role-moderator",
     isSuperuser: false,
+    joinDate: "19 May 2025",
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 68,
@@ -459,6 +486,7 @@ const INITIAL_STAFF: StaffUser[] = [
     designation: "Order Processing Specialist",
     roleId: "role-processor",
     isSuperuser: false,
+    joinDate: "01 Jul 2025",
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 54,
@@ -477,6 +505,7 @@ const INITIAL_STAFF: StaffUser[] = [
     designation: "Senior Delivery Executive",
     roleId: "role-delivery",
     isSuperuser: false,
+    joinDate: "15 Aug 2025",
     directPermissions: [],
     status: "ACTIVE",
     ordersAssigned: 41,
@@ -486,11 +515,62 @@ const INITIAL_STAFF: StaffUser[] = [
   }
 ];
 
+const INITIAL_CUSTOMERS: CustomerRecord[] = [
+  {
+    id: "cust-1",
+    name: "Mahmudul Hasan",
+    email: "mahmudul@example.com",
+    phone: "01712345678",
+    address: "Flat 4B, House 19, Road 7, Dhanmondi, Dhaka-1209",
+    totalOrders: 5,
+    totalSpent: 34900,
+    registeredAt: "14 Feb 2026",
+    status: "VIP",
+    notes: "Prefers morning delivery between 10 AM and 1 PM."
+  },
+  {
+    id: "cust-2",
+    name: "Farhana Yasmin",
+    email: "farhana.y@example.com",
+    phone: "01819876543",
+    address: "Sector 11, Road 14, House 8, Uttara, Dhaka-1230",
+    totalOrders: 3,
+    totalSpent: 21450,
+    registeredAt: "02 Apr 2026",
+    status: "ACTIVE",
+    notes: "Frequent bKash prepaid customer."
+  },
+  {
+    id: "cust-3",
+    name: "Tariqul Alam",
+    email: "tariqul.ctg@example.com",
+    phone: "01911223344",
+    address: "42 Agrabad Commercial Area, Chattogram",
+    totalOrders: 2,
+    totalSpent: 11200,
+    registeredAt: "21 Aug 2026",
+    status: "ACTIVE",
+    notes: "Commercial office address."
+  },
+  {
+    id: "cust-4",
+    name: "Shafiqur Rahman",
+    email: "shafiq@example.com",
+    phone: "01615556677",
+    address: "House 12, Block C, Bashundhara R/A, Dhaka",
+    totalOrders: 4,
+    totalSpent: 28400,
+    registeredAt: "09 Sep 2026",
+    status: "VIP",
+    notes: "VIP repeat customer."
+  }
+];
+
 const INITIAL_CATEGORIES: CategoryItem[] = [
-  { id: "cat-1", name: "Flagship Electronics", nameBn: "ইলেকট্রনিক্স ও গ্যাজেট", slug: "electronics", isActive: true },
-  { id: "cat-2", name: "Smart Watches & Audio", nameBn: "স্মার্ট ওয়াচ ও অডিও", slug: "wearables", isActive: true },
-  { id: "cat-3", name: "Executive Apparel", nameBn: "প্রিমিয়াম পোশাক", slug: "apparel", isActive: true },
-  { id: "cat-4", name: "Home & Workspace", nameBn: "হোম ও অফিস এক্সেসরিজ", slug: "workspace", isActive: true }
+  { id: "cat-1", name: "Flagship Electronics", nameBn: "ইলেকট্রনিক্স ও গ্যাজেট", slug: "electronics", itemCount: 18, isActive: true },
+  { id: "cat-2", name: "Smart Watches & Audio", nameBn: "স্মার্ট ওয়াচ ও অডিও", slug: "wearables", itemCount: 24, isActive: true },
+  { id: "cat-3", name: "Executive Apparel", nameBn: "প্রিমিয়াম পোশাক", slug: "apparel", itemCount: 32, isActive: true },
+  { id: "cat-4", name: "Home & Workspace", nameBn: "হোম ও অফিস এক্সেসরিজ", slug: "workspace", itemCount: 15, isActive: true }
 ];
 
 const INITIAL_PRODUCTS: ProductItem[] = [
@@ -503,20 +583,28 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     barcode: "8901122334411",
     categoryId: "cat-2",
     description: "Studio-grade 45dB Hybrid Active Noise Cancellation, 60-hour battery life, dual-device Bluetooth 5.4 multipoint, and spatial audio.",
+    specs: {
+      "Driver Unit": "40mm Custom Titanium Diaphragm",
+      "Noise Cancellation": "45dB Hybrid Active ANC + Transparency",
+      "Battery Life": "60 Hours (ANC Off) / 42 Hours (ANC On)",
+      "Connectivity": "Bluetooth 5.4 + 3.5mm Studio Jack",
+      "Warranty": "12 Months Official Replacement Guarantee"
+    },
     regularPrice: 6500,
     salePrice: 5490,
     purchasePrice: 3800,
     stockQuantity: 34,
     lowStockThreshold: 10,
     isFeatured: true,
+    isNewArrival: false,
+    isSpecialOffer: true,
     isActive: true,
     rating: 4.9,
     reviewCount: 42,
-    imageGrad: "from-violet-600 via-indigo-700 to-slate-900",
     badgeText: "BESTSELLER",
     variants: [
-      { id: "v-101a", name: "Obsidian Black", sku: "NX-AUD-101-BLK", priceDelta: 0, stock: 20 },
-      { id: "v-101b", name: "Titanium Silver", sku: "NX-AUD-101-SLV", priceDelta: 200, stock: 14 }
+      { id: "v-101a", name: "Navy Slate", sku: "NX-AUD-101-NVY", priceDelta: 0, stock: 20 },
+      { id: "v-101b", name: "Warm Sand Beige", sku: "NX-AUD-101-BGE", priceDelta: 200, stock: 14 }
     ]
   },
   {
@@ -527,21 +615,29 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     sku: "NX-WTC-204",
     barcode: "8901122334428",
     categoryId: "cat-2",
-    description: "2.04-inch Retina AMOLED display, titanium alloy bezel, Bluetooth calling, ECG & SpO2 monitoring, IP68 waterproof.",
+    description: "2.04-inch Retina AMOLED display, titanium alloy bezel, Bluetooth calling, ECG & SpO2 monitoring, IP68 water resistance.",
+    specs: {
+      "Display": "2.04\" Super Retina AMOLED (1000 nits)",
+      "Case Material": "Brushed Aerospace Titanium Alloy",
+      "Health Sensors": "Continuous Heart Rate, SpO2, Sleep & Stress",
+      "Water Resistance": "IP68 Swimming-Grade Protection",
+      "Warranty": "12 Months Official Warranty"
+    },
     regularPrice: 4800,
     salePrice: 3990,
     purchasePrice: 2650,
     stockQuantity: 8,
     lowStockThreshold: 12,
     isFeatured: true,
+    isNewArrival: true,
+    isSpecialOffer: true,
     isActive: true,
     rating: 4.8,
     reviewCount: 31,
-    imageGrad: "from-emerald-500 via-teal-700 to-slate-900",
-    badgeText: "LOW STOCK",
+    badgeText: "LIMITED STOCK",
     variants: [
-      { id: "v-204a", name: "Orange Alpine Loop", sku: "NX-WTC-204-ORG", priceDelta: 0, stock: 5 },
-      { id: "v-204b", name: "Midnight Ocean Band", sku: "NX-WTC-204-MID", priceDelta: 0, stock: 3 }
+      { id: "v-204a", name: "Teal Ocean Strap", sku: "NX-WTC-204-TEL", priceDelta: 0, stock: 5 },
+      { id: "v-204b", name: "Deep Navy Milanese", sku: "NX-WTC-204-NVY", priceDelta: 0, stock: 3 }
     ]
   },
   {
@@ -552,21 +648,29 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     sku: "NX-KBD-309",
     barcode: "8901122334435",
     categoryId: "cat-4",
-    description: "Gasket-mounted CNC aluminum frame, tri-mode wireless (2.4GHz/BT/USB-C), pre-lubed tactile switches, PBT keycaps.",
+    description: "Gasket-mounted CNC aluminum frame, tri-mode wireless (2.4GHz/BT/USB-C), pre-lubed tactile switches, double-shot PBT keycaps.",
+    specs: {
+      "Layout": "75% Compact Executive (82 Keys + Rotary Knob)",
+      "Mounting Style": "Poron Gasket Mount with Polycarbonate Plate",
+      "Keycaps": "Double-Shot PBT in Navy/Beige/Sky Blue colorway",
+      "Battery": "4000mAh Li-Po Rechargeable",
+      "Warranty": "1 Year Official Brand Warranty"
+    },
     regularPrice: 8200,
     salePrice: 7250,
     purchasePrice: 5100,
     stockQuantity: 19,
     lowStockThreshold: 8,
     isFeatured: true,
+    isNewArrival: true,
+    isSpecialOffer: false,
     isActive: true,
     rating: 4.9,
     reviewCount: 27,
-    imageGrad: "from-fuchsia-600 via-purple-800 to-slate-950",
-    badgeText: "PRO SERIES",
+    badgeText: "ARCHITECT SERIES",
     variants: [
       { id: "v-309a", name: "Tactile Brown Switch", sku: "NX-KBD-309-BRN", priceDelta: 0, stock: 11 },
-      { id: "v-309b", name: "Linear Red Switch", sku: "NX-KBD-309-RED", priceDelta: 0, stock: 8 }
+      { id: "v-309b", name: "Linear Silent Switch", sku: "NX-KBD-309-LIN", priceDelta: 0, stock: 8 }
     ]
   },
   {
@@ -578,19 +682,27 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     barcode: "8901122334442",
     categoryId: "cat-1",
     description: "Airline-safe 99.5Wh capacity, smart OLED wattage telemetry screen, charges MacBook Pro & flagship phones simultaneously.",
+    specs: {
+      "Capacity": "27,650mAh / 99.54Wh (TSA Airline Approved)",
+      "Max Output": "140W PD 3.1 Single Port / 165W Combined",
+      "Ports": "2x USB-C PD 3.1 + 1x USB-A QC 4.0",
+      "Display": "Real-time Wattage, Voltage & Time Remaining OLED",
+      "Warranty": "18 Months Official Warranty"
+    },
     regularPrice: 5900,
     salePrice: 4950,
     purchasePrice: 3400,
     stockQuantity: 6,
     lowStockThreshold: 10,
     isFeatured: false,
+    isNewArrival: false,
+    isSpecialOffer: true,
     isActive: true,
     rating: 4.7,
     reviewCount: 19,
-    imageGrad: "from-amber-500 via-orange-700 to-stone-950",
     badgeText: "140W GAN",
     variants: [
-      { id: "v-412a", name: "Space Gray 140W", sku: "NX-PWR-412-GRY", priceDelta: 0, stock: 6 }
+      { id: "v-412a", name: "Anodized Navy 140W", sku: "NX-PWR-412-NVY", priceDelta: 0, stock: 6 }
     ]
   },
   {
@@ -601,17 +713,25 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     sku: "NX-APR-501",
     barcode: "8901122334459",
     categoryId: "cat-3",
-    description: "Breathable 100% Giza cotton weave with subtle minimal embroidery on collar and cuffs.",
+    description: "Breathable 100% Giza cotton weave with tailored architectural collar, mother-of-pearl buttons, and tonal embroidery.",
+    specs: {
+      "Fabric": "100% Long-Staple Egyptian Giza Cotton",
+      "Fit": "Tailored Contemporary Executive Fit",
+      "Detailing": "Tonal Geometric Collar & Cuff Embroidery",
+      "Care": "Gentle Cold Wash or Dry Clean",
+      "Exchange": "7-Day Size Exchange Guarantee"
+    },
     regularPrice: 3200,
     salePrice: 2690,
     purchasePrice: 1550,
     stockQuantity: 42,
     lowStockThreshold: 10,
     isFeatured: true,
+    isNewArrival: true,
+    isSpecialOffer: false,
     isActive: true,
     rating: 4.8,
     reviewCount: 53,
-    imageGrad: "from-sky-500 via-blue-700 to-slate-950",
     badgeText: "NEW ARRIVAL",
     variants: [
       { id: "v-501m", name: "Size M (40)", sku: "NX-APR-501-M", priceDelta: 0, stock: 14 },
@@ -627,20 +747,28 @@ const INITIAL_PRODUCTS: ProductItem[] = [
     sku: "NX-WKS-608",
     barcode: "8901122334466",
     categoryId: "cat-4",
-    description: "Asymmetric anti-glare optical design with wireless rotary puck controller, CRI>97 eye-care LEDs.",
+    description: "Asymmetric anti-glare optical design with wireless aluminum rotary puck controller and CRI>97 eye-care LEDs.",
+    specs: {
+      "Color Rendering": "Ra > 97 Full-Spectrum Eye Care LED",
+      "Color Temp": "2700K Warm to 6500K Daylight Stepless",
+      "Controller": "2.4GHz Wireless Machined Aluminum Puck",
+      "Mount": "Weighted Counterbalance Clamp (Fits Curved/Flat)",
+      "Warranty": "12 Months Warranty"
+    },
     regularPrice: 3600,
     salePrice: 2990,
     purchasePrice: 1900,
     stockQuantity: 25,
     lowStockThreshold: 8,
     isFeatured: false,
+    isNewArrival: true,
+    isSpecialOffer: true,
     isActive: true,
     rating: 4.6,
     reviewCount: 15,
-    imageGrad: "from-rose-500 via-pink-700 to-slate-950",
-    badgeText: "EYE CARE",
+    badgeText: "STUDIO PICK",
     variants: [
-      { id: "v-608a", name: "Matte Black", sku: "NX-WKS-608-BLK", priceDelta: 0, stock: 25 }
+      { id: "v-608a", name: "Matte Navy Slate", sku: "NX-WKS-608-NVY", priceDelta: 0, stock: 25 }
     ]
   }
 ];
@@ -680,7 +808,7 @@ const INITIAL_ORDERS: OrderRecord[] = [
         productName: "AuraPro ANC Wireless Headphones",
         productNameBn: "অরাপ্রো এএনসি ওয়্যারলেস হেডফোন",
         sku: "NX-AUD-101",
-        variantName: "Obsidian Black",
+        variantName: "Navy Slate",
         quantity: 1,
         unitPrice: 5490,
         purchasePrice: 3800,
@@ -691,7 +819,7 @@ const INITIAL_ORDERS: OrderRecord[] = [
         productName: "Chronos Ultra AMOLED Smart Watch",
         productNameBn: "ক্রোনোস আল্ট্রা অ্যামোলেড স্মার্ট ওয়াচ",
         sku: "NX-WTC-204",
-        variantName: "Orange Alpine Loop",
+        variantName: "Teal Ocean Strap",
         quantity: 1,
         unitPrice: 3990,
         purchasePrice: 2650,
@@ -854,7 +982,7 @@ const INITIAL_ORDERS: OrderRecord[] = [
         productName: "VoltEdge 140W GaN Fast Power Bank (27,650mAh)",
         productNameBn: "ভোল্টএজ ১৪০ ওয়াট ফাস্ট পাওয়ার ব্যাংক",
         sku: "NX-PWR-412",
-        variantName: "Space Gray 140W",
+        variantName: "Anodized Navy 140W",
         quantity: 1,
         unitPrice: 4950,
         purchasePrice: 3400,
@@ -1012,7 +1140,8 @@ const REVENUE_CHART_DATA = [
   { day: "10 Nov", revenue: 96400, profit: 33800, orders: 21 }
 ];
 
-const PIE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#0ea5e9", "#ef4444", "#8b5cf6"];
+// Official Brand Palette Chart Colors (Navy, Teal, Sky Blue, Semantic Accents)
+const BRAND_PIE_COLORS = ["#2F4156", "#567C8D", "#8BA9BC", "#0D9488", "#D97706", "#E11D48"];
 
 function formatBDT(amount: number): string {
   return `৳${Number(amount || 0).toLocaleString("en-BD", {
@@ -1021,53 +1150,107 @@ function formatBDT(amount: number): string {
   })}`;
 }
 
+/**
+ * Exact Semantic Status Badges per Section 6.B:
+ * - Pending: Orange
+ * - Confirmed: Blue
+ * - Processing: Teal (#567C8D)
+ * - Ready for Shipment: Indigo
+ * - Shipped: Purple
+ * - Delivered: Green
+ * - Cancelled: Red
+ * - Returned: Neutral
+ * - Refunded: Warning/Success
+ */
 function getStatusBadgeStyle(status: OrderStatus): string {
   switch (status) {
     case "PENDING":
-      return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30";
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
     case "CONFIRMED":
-      return "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30";
+      return "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30";
     case "PROCESSING":
-      return "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30";
+      return "bg-[#567C8D]/20 text-[#2F4156] dark:text-[#C8D9E6] border-[#567C8D]/40";
     case "READY_FOR_SHIPMENT":
-      return "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30";
+      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30";
     case "SHIPPED":
-      return "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30";
+      return "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30";
     case "DELIVERED":
-      return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
+      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
     case "CANCELLED":
+      return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
     case "RETURNED":
+      return "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-400/40";
     case "REFUNDED":
-      return "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30";
+      return "bg-teal-500/15 text-teal-800 dark:text-teal-300 border-teal-500/30";
     default:
       return "bg-slate-500/15 text-slate-600 border-slate-500/30";
   }
 }
 
+/**
+ * Clean Architectural Product Illustration in Official Palette
+ * (#2F4156 Navy, #567C8D Teal, #C8D9E6 Sky Blue, #F5F1EE Beige)
+ */
+function ProductVisualArtwork({ sku, categoryId }: { sku: string; categoryId: string }) {
+  return (
+    <div className="w-full h-full bg-[#F5F1EE] dark:bg-[#1B2634] flex items-center justify-center relative overflow-hidden p-6">
+      <div className="w-36 h-36 rounded-full bg-[#C8D9E6]/55 dark:bg-[#567C8D]/25 flex items-center justify-center border border-[#C8D9E6] dark:border-[#567C8D]/40 transition-transform duration-300 group-hover:scale-105">
+        {categoryId === "cat-2" && sku.includes("AUD") && (
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M18 44V38a22 22 0 0 1 44 0v6" />
+            <rect x="12" y="42" width="12" height="20" rx="6" fill="#567C8D" />
+            <rect x="56" y="42" width="12" height="20" rx="6" fill="#567C8D" />
+          </svg>
+        )}
+        {categoryId === "cat-2" && sku.includes("WTC") && (
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="24" y="20" width="32" height="40" rx="8" fill="#FFFFFF" stroke="#2F4156" strokeWidth="3" />
+            <path d="M30 20V10h20v10M30 60v10h20V60" stroke="#567C8D" strokeWidth="3" />
+            <circle cx="40" cy="40" r="9" stroke="#567C8D" strokeWidth="2.5" />
+          </svg>
+        )}
+        {categoryId === "cat-4" && sku.includes("KBD") && (
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="10" y="24" width="60" height="32" rx="5" fill="#FFFFFF" stroke="#2F4156" strokeWidth="3" />
+            <path d="M18 33h6M28 33h6M38 33h6M48 33h6M58 33h4M18 41h8M30 41h20M54 41h8M22 49h36" stroke="#567C8D" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        )}
+        {categoryId === "cat-1" && (
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="22" y="14" width="36" height="52" rx="6" fill="#FFFFFF" stroke="#2F4156" strokeWidth="3" />
+            <path d="M42 26l-8 14h12l-8 14" stroke="#567C8D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+        {categoryId === "cat-3" && (
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M28 16l12 6 12-6 12 10-8 10v28H24V36l-8-10 12-10z" fill="#FFFFFF" stroke="#2F4156" strokeWidth="2.8" />
+            <path d="M40 22v22" stroke="#567C8D" strokeWidth="2.5" />
+          </svg>
+        )}
+        {categoryId === "cat-4" && !sku.includes("KBD") && (
+          <svg viewBox="0 0 80 80" className="w-20 h-20 text-[#2F4156] dark:text-[#C8D9E6]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M16 24h48" stroke="#2F4156" strokeWidth="4" strokeLinecap="round" />
+            <path d="M40 24v32M26 56h28" stroke="#567C8D" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
 
-  // ==========================================================================
-  // STRICT SESSION SEPARATION:
-  // - By default, visitors are normal customers ("CUSTOMER") on the Storefront.
-  // - Normal users NEVER see the Admin menu, Staff ERP bar, or RBAC switcher.
-  // - Only when signed in as Staff / Superuser (`isStaffLoggedIn === true`)
-  //   does the Admin Dashboard & Staff Control Bar become visible!
-  // ==========================================================================
+  // Strict Customer vs Staff Separation:
+  // Normal customers NEVER see Admin menus; only signed-in Staff see the ERP bar & dashboard.
   const [isStaffLoggedIn, setIsStaffLoggedIn] = useState<boolean>(false);
-  const [loggedInCustomer, setLoggedInCustomer] = useState<CustomerAccount | null>({
-    id: "cust-1",
-    name: "Mahmudul Hasan",
-    email: "mahmudul@example.com",
-    phone: "01712345678",
-    loyaltyPoints: 420
-  });
-
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [portalMode, setPortalMode] = useState<"STOREFRONT" | "ADMIN" | "ARCHITECTURE">(
     "STOREFRONT"
   );
   const [activeStaffId, setActiveStaffId] = useState<string>("stf-1");
 
+  // Storefront Navigation & Filters
   const [storePage, setStorePage] = useState<
     | "HOME"
     | "SHOP"
@@ -1083,10 +1266,20 @@ export default function App() {
     | "TERMS"
     | "AUTH"
   >("HOME");
+  const [customerDashTab, setCustomerDashTab] = useState<
+    "OVERVIEW" | "MY_ORDERS" | "TRACKING" | "WISHLIST" | "ADDRESSES" | "PROFILE" | "PASSWORD"
+  >("OVERVIEW");
+  const [shopViewMode, setShopViewMode] = useState<"GRID" | "LIST">("GRID");
+  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+  const [maxPriceFilter, setMaxPriceFilter] = useState<number>(10000);
   const [selectedProductId, setSelectedProductId] = useState<string>("prd-1");
   const [selectedVariantId, setSelectedVariantId] = useState<string>("v-101a");
+  const [detailQty, setDetailQty] = useState<number>(1);
+  const [detailTab, setDetailTab] = useState<"DESCRIPTION" | "SPECS" | "REVIEWS">("DESCRIPTION");
+  const [zoomActive, setZoomActive] = useState<boolean>(false);
+  const [newsletterEmail, setNewsletterEmail] = useState<string>("");
 
-  // Auth page sub-tabs ("CUSTOMER_LOGIN" | "STAFF_LOGIN" | "SUPERUSER_SETUP")
+  // Auth Page Sub-Tabs
   const [authMode, setAuthMode] = useState<"CUSTOMER_LOGIN" | "STAFF_LOGIN" | "SUPERUSER_SETUP">(
     "STAFF_LOGIN"
   );
@@ -1096,7 +1289,6 @@ export default function App() {
   const [customerLoginName, setCustomerLoginName] = useState<string>("Mahmudul Hasan");
   const [customerLoginPhone, setCustomerLoginPhone] = useState<string>("01712345678");
 
-  // Superuser creation / promotion state
   const [superuserForm, setSuperuserForm] = useState({
     name: "",
     email: "",
@@ -1105,8 +1297,11 @@ export default function App() {
     employeeCode: "SU-001"
   });
 
+  // Admin Sidebar Navigation (All 15 Modules + Role-Specific Operational Views)
   const [adminTab, setAdminTab] = useState<
     | "DASHBOARD"
+    | "MODERATOR_DESK"
+    | "DELIVERY_DESK"
     | "ORDERS"
     | "INVOICES"
     | "PRODUCTS"
@@ -1122,9 +1317,13 @@ export default function App() {
     | "REPORTS"
     | "SETTINGS"
   >("DASHBOARD");
+  const [settingsSubTab, setSettingsSubTab] = useState<
+    "GENERAL" | "BRANDING" | "SHIPPING" | "PAYMENT" | "INVOICE" | "SEO_LEGAL"
+  >("GENERAL");
 
   const [roles, setRoles] = useState<RoleDef[]>(INITIAL_ROLES);
   const [staffList, setStaffList] = useState<StaffUser[]>(INITIAL_STAFF);
+  const [customers, setCustomers] = useState<CustomerRecord[]>(INITIAL_CUSTOMERS);
   const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
   const [products, setProducts] = useState<ProductItem[]>(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<OrderRecord[]>(INITIAL_ORDERS);
@@ -1140,6 +1339,7 @@ export default function App() {
     companyAddressBn: "বাড়ি ৪২, রোড ১১, বনানী, ঢাকা-১২১৩, বাংলাদেশ",
     companyPhone: "+880 1711-009988",
     companyEmail: "support@nexusmart.com.bd",
+    currencySymbol: "৳",
     insideDhakaShipping: 60,
     subDhakaShipping: 100,
     outsideDhakaShipping: 130,
@@ -1151,7 +1351,7 @@ export default function App() {
     invoiceThankYouEn: "Thank you for shopping with NexusMart Enterprise!",
     invoiceThankYouBn: "নেক্সাসমার্ট এন্টারপ্রাইজ থেকে কেনাকাটার জন্য আপনাকে ধন্যবাদ!",
     promoBannerText:
-      "SEASON FINALE: Up to 25% OFF Flagship Audio & Wearables + Free Express Delivery over ৳5,000 — Code: NEXUS15",
+      "Complimentary Express Delivery on orders above ৳5,000 • Use Code NEXUS15 for 15% Off Flagship Audio",
     promoBannerActive: true
   });
 
@@ -1197,6 +1397,7 @@ export default function App() {
 
   const [orderSearch, setOrderSearch] = useState<string>("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("ALL");
+  const [orderPaymentFilter, setOrderPaymentFilter] = useState<string>("ALL");
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>(["ord-1001", "ord-1002"]);
   const [inspectingOrderId, setInspectingOrderId] = useState<string | null>(null);
 
@@ -1296,14 +1497,10 @@ export default function App() {
       module,
       targetId,
       details,
-      createdAt: "2026-11-10 04:15 PM"
+      createdAt: "2026-11-10 05:18 PM"
     };
     setActivityLogs((prev) => [entry, ...prev]);
   };
-
-  // ==========================================================================
-  // STAFF LOGIN, CUSTOMER LOGIN & SUPERUSER CREATION HANDLERS
-  // ==========================================================================
 
   const handleStaffLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1321,9 +1518,15 @@ export default function App() {
     setActiveStaffId(matched.id);
     setIsStaffLoggedIn(true);
     setPortalMode("ADMIN");
-    setAdminTab("DASHBOARD");
     const r = roles.find((rl) => rl.id === matched.roleId);
-    showToast(`Welcome back, ${matched.name}! Logged into ${r?.name} Dashboard.`);
+    if (r?.slug === "MODERATOR") {
+      setAdminTab("MODERATOR_DESK");
+    } else if (r?.slug === "DELIVERY_STAFF") {
+      setAdminTab("DELIVERY_DESK");
+    } else {
+      setAdminTab("DASHBOARD");
+    }
+    showToast(`Signed in as ${matched.name} (${r?.name}).`);
   };
 
   const handleCreateOrPromoteSuperuser = (e: React.FormEvent) => {
@@ -1368,6 +1571,7 @@ export default function App() {
       designation: "Superuser / Platform Owner",
       roleId: "role-super-admin",
       isSuperuser: true,
+      joinDate: "10 Nov 2026",
       directPermissions: ALL_PERMISSIONS.map((p) => p.code),
       status: "ACTIVE",
       ordersAssigned: 0,
@@ -1426,6 +1630,8 @@ export default function App() {
     return products
       .filter((p) => p.isActive)
       .filter((p) => (storeCategory === "ALL" ? true : p.categoryId === storeCategory))
+      .filter((p) => (inStockOnly ? p.stockQuantity > 0 : true))
+      .filter((p) => p.salePrice <= maxPriceFilter)
       .filter((p) => {
         if (!storeSearch.trim()) return true;
         const q = storeSearch.toLowerCase();
@@ -1441,7 +1647,7 @@ export default function App() {
         if (storeSort === "RATING") return b.rating - a.rating;
         return Number(b.isFeatured) - Number(a.isFeatured);
       });
-  }, [products, storeCategory, storeSearch, storeSort]);
+  }, [products, storeCategory, inStockOnly, maxPriceFilter, storeSearch, storeSort]);
 
   const cartDetails = useMemo(() => {
     const lines = cart
@@ -1502,7 +1708,7 @@ export default function App() {
     return { lines, subtotal, discountAmount, deliveryCharge, grandTotal, matchedCoupon };
   }, [cart, products, coupons, appliedCoupon, checkoutForm.deliveryZone, settings]);
 
-  const handleAddToCart = (productId: string, variantId?: string) => {
+  const handleAddToCart = (productId: string, variantId?: string, qty = 1) => {
     const product = products.find((p) => p.id === productId);
     if (!product) return;
     if (product.stockQuantity <= 0) {
@@ -1514,12 +1720,12 @@ export default function App() {
         (i) => i.productId === productId && i.variantId === (variantId || product.variants[0]?.id)
       );
       if (existing) {
-        if (existing.quantity + 1 > product.stockQuantity) {
+        if (existing.quantity + qty > product.stockQuantity) {
           showToast(`Stock limit reached (${product.stockQuantity} available)`, "error");
           return prev;
         }
         return prev.map((i) =>
-          i === existing ? { ...i, quantity: i.quantity + 1 } : i
+          i === existing ? { ...i, quantity: i.quantity + qty } : i
         );
       }
       return [
@@ -1527,17 +1733,17 @@ export default function App() {
         {
           productId,
           variantId: variantId || product.variants[0]?.id,
-          quantity: 1
+          quantity: qty
         }
       ];
     });
-    showToast(`Added "${product.name}" to bag!`);
+    showToast(`Added "${product.name}" to shopping cart!`);
   };
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     if (cartDetails.lines.length === 0) {
-      showToast("Your shopping bag is empty!", "error");
+      showToast("Your cart is empty!", "error");
       return;
     }
     if (!checkoutForm.customerName.trim() || !checkoutForm.customerPhone.trim()) {
@@ -1574,7 +1780,7 @@ export default function App() {
           referenceId: newOrderNum,
           note: `Deducted for checkout order ${newOrderNum}`,
           performedBy: checkoutForm.customerName,
-          createdAt: "2026-11-10 04:20 PM"
+          createdAt: "2026-11-10 05:20 PM"
         });
         return { ...p, stockQuantity: nextStock };
       })
@@ -1610,7 +1816,7 @@ export default function App() {
       customerNotes: checkoutForm.customerNotes,
       internalNotes: "New customer order placed via storefront.",
       memoPrintCount: 0,
-      createdAt: "2026-11-10 04:20 PM",
+      createdAt: "2026-11-10 05:20 PM",
       items: cartDetails.lines.map((l) => ({
         productId: l.product.id,
         productName: l.product.name,
@@ -1628,7 +1834,7 @@ export default function App() {
           newState: "PENDING",
           note: "Order placed by customer via Checkout.",
           changedBy: checkoutForm.customerName,
-          createdAt: "2026-11-10 04:20 PM"
+          createdAt: "2026-11-10 05:20 PM"
         }
       ]
     };
@@ -1652,6 +1858,7 @@ export default function App() {
         );
       })
       .filter((o) => (orderStatusFilter === "ALL" ? true : o.orderStatus === orderStatusFilter))
+      .filter((o) => (orderPaymentFilter === "ALL" ? true : o.paymentStatus === orderPaymentFilter))
       .filter((o) => {
         if (!orderSearch.trim()) return true;
         const q = orderSearch.toLowerCase();
@@ -1661,7 +1868,7 @@ export default function App() {
           o.customerPhone.includes(q)
         );
       });
-  }, [orders, activeStaff, activePermissions, orderStatusFilter, orderSearch]);
+  }, [orders, activeStaff, activePermissions, orderStatusFilter, orderPaymentFilter, orderSearch]);
 
   const handleUpdateOrderStatus = (
     orderId: string,
@@ -1701,7 +1908,7 @@ export default function App() {
             referenceId: target.orderNumber,
             note: `Automatic stock restoration on order ${newStatus}`,
             performedBy: activeStaff.name,
-            createdAt: "2026-11-10 04:22 PM"
+            createdAt: "2026-11-10 05:22 PM"
           });
           return { ...p, stockQuantity: nextStock };
         })
@@ -1731,7 +1938,7 @@ export default function App() {
               newState: newStatus,
               note: note || `Updated to ${newStatus} by ${activeStaff.name}`,
               changedBy: activeStaff.name,
-              createdAt: "2026-11-10 04:22 PM"
+              createdAt: "2026-11-10 05:22 PM"
             }
           ]
         };
@@ -1749,7 +1956,6 @@ export default function App() {
 
   const handleBulkPrintMemos = (orderIdsToPrint: string[]) => {
     if (!isStaffLoggedIn) {
-      // Allow customer to print their own order invoice on storefront, or open print dialog
       window.print();
       return;
     }
@@ -1768,7 +1974,7 @@ export default function App() {
           ? {
               ...o,
               memoPrintCount: o.memoPrintCount + 1,
-              lastPrintedAt: "2026-11-10 04:25 PM",
+              lastPrintedAt: "2026-11-10 05:25 PM",
               lastPrintedBy: activeStaff.name
             }
           : o
@@ -1804,12 +2010,13 @@ export default function App() {
 <meta charset="utf-8" />
 <title>Order Memo - ${queueOrders.map((o) => o.orderNumber).join(", ")}</title>
 <style>
-  body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 24px; color: #0f172a; }
-  .memo { border: 1px solid #cbd5e1; padding: 24px; margin-bottom: 32px; max-width: ${
+  body { font-family: 'Inter', 'Segoe UI', sans-serif; margin: 24px; color: #2F4156; }
+  .memo { border: 1px solid #C8D9E6; padding: 28px; margin-bottom: 32px; max-width: ${
     invoiceLayout === "THERMAL_80MM" ? "300px" : invoiceLayout === "COMPACT_MEMO" ? "520px" : "800px"
   }; margin-left: auto; margin-right: auto; }
   table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-  th, td { border-bottom: 1px solid #e2e8f0; padding: 8px 4px; text-align: left; font-size: 13px; }
+  th, td { border-bottom: 1px solid #C8D9E6; padding: 8px 4px; text-align: left; font-size: 13px; }
+  th { background: #F5F1EE; color: #2F4156; }
   .right { text-align: right; }
 </style>
 </head>
@@ -1911,6 +2118,9 @@ ${queueOrders
       (o) => !["CANCELLED", "RETURNED", "REFUNDED"].includes(o.orderStatus)
     );
     const totalRevenue = activeOrders.reduce((s, o) => s + o.grandTotal, 0);
+    const todayRevenue = orders
+      .filter((o) => o.createdAt.includes("2026-11-10") && o.orderStatus !== "CANCELLED")
+      .reduce((s, o) => s + o.grandTotal, 0);
     const totalCost = activeOrders.reduce(
       (s, o) =>
         s + o.items.reduce((is, item) => is + item.purchasePrice * item.quantity, 0),
@@ -1919,6 +2129,8 @@ ${queueOrders
     const grossProfit = totalRevenue - totalCost;
     const pendingCount = orders.filter((o) => o.orderStatus === "PENDING").length;
     const confirmedCount = orders.filter((o) => o.orderStatus === "CONFIRMED").length;
+    const processingCount = orders.filter((o) => o.orderStatus === "PROCESSING").length;
+    const shippedCount = orders.filter((o) => o.orderStatus === "SHIPPED").length;
     const deliveredCount = orders.filter((o) => o.orderStatus === "DELIVERED").length;
     const cancelledCount = orders.filter((o) => o.orderStatus === "CANCELLED").length;
     const lowStockProducts = products.filter((p) => p.stockQuantity <= p.lowStockThreshold);
@@ -1926,16 +2138,19 @@ ${queueOrders
     const statusPie = [
       { name: "Pending", value: pendingCount || 1 },
       { name: "Confirmed", value: confirmedCount || 1 },
-      { name: "Shipped", value: orders.filter((o) => o.orderStatus === "SHIPPED").length || 1 },
+      { name: "Shipped", value: shippedCount || 1 },
       { name: "Delivered", value: deliveredCount || 1 },
       { name: "Cancelled", value: cancelledCount }
     ].filter((s) => s.value > 0);
 
     return {
       totalRevenue,
+      todayRevenue,
       grossProfit,
       pendingCount,
       confirmedCount,
+      processingCount,
+      shippedCount,
       deliveredCount,
       cancelledCount,
       lowStockProducts,
@@ -1943,12 +2158,23 @@ ${queueOrders
     };
   }, [orders, products]);
 
+  // Group permissions by module for Section 8 Permission Matrix
+  const groupedPermissions = useMemo(() => {
+    const map = new Map<string, PermissionDef[]>();
+    for (const p of ALL_PERMISSIONS) {
+      const list = map.get(p.module) || [];
+      list.push(p);
+      map.set(p.module, list);
+    }
+    return Array.from(map.entries());
+  }, []);
+
   return (
     <div
       className={
         darkMode
-          ? "dark bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white"
-          : "bg-[#f8fafc] text-slate-900 min-h-screen font-sans selection:bg-indigo-600 selection:text-white"
+          ? "dark bg-[#1B2634] text-[#F5F1EE] min-h-screen font-sans selection:bg-[#567C8D] selection:text-white"
+          : "bg-[#F5F1EE] text-[#2F4156] min-h-screen font-sans selection:bg-[#2F4156] selection:text-white"
       }
     >
       <style>{`
@@ -1971,58 +2197,58 @@ ${queueOrders
 
       {/* Toast Notification */}
       {toast && (
-        <div className="no-print fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border bg-slate-900/95 backdrop-blur-md text-white border-slate-700/80">
+        <div className="no-print fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl border bg-[#2F4156] text-white border-[#567C8D]">
           {toast.type === "error" ? (
-            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-amber-300 shrink-0" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-[#C8D9E6] shrink-0" />
           )}
           <span className="text-sm font-medium">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="text-slate-400 hover:text-white ml-2">
+          <button onClick={() => setToast(null)} className="text-[#C8D9E6] hover:text-white ml-2">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* ==================================================================== */}
-      {/* STAFF EXECUTIVE BAR — STRICTLY HIDDEN FROM NORMAL CUSTOMERS!         */}
-      {/* Only renders when `isStaffLoggedIn === true`                         */}
+      {/* STAFF EXECUTIVE TOPBAR — STRICTLY HIDDEN FROM NORMAL CUSTOMERS       */}
+      {/* Uses Official Brand Navy (#2F4156) & Teal (#567C8D)                  */}
       {/* ==================================================================== */}
       {isStaffLoggedIn && (
-        <header className="no-print sticky top-0 z-50 bg-slate-950/95 backdrop-blur-xl text-white border-b border-slate-800/80 px-4 py-2.5 shadow-lg">
+        <header className="no-print sticky top-0 z-50 bg-[#2F4156] text-white border-b border-[#567C8D]/40 px-4 py-2.5 shadow-md">
           <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center font-black text-base shadow-md shadow-indigo-500/20">
+              <div className="w-9 h-9 rounded-lg bg-[#567C8D] flex items-center justify-center font-bold text-base text-white border border-[#C8D9E6]/30">
                 N
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold tracking-tight text-sm">
-                    {settings.companyName} Executive ERP
+                    {settings.companyName} Enterprise SaaS
                   </span>
                   {activeStaff.isSuperuser || activeRole.slug === "SUPER_ADMIN" ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold">
+                    <span className="inline-flex items-center gap-1 text-[11px] bg-[#C8D9E6] text-[#2F4156] px-2.5 py-0.5 rounded-md font-bold">
                       <Crown className="w-3 h-3" /> SUPERUSER
                     </span>
                   ) : (
-                    <span className="text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full font-semibold">
+                    <span className="text-[11px] bg-[#567C8D] text-white px-2.5 py-0.5 rounded-md font-semibold">
                       {activeRole.name}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-400 hidden sm:block">
-                  Signed in as {activeStaff.name} ({activeStaff.email})
+                <p className="text-[11px] text-[#C8D9E6] hidden sm:block">
+                  Active Staff Session: {activeStaff.name} ({activeStaff.email})
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-1.5 bg-[#243344] p-1 rounded-lg border border-[#567C8D]/40">
               <button
                 onClick={() => setPortalMode("STOREFRONT")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
                   portalMode === "STOREFRONT"
-                    ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-300 hover:text-white"
+                    ? "bg-[#567C8D] text-white shadow-sm"
+                    : "text-[#C8D9E6] hover:text-white"
                 }`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
@@ -2030,10 +2256,10 @@ ${queueOrders
               </button>
               <button
                 onClick={() => setPortalMode("ADMIN")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
                   portalMode === "ADMIN"
-                    ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-300 hover:text-white"
+                    ? "bg-[#567C8D] text-white shadow-sm"
+                    : "text-[#C8D9E6] hover:text-white"
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -2044,10 +2270,10 @@ ${queueOrders
                   setPortalMode("ADMIN");
                   setAdminTab("INVOICES");
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
                   portalMode === "ADMIN" && adminTab === "INVOICES"
-                    ? "bg-emerald-600 text-white shadow"
-                    : "text-emerald-400 hover:text-white"
+                    ? "bg-[#C8D9E6] text-[#2F4156] font-bold"
+                    : "text-[#C8D9E6] hover:text-white"
                 }`}
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -2055,10 +2281,10 @@ ${queueOrders
               </button>
               <button
                 onClick={() => setPortalMode("ARCHITECTURE")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
                   portalMode === "ARCHITECTURE"
-                    ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-300 hover:text-white"
+                    ? "bg-[#567C8D] text-white"
+                    : "text-[#C8D9E6] hover:text-white"
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -2067,9 +2293,9 @@ ${queueOrders
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs">
-                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-slate-400 hidden xl:inline">Role Simulator:</span>
+              <div className="flex items-center gap-1.5 bg-[#243344] px-2.5 py-1.5 rounded-lg border border-[#567C8D]/40 text-xs">
+                <UserCheck className="w-3.5 h-3.5 text-[#C8D9E6]" />
+                <span className="text-[#C8D9E6] hidden xl:inline">Role View:</span>
                 <select
                   aria-label="Switch Active Staff Role Session"
                   value={activeStaffId}
@@ -2077,6 +2303,8 @@ ${queueOrders
                     setActiveStaffId(e.target.value);
                     const chosen = staffList.find((s) => s.id === e.target.value);
                     const r = roles.find((rl) => rl.id === chosen?.roleId);
+                    if (r?.slug === "MODERATOR") setAdminTab("MODERATOR_DESK");
+                    else if (r?.slug === "DELIVERY_STAFF") setAdminTab("DELIVERY_DESK");
                     showToast(`Switched staff session to ${chosen?.name} (${r?.name})`, "info");
                   }}
                   className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
@@ -2084,7 +2312,7 @@ ${queueOrders
                   {staffList.map((stf) => {
                     const r = roles.find((rl) => rl.id === stf.roleId);
                     return (
-                      <option key={stf.id} value={stf.id} className="bg-slate-900 text-white">
+                      <option key={stf.id} value={stf.id} className="bg-[#2F4156] text-white">
                         {stf.name} — [{r?.name}]
                       </option>
                     );
@@ -2095,18 +2323,18 @@ ${queueOrders
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 title="Toggle Dark/Light Theme"
-                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200"
+                className="p-2 rounded-lg bg-[#243344] hover:bg-[#567C8D] border border-[#567C8D]/40 text-white transition"
               >
-                {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+                {darkMode ? <Sun className="w-4 h-4 text-[#C8D9E6]" /> : <Moon className="w-4 h-4" />}
               </button>
 
               <button
                 onClick={handleStaffLogout}
                 title="Sign Out of Staff Portal"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 text-xs font-semibold transition"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Exit Staff</span>
+                <span className="hidden sm:inline">Sign Out</span>
               </button>
             </div>
           </div>
@@ -2114,75 +2342,113 @@ ${queueOrders
       )}
 
       {/* ==================================================================== */}
-      {/* PORTAL 1: LUXURY CUSTOMER-FACING STOREFRONT                          */}
-      {/* (What normal customers see — clean, modern, zero admin clutter!)     */}
+      {/* PORTAL 1: CUSTOMER STOREFRONT (Official Navy, Teal, Sky Blue, Beige) */}
       {/* ==================================================================== */}
       {(portalMode === "STOREFRONT" || !isStaffLoggedIn) && (
-        <div className="min-h-screen flex flex-col">
-          {/* Announcement Ribbon */}
+        <div className="min-h-screen flex flex-col bg-[#F5F1EE] dark:bg-[#1B2634]">
+          {/* Top Announcement Bar in Navy (#2F4156) */}
           {settings.promoBannerActive && (
-            <div className="bg-slate-950 text-white text-xs font-medium py-2.5 px-4 text-center border-b border-slate-800">
-              <span className="inline-flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-[10px] font-extrabold uppercase tracking-wider">
-                  Live Offer
-                </span>
-                <span className="text-slate-200">{settings.promoBannerText}</span>
-              </span>
+            <div className="bg-[#2F4156] text-[#F5F1EE] text-xs font-medium py-2.5 px-4 text-center border-b border-[#567C8D]/30">
+              <span>{settings.promoBannerText}</span>
             </div>
           )}
 
-          {/* Glassmorphic Storefront Header */}
+          {/* Main Sticky Storefront Header in White (#FFFFFF) with Navy (#2F4156) & Teal (#567C8D) */}
           <nav
-            className={`bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 px-4 py-3.5 sticky ${
+            className={`bg-white dark:bg-[#243344] border-b border-[#C8D9E6] dark:border-[#567C8D]/40 px-4 py-4 sticky ${
               isStaffLoggedIn ? "top-[53px]" : "top-0"
-            } z-30 transition-all`}
+            } z-30 shadow-sm`}
           >
             <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-8">
                 <button
                   onClick={() => setStorePage("HOME")}
-                  className="flex items-center gap-2.5 text-left group"
+                  className="flex items-center gap-3 text-left"
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
+                  <div className="w-10 h-10 rounded-lg bg-[#2F4156] text-white flex items-center justify-center font-serif font-bold text-xl">
                     N
                   </div>
                   <div>
-                    <span className="text-xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 dark:from-white dark:via-indigo-200 dark:to-white bg-clip-text text-transparent">
+                    <span className="text-xl font-bold tracking-tight text-[#2F4156] dark:text-white block leading-none">
                       {settings.companyName}
                     </span>
-                    <span className="block text-[10px] font-semibold uppercase tracking-widest text-slate-400 -mt-1">
-                      Flagship Store
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#567C8D] dark:text-[#C8D9E6] mt-1 block">
+                      Architectural Commerce
                     </span>
                   </div>
                 </button>
 
-                <div className="hidden lg:flex items-center gap-1 text-sm font-semibold">
-                  {[
-                    { id: "HOME", label: "Home" },
-                    { id: "SHOP", label: "Shop Collection" },
-                    { id: "TRACK_ORDER", label: "Track Order" },
-                    { id: "CUSTOMER_DASHBOARD", label: "My Orders" },
-                    { id: "ABOUT", label: "Our Story" },
-                    { id: "CONTACT", label: "Showroom" }
-                  ].map((nav) => (
-                    <button
-                      key={nav.id}
-                      onClick={() => setStorePage(nav.id as any)}
-                      className={`px-3.5 py-2 rounded-xl transition ${
-                        storePage === nav.id
-                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
-                      }`}
-                    >
-                      {nav.label}
-                    </button>
-                  ))}
+                {/* Main Navigation Links (Preserving exact button labels & adding requested links) */}
+                <div className="hidden lg:flex items-center gap-1 text-sm font-medium">
+                  <button
+                    onClick={() => setStorePage("HOME")}
+                    className={
+                      storePage === "HOME"
+                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
+                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                    }
+                  >
+                    Home
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStoreCategory("ALL");
+                      setStorePage("SHOP");
+                    }}
+                    className={
+                      storePage === "SHOP"
+                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
+                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                    }
+                  >
+                    Shop Catalog
+                  </button>
+                  <button
+                    onClick={() => setStorePage("TRACK_ORDER")}
+                    className={
+                      storePage === "TRACK_ORDER"
+                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
+                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                    }
+                  >
+                    Track Order
+                  </button>
+                  <button
+                    onClick={() => setStorePage("CUSTOMER_DASHBOARD")}
+                    className={
+                      storePage === "CUSTOMER_DASHBOARD"
+                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
+                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                    }
+                  >
+                    My Account
+                  </button>
+                  <button
+                    onClick={() => setStorePage("ABOUT")}
+                    className={
+                      storePage === "ABOUT"
+                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
+                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                    }
+                  >
+                    About
+                  </button>
+                  <button
+                    onClick={() => setStorePage("CONTACT")}
+                    className={
+                      storePage === "CONTACT"
+                        ? "px-3.5 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
+                        : "px-3.5 py-2 rounded-lg text-[#2F4156] dark:text-[#F5F1EE] hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
+                    }
+                  >
+                    Contact
+                  </button>
                 </div>
               </div>
 
               <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+                  <Search className="w-4 h-4 text-[#567C8D] absolute left-3.5 top-2.5" />
                   <input
                     type="text"
                     value={storeSearch}
@@ -2190,27 +2456,27 @@ ${queueOrders
                       setStoreSearch(e.target.value);
                       if (storePage !== "SHOP") setStorePage("SHOP");
                     }}
-                    placeholder="Search headphones, watches..."
-                    className="pl-9 pr-4 py-2 text-xs font-medium rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44 sm:w-64 transition"
+                    placeholder="Search products or SKU..."
+                    className="pl-9 pr-4 py-2 text-xs rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] bg-[#F5F1EE] dark:bg-[#1B2634] text-[#2F4156] dark:text-white focus:outline-none focus:border-[#2F4156] w-44 sm:w-60"
                   />
                 </div>
 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
-                  title="Toggle Theme"
-                  className="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300"
+                  title="Toggle Light / Dark Mode"
+                  className="p-2.5 rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] hover:bg-[#C8D9E6]/30 text-[#2F4156] dark:text-[#C8D9E6]"
                 >
-                  {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+                  {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </button>
 
                 <button
                   onClick={() => setStorePage("WISHLIST")}
-                  className="relative p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900"
-                  title="Saved Wishlist"
+                  className="relative p-2.5 rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] hover:bg-[#C8D9E6]/30 text-[#2F4156] dark:text-[#C8D9E6]"
+                  title="Wishlist"
                 >
-                  <Heart className="w-4 h-4 text-rose-500" />
+                  <Heart className="w-4 h-4 text-[#567C8D]" />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#2F4156] text-white text-[10px] font-bold flex items-center justify-center">
                       {wishlist.length}
                     </span>
                   )}
@@ -2218,176 +2484,188 @@ ${queueOrders
 
                 <button
                   onClick={() => setStorePage("CART")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold transition"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Bag ({cartDetails.lines.reduce((s, l) => s + l.quantity, 0)})</span>
-                  <span className="hidden sm:inline pl-1 border-l border-white/20">
+                  <span>Cart ({cartDetails.lines.reduce((s, l) => s + l.quantity, 0)})</span>
+                  <span className="hidden sm:inline font-bold pl-1 border-l border-white/20">
                     {formatBDT(cartDetails.grandTotal)}
                   </span>
                 </button>
 
-                {!isStaffLoggedIn ? (
-                  <button
-                    onClick={() => {
-                      setAuthMode("STAFF_LOGIN");
-                      setStorePage("AUTH");
-                    }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 text-xs font-bold transition"
-                  >
-                    <LogIn className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Sign In</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setPortalMode("ADMIN")}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Staff Dashboard</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => setStorePage("AUTH")}
+                  className="px-3.5 py-2 rounded-lg border border-[#2F4156] dark:border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] hover:bg-[#2F4156] hover:text-white text-xs font-semibold transition"
+                >
+                  Login / Register
+                </button>
               </div>
             </div>
           </nav>
 
-          {/* Storefront Main Content */}
+          {/* Storefront Content Body */}
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-            {/* HOME VIEW */}
+            {/* ============================================================== */}
+            {/* 4.B HOMEPAGE (All 10 Commercial Sections in Official Palette)  */}
+            {/* ============================================================== */}
             {storePage === "HOME" && (
-              <div className="space-y-12">
-                {/* Editorial Luxury Hero Bento */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-8 rounded-[2rem] bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10">
-                    <div className="space-y-5 max-w-xl relative z-10">
-                      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-indigo-200">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                        <span>2026 Flagship Collection • Official Warranty</span>
-                      </div>
-                      <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.12]">
-                         Crafted for Sound, Speed & Executive Style.
+              <div className="space-y-16">
+                {/* Section 1: Hero Section */}
+                <section className="rounded-2xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12">
+                  <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-between space-y-6">
+                    <div className="space-y-4">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#C8D9E6]/50 dark:bg-[#567C8D]/30 text-[#2F4156] dark:text-[#C8D9E6] text-xs font-semibold uppercase tracking-widest">
+                        2026 Architectural Edition
+                      </span>
+                      <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#2F4156] dark:text-white leading-[1.15]">
+                        Timeless Precision for Modern Work & Living.
                       </h1>
-                      <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                        Experience studio-grade acoustics, titanium wearables, and artisan apparel with instant Dhaka express dispatch and verified authentic warranty.
+                      <p className="text-sm sm:text-base text-[#567C8D] dark:text-[#C8D9E6] leading-relaxed max-w-xl">
+                        Thoughtfully engineered acoustics, titanium wearables, and Giza cotton executive apparel—backed by serialized warehouse inventory and same-day Dhaka dispatch.
                       </p>
-                      <div className="flex flex-wrap gap-3 pt-2">
-                        <button
-                          onClick={() => setStorePage("SHOP")}
-                          className="px-6 py-3.5 rounded-2xl bg-white text-slate-950 hover:bg-indigo-50 font-extrabold text-xs sm:text-sm shadow-xl transition flex items-center gap-2"
-                        >
-                          <span>Explore Collection</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setStorePage("TRACK_ORDER")}
-                          className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm border border-white/15 backdrop-blur transition"
-                        >
-                          Track Your Order
-                        </button>
-                      </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 pt-10 mt-8 border-t border-white/10 relative z-10 text-xs">
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <button
+                        onClick={() => setStorePage("SHOP")}
+                        className="px-6 py-3 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-semibold text-sm transition"
+                      >
+                        Explore Shop Catalog
+                      </button>
+                      <button
+                        onClick={() => setStorePage("TRACK_ORDER")}
+                        className="px-6 py-3 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white font-semibold text-sm transition"
+                      >
+                        Track an Order
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[#C8D9E6] dark:border-[#567C8D]/40 text-xs">
                       <div>
-                        <div className="font-black text-lg text-white">24h Dispatch</div>
-                        <div className="text-slate-400">Inside Dhaka Express</div>
+                        <div className="font-bold text-sm text-[#2F4156] dark:text-white">
+                          Official Warranty
+                        </div>
+                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
+                          100% Serialized Stock
+                        </div>
                       </div>
                       <div>
-                        <div className="font-black text-lg text-emerald-400">100% Genuine</div>
-                        <div className="text-slate-400">Barcode Verified Stock</div>
+                        <div className="font-bold text-sm text-[#2F4156] dark:text-white">
+                          Express Courier
+                        </div>
+                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
+                          Steadfast, Pathao & RedX
+                        </div>
                       </div>
                       <div>
-                        <div className="font-black text-lg text-amber-300">COD & bKash</div>
-                        <div className="text-slate-400">Flexible Checkout</div>
+                        <div className="font-bold text-sm text-[#2F4156] dark:text-white">
+                          Flexible Payment
+                        </div>
+                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
+                          COD, bKash, Nagad & Card
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Side Bento Stack */}
-                  <div className="lg:col-span-4 flex flex-col gap-6">
-                    <div
-                      onClick={() => {
-                        setSelectedProductId("prd-1");
-                        setStorePage("PRODUCT_DETAIL");
-                      }}
-                      className="flex-1 rounded-[2rem] bg-gradient-to-br from-indigo-600 via-violet-700 to-purple-900 text-white p-7 flex flex-col justify-between cursor-pointer hover:scale-[1.01] transition shadow-xl"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider bg-black/30 px-3 py-1 rounded-full">
-                          Editor&apos;s Pick
-                        </span>
-                        <span className="text-sm font-black bg-white text-slate-900 px-3 py-1 rounded-full">
-                          Save ৳1,010
-                        </span>
+                  <div className="lg:col-span-5 bg-[#C8D9E6]/45 dark:bg-[#2F4156] p-8 sm:p-10 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-[#C8D9E6] dark:border-[#567C8D]/40">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#2F4156] dark:text-[#C8D9E6]">
+                        Flagship Highlight
+                      </span>
+                      <span className="px-3 py-1 rounded-md bg-[#2F4156] text-white text-xs font-semibold">
+                        Save ৳1,010
+                      </span>
+                    </div>
+                    <div className="my-6 rounded-xl overflow-hidden border border-[#C8D9E6] bg-white">
+                      <ProductVisualArtwork sku="NX-AUD-101" categoryId="cat-2" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-xs font-semibold text-[#567C8D] dark:text-[#C8D9E6]">
+                        অরাপ্রো এএনসি ওয়্যারলেস হেডফোন
                       </div>
-                      <div className="my-4">
-                        <div className="text-xs text-indigo-200 font-medium">
-                          45dB Hybrid ANC • 60H Battery
-                        </div>
-                        <h3 className="text-2xl font-black tracking-tight mt-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-[#2F4156] dark:text-white">
                           AuraPro ANC Wireless
                         </h3>
-                        <p className="text-xs text-indigo-100 mt-1">
-                          অরাপ্রো এএনসি ওয়্যারলেস হেডফোন
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between pt-3 border-t border-white/15">
-                        <span className="text-xl font-black">{formatBDT(5490)}</span>
-                        <span className="text-xs font-bold underline flex items-center gap-1">
-                          Shop Now <ArrowUpRight className="w-4 h-4" />
+                        <span className="text-lg font-bold text-[#2F4156] dark:text-white">
+                          {formatBDT(5490)}
                         </span>
                       </div>
-                    </div>
-
-                    <div className="rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 space-y-3 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                          Browse by Department
-                        </span>
-                        <Layers className="w-4 h-4 text-indigo-600" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {categories.map((cat) => (
-                          <button
-                            key={cat.id}
-                            onClick={() => {
-                              setStoreCategory(cat.id);
-                              setStorePage("SHOP");
-                            }}
-                            className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/60 dark:border-slate-800 text-left transition group"
-                          >
-                            <div className="font-bold text-xs group-hover:text-indigo-600 transition">
-                              {cat.name}
-                            </div>
-                            <div className="text-[11px] text-slate-400 mt-0.5">{cat.nameBn}</div>
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedProductId("prd-1");
+                          setStorePage("PRODUCT_DETAIL");
+                        }}
+                        className="w-full py-2.5 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white text-xs font-semibold transition"
+                      >
+                        Inspect Specifications →
+                      </button>
                     </div>
                   </div>
-                </div>
+                </section>
 
-                {/* Curated Products Showcase */}
-                <div className="space-y-6">
-                  <div className="flex flex-wrap items-end justify-between gap-4">
+                {/* Section 2: Featured Categories */}
+                <section className="space-y-5">
+                  <div className="flex items-end justify-between">
                     <div>
-                      <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                        Curated Catalog
+                      <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
+                        Departments
                       </span>
-                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
-                        Trending Flagship Essentials
+                      <h2 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                        Featured Categories
                       </h2>
                     </div>
                     <button
                       onClick={() => setStorePage("SHOP")}
-                      className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold hover:border-indigo-500 transition flex items-center gap-1.5"
+                      className="text-xs font-semibold text-[#567C8D] hover:text-[#2F4156] flex items-center gap-1"
                     >
-                      <span>View Full Catalog ({products.length})</span>
-                      <ChevronRight className="w-4 h-4" />
+                      View All Products <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setStoreCategory(cat.id);
+                          setStorePage("SHOP");
+                        }}
+                        className="p-6 rounded-xl bg-white dark:bg-[#243344] hover:bg-[#C8D9E6]/35 border border-[#C8D9E6] dark:border-[#567C8D]/40 text-left transition group shadow-sm"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-[#C8D9E6]/50 text-[#2F4156] flex items-center justify-center mb-4 group-hover:bg-[#2F4156] group-hover:text-white transition">
+                          <Layers className="w-5 h-5" />
+                        </div>
+                        <div className="font-bold text-base text-[#2F4156] dark:text-white">
+                          {cat.name}
+                        </div>
+                        <div className="text-xs text-[#567C8D] dark:text-[#C8D9E6] mt-0.5">
+                          {cat.nameBn}
+                        </div>
+                        <div className="text-[11px] font-semibold text-[#567C8D] mt-3 flex items-center justify-between pt-3 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                          <span>{cat.itemCount} Products</span>
+                          <span>Browse →</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Section 3: Best-Selling Products */}
+                <section className="space-y-6">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
+                        Most Popular
+                      </span>
+                      <h2 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                        Best-Selling Products
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {products.map((product) => {
                       const discountPct = Math.round(
                         ((product.regularPrice - product.salePrice) / product.regularPrice) * 100
@@ -2395,80 +2673,68 @@ ${queueOrders
                       return (
                         <div
                           key={product.id}
-                          className="group rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                          className="group rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col"
                         >
-                          <div
-                            onClick={() => {
-                              setSelectedProductId(product.id);
-                              setSelectedVariantId(product.variants[0]?.id || "");
-                              setStorePage("PRODUCT_DETAIL");
-                            }}
-                            className={`h-52 bg-gradient-to-br ${product.imageGrad} p-6 flex flex-col justify-between text-white relative cursor-pointer`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex gap-1.5">
-                                {product.badgeText && (
-                                  <span className="text-[10px] font-black uppercase tracking-wider bg-white text-slate-950 px-2.5 py-1 rounded-full shadow">
-                                    {product.badgeText}
-                                  </span>
-                                )}
-                                {discountPct > 0 && (
-                                  <span className="text-[10px] font-extrabold uppercase bg-emerald-500 text-white px-2.5 py-1 rounded-full">
-                                    -{discountPct}%
-                                  </span>
-                                )}
-                              </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setWishlist((prev) =>
-                                    prev.includes(product.id)
-                                      ? prev.filter((id) => id !== product.id)
-                                      : [...prev, product.id]
-                                  );
-                                }}
-                                className="p-2 rounded-full bg-black/25 hover:bg-black/50 backdrop-blur transition"
-                              >
-                                <Heart
-                                  className={`w-4 h-4 ${
-                                    wishlist.includes(product.id)
-                                      ? "fill-rose-500 text-rose-500"
-                                      : "text-white"
-                                  }`}
-                                />
-                              </button>
+                          <div className="h-52 relative border-b border-[#F5F1EE] dark:border-[#567C8D]/30">
+                            <ProductVisualArtwork
+                              sku={product.sku}
+                              categoryId={product.categoryId}
+                            />
+                            <div className="absolute top-3 left-3 flex gap-1.5">
+                              {product.badgeText && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#2F4156] text-white px-2.5 py-1 rounded">
+                                  {product.badgeText}
+                                </span>
+                              )}
+                              {discountPct > 0 && (
+                                <span className="text-[10px] font-bold bg-[#567C8D] text-white px-2 py-1 rounded">
+                                  -{discountPct}%
+                                </span>
+                              )}
                             </div>
-
-                            <div>
-                              <div className="text-xs text-white/75 font-medium">
-                                {product.nameBn}
-                              </div>
-                              <div className="font-extrabold text-lg leading-snug mt-0.5 group-hover:underline">
-                                {product.name}
-                              </div>
-                            </div>
+                            <button
+                              onClick={() =>
+                                setWishlist((prev) =>
+                                  prev.includes(product.id)
+                                    ? prev.filter((id) => id !== product.id)
+                                    : [...prev, product.id]
+                                )
+                              }
+                              className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white border border-[#C8D9E6] text-[#2F4156]"
+                            >
+                              <Heart
+                                className={`w-4 h-4 ${
+                                  wishlist.includes(product.id)
+                                    ? "fill-rose-600 text-rose-600"
+                                    : "text-[#2F4156]"
+                                }`}
+                              />
+                            </button>
                           </div>
 
-                          <div className="p-6 flex-1 flex flex-col justify-between space-y-5">
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-mono text-slate-400">{product.sku}</span>
-                                <span className="font-bold text-amber-500 flex items-center gap-1">
-                                  ★ {product.rating}{" "}
-                                  <span className="text-slate-400 font-normal">
-                                    ({product.reviewCount})
-                                  </span>
+                          <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                            <div>
+                              <div className="flex items-center justify-between text-xs text-[#567C8D] dark:text-[#C8D9E6]">
+                                <span className="font-mono">{product.sku}</span>
+                                <span className="font-semibold text-amber-600">
+                                  ★ {product.rating} ({product.reviewCount})
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                              <h3 className="font-bold text-base text-[#2F4156] dark:text-white mt-1">
+                                {product.name}
+                              </h3>
+                              <p className="text-xs text-[#567C8D] dark:text-[#C8D9E6]">
+                                {product.nameBn}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-300 line-clamp-2 mt-2">
                                 {product.description}
                               </p>
                             </div>
 
-                            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                            <div className="space-y-3 pt-3 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
                               <div className="flex items-baseline justify-between">
                                 <div>
-                                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                                  <span className="text-lg font-bold text-[#2F4156] dark:text-white">
                                     {formatBDT(product.salePrice)}
                                   </span>
                                   <span className="text-xs text-slate-400 line-through ml-2">
@@ -2476,34 +2742,34 @@ ${queueOrders
                                   </span>
                                 </div>
                                 <span
-                                  className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                                  className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
                                     product.stockQuantity <= product.lowStockThreshold
-                                      ? "bg-amber-500/15 text-amber-600"
-                                      : "bg-emerald-500/15 text-emerald-600"
+                                      ? "bg-amber-500/15 text-amber-700"
+                                      : "bg-[#C8D9E6]/50 text-[#2F4156]"
                                   }`}
                                 >
                                   {product.stockQuantity} in stock
                                 </span>
                               </div>
 
-                              <div className="flex gap-2.5">
+                              <div className="flex gap-2">
                                 <button
                                   onClick={() => {
                                     setSelectedProductId(product.id);
                                     setSelectedVariantId(product.variants[0]?.id || "");
                                     setStorePage("PRODUCT_DETAIL");
                                   }}
-                                  className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                                  className="flex-1 py-2 px-3 rounded-lg border border-[#C8D9E6] dark:border-[#567C8D] text-xs font-semibold text-[#2F4156] dark:text-white hover:bg-[#F5F1EE] dark:hover:bg-[#2F4156]"
                                 >
-                                  Specs
+                                  View Details
                                 </button>
                                 <button
                                   onClick={() =>
                                     handleAddToCart(product.id, product.variants[0]?.id)
                                   }
-                                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition"
+                                  className="flex-1 py-2 px-3 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold transition"
                                 >
-                                  + Add to Bag
+                                  Add to Cart
                                 </button>
                               </div>
                             </div>
@@ -2512,301 +2778,708 @@ ${queueOrders
                       );
                     })}
                   </div>
-                </div>
+                </section>
+
+                {/* Section 4: Seasonal Promotional Banner */}
+                <section className="rounded-2xl bg-[#2F4156] text-white p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-[#567C8D]">
+                  <div className="space-y-2 max-w-xl">
+                    <span className="text-xs uppercase tracking-widest text-[#C8D9E6] font-semibold">
+                      Seasonal Privilege Offer
+                    </span>
+                    <h3 className="font-serif text-2xl sm:text-3xl font-bold">
+                      Save 15% on Executive Workspace Bundles
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#C8D9E6]">
+                      Apply voucher code <strong>NEXUS15</strong> at checkout on orders over ৳4,000 for instant discount plus complimentary Dhaka courier delivery.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setAppliedCoupon("NEXUS15");
+                      setCouponInput("NEXUS15");
+                      setStorePage("SHOP");
+                      showToast("Promo code NEXUS15 activated for your shopping session!");
+                    }}
+                    className="px-6 py-3 rounded-lg bg-[#C8D9E6] hover:bg-white text-[#2F4156] font-bold text-xs sm:text-sm shrink-0 transition"
+                  >
+                    Activate NEXUS15 Offer
+                  </button>
+                </section>
+
+                {/* Section 5, 6 & 7: New Arrivals, Featured Collections & Special Offers */}
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="p-6 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
+                      New Arrivals
+                    </span>
+                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                      Acoustic & Desk Releases
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-[#C8D9E6]">
+                      Explore our latest CNC aluminum mechanical keyboards and full-spectrum studio monitor lighting.
+                    </p>
+                    <button
+                      onClick={() => setStorePage("SHOP")}
+                      className="text-xs font-bold text-[#567C8D] hover:text-[#2F4156]"
+                    >
+                      Explore New Arrivals →
+                    </button>
+                  </div>
+
+                  <div className="p-6 rounded-xl bg-[#C8D9E6]/40 dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F4156] dark:text-[#C8D9E6]">
+                      Featured Collection
+                    </span>
+                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                      The Giza Cotton Sartorial Line
+                    </h3>
+                    <p className="text-xs text-[#2F4156]/80 dark:text-[#C8D9E6]">
+                      Tailored Egyptian cotton panjabis crafted for executive gatherings and seasonal celebrations.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setStoreCategory("cat-3");
+                        setStorePage("SHOP");
+                      }}
+                      className="text-xs font-bold text-[#2F4156] dark:text-white underline"
+                    >
+                      Shop Executive Apparel →
+                    </button>
+                  </div>
+
+                  <div className="p-6 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
+                      Special Offers
+                    </span>
+                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                      ৳500 Welcome Privilege
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-[#C8D9E6]">
+                      First-time customers enjoy ৳500 off orders above ৳3,000 using code{" "}
+                      <strong>WELCOME500</strong>.
+                    </p>
+                    <button
+                      onClick={() => setStorePage("CART")}
+                      className="text-xs font-bold text-[#567C8D] hover:text-[#2F4156]"
+                    >
+                      Redeem in Cart →
+                    </button>
+                  </div>
+                </section>
+
+                {/* Section 8 & 9: Customer Testimonials & Newsletter Subscription */}
+                <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-7 bg-white dark:bg-[#243344] p-7 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-4">
+                    <span className="text-xs font-bold uppercase tracking-widest text-[#567C8D]">
+                      Verified Buyer Voices
+                    </span>
+                    <h3 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                      Customer Testimonials
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {reviews.map((rev) => (
+                        <div
+                          key={rev.id}
+                          className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6]/60 space-y-2"
+                        >
+                          <div className="text-xs text-amber-600 font-bold">
+                            {"★".repeat(rev.rating)}
+                          </div>
+                          <p className="text-xs text-[#2F4156] dark:text-[#F5F1EE] italic">
+                            &ldquo;{rev.comment}&rdquo;
+                          </p>
+                          <div className="text-[11px] font-bold text-[#567C8D]">
+                            — {rev.customerName} (Verified Purchase)
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-5 bg-[#C8D9E6]/45 dark:bg-[#243344] p-7 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-widest text-[#2F4156] dark:text-[#C8D9E6]">
+                        Private Dispatch Dispatch
+                      </span>
+                      <h3 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                        Subscribe to Our Newsletter
+                      </h3>
+                      <p className="text-xs text-[#2F4156]/80 dark:text-[#C8D9E6]">
+                        Receive early access to restocked flagship electronics and seasonal lookbooks.
+                      </p>
+                    </div>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!newsletterEmail.trim()) return;
+                        showToast(`Subscribed ${newsletterEmail} to NexusMart dispatches!`);
+                        setNewsletterEmail("");
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input
+                        type="email"
+                        required
+                        value={newsletterEmail}
+                        onChange={(e) => setNewsletterEmail(e.target.value)}
+                        placeholder="Enter your email address..."
+                        className="flex-1 px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2.5 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold"
+                      >
+                        Subscribe
+                      </button>
+                    </form>
+                  </div>
+                </section>
               </div>
             )}
 
-            {/* SHOP CATALOG VIEW */}
+            {/* ============================================================== */}
+            {/* 4.C PRODUCT LISTING PAGE (Category Sidebar, Price/Stock, Grid) */}
+            {/* ============================================================== */}
             {storePage === "SHOP" && (
               <div className="space-y-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => setStoreCategory("ALL")}
-                      className={`px-4 py-2 rounded-2xl text-xs font-bold transition ${
-                        storeCategory === "ALL"
-                          ? "bg-slate-900 text-white dark:bg-indigo-600"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                      }`}
-                    >
-                      All Items ({products.length})
-                    </button>
-                    {categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setStoreCategory(cat.id)}
-                        className={`px-4 py-2 rounded-2xl text-xs font-bold transition ${
-                          storeCategory === cat.id
-                            ? "bg-slate-900 text-white dark:bg-indigo-600"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                        }`}
-                      >
-                        {cat.name}
+                {/* Breadcrumb & Title */}
+                <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#243344] p-5 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40">
+                  <div>
+                    <div className="text-xs text-[#567C8D] flex items-center gap-1.5">
+                      <button onClick={() => setStorePage("HOME")} className="hover:underline">
+                        Home
                       </button>
-                    ))}
+                      <span>/</span>
+                      <span className="font-semibold text-[#2F4156] dark:text-white">
+                        Shop Catalog
+                      </span>
+                    </div>
+                    <h1 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                      Complete Collection ({filteredStoreProducts.length} Products)
+                    </h1>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs">
-                    <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-                    <span className="text-slate-500 font-medium">Sort:</span>
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    <div className="flex items-center gap-1 bg-[#F5F1EE] dark:bg-[#1B2634] p-1 rounded-lg border border-[#C8D9E6]">
+                      <button
+                        onClick={() => setShopViewMode("GRID")}
+                        className={`p-1.5 rounded ${
+                          shopViewMode === "GRID"
+                            ? "bg-[#2F4156] text-white"
+                            : "text-[#567C8D]"
+                        }`}
+                        title="Grid View"
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setShopViewMode("LIST")}
+                        className={`p-1.5 rounded ${
+                          shopViewMode === "LIST"
+                            ? "bg-[#2F4156] text-white"
+                            : "text-[#567C8D]"
+                        }`}
+                        title="List View"
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <span className="text-[#567C8D]">Sort by:</span>
                     <select
                       value={storeSort}
                       onChange={(e) => setStoreSort(e.target.value as any)}
-                      className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-transparent px-3.5 py-2 font-bold"
+                      className="rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#1B2634] px-3 py-2 font-semibold text-[#2F4156] dark:text-white"
                     >
-                      <option value="FEATURED">Featured Collection</option>
+                      <option value="FEATURED">Featured First</option>
                       <option value="PRICE_ASC">Price: Low to High</option>
                       <option value="PRICE_DESC">Price: High to Low</option>
-                      <option value="RATING">Top Rated</option>
+                      <option value="RATING">Top Customer Rating</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-                  {filteredStoreProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col"
-                    >
-                      <div
-                        className={`h-44 bg-gradient-to-br ${product.imageGrad} p-5 text-white flex flex-col justify-between`}
-                      >
-                        <div className="flex justify-between text-xs">
-                          <span className="bg-black/30 px-2.5 py-0.5 rounded-full font-mono">
-                            {product.sku}
-                          </span>
-                          <span className="font-bold">★ {product.rating}</span>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Category, Price & Availability Filter Sidebar */}
+                  <aside className="lg:col-span-3 space-y-4">
+                    <div className="bg-white dark:bg-[#243344] p-5 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-5 text-xs">
+                      <div>
+                        <div className="font-bold uppercase tracking-wider text-[#2F4156] dark:text-white mb-2.5">
+                          Categories
                         </div>
-                        <div>
-                          <div className="text-xs text-white/80">{product.nameBn}</div>
-                          <div className="font-extrabold text-base">{product.name}</div>
+                        <div className="space-y-1.5">
+                          <button
+                            onClick={() => setStoreCategory("ALL")}
+                            className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition ${
+                              storeCategory === "ALL"
+                                ? "bg-[#2F4156] text-white"
+                                : "hover:bg-[#F5F1EE] dark:hover:bg-[#1B2634]"
+                            }`}
+                          >
+                            All Categories
+                          </button>
+                          {categories.map((cat) => (
+                            <button
+                              key={cat.id}
+                              onClick={() => setStoreCategory(cat.id)}
+                              className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition ${
+                                storeCategory === cat.id
+                                  ? "bg-[#2F4156] text-white"
+                                  : "hover:bg-[#F5F1EE] dark:hover:bg-[#1B2634]"
+                              }`}
+                            >
+                              {cat.name}
+                            </button>
+                          ))}
                         </div>
                       </div>
-                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                        <p className="text-xs text-slate-500 leading-relaxed">
-                          {product.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xl font-black text-slate-900 dark:text-white">
-                            {formatBDT(product.salePrice)}
-                          </span>
-                          <span className="text-xs font-semibold text-emerald-600">
-                            {product.stockQuantity} available
-                          </span>
+
+                      <div className="pt-4 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                        <div className="flex justify-between font-bold mb-2">
+                          <span>Max Price</span>
+                          <span className="text-[#567C8D]">{formatBDT(maxPriceFilter)}</span>
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedProductId(product.id);
-                              setSelectedVariantId(product.variants[0]?.id || "");
-                              setStorePage("PRODUCT_DETAIL");
-                            }}
-                            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold"
-                          >
-                            View Details
-                          </button>
-                          <button
-                            onClick={() => handleAddToCart(product.id, product.variants[0]?.id)}
-                            className="flex-1 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
-                          >
-                            Add to Bag
-                          </button>
-                        </div>
+                        <input
+                          type="range"
+                          min={2000}
+                          max={10000}
+                          step={500}
+                          value={maxPriceFilter}
+                          onChange={(e) => setMaxPriceFilter(Number(e.target.value))}
+                          className="w-full accent-[#2F4156]"
+                        />
+                      </div>
+
+                      <div className="pt-4 border-t border-[#F5F1EE] dark:border-[#567C8D]/30">
+                        <label className="flex items-center gap-2 font-semibold cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={inStockOnly}
+                            onChange={(e) => setInStockOnly(e.target.checked)}
+                          />
+                          <span>In-Stock Items Only</span>
+                        </label>
                       </div>
                     </div>
-                  ))}
+                  </aside>
+
+                  {/* Product Grid / List */}
+                  <div className="lg:col-span-9">
+                    <div
+                      className={
+                        shopViewMode === "GRID"
+                          ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+                          : "space-y-4"
+                      }
+                    >
+                      {filteredStoreProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          className={`group rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] dark:border-[#567C8D]/40 overflow-hidden shadow-sm flex ${
+                            shopViewMode === "LIST"
+                              ? "flex-col sm:flex-row items-center"
+                              : "flex-col"
+                          }`}
+                        >
+                          <div
+                            className={
+                              shopViewMode === "LIST"
+                                ? "w-full sm:w-56 h-48 shrink-0"
+                                : "h-48 w-full border-b border-[#F5F1EE]"
+                            }
+                          >
+                            <ProductVisualArtwork
+                              sku={product.sku}
+                              categoryId={product.categoryId}
+                            />
+                          </div>
+                          <div className="p-5 flex-1 flex flex-col justify-between space-y-3 w-full">
+                            <div>
+                              <div className="flex justify-between text-xs text-[#567C8D]">
+                                <span className="font-mono">{product.sku}</span>
+                                <span>★ {product.rating} ({product.reviewCount})</span>
+                              </div>
+                              <div className="font-bold text-base text-[#2F4156] dark:text-white mt-1">
+                                {product.name}
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                {product.description}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between pt-2">
+                              <span className="text-lg font-bold text-[#2F4156] dark:text-white">
+                                {formatBDT(product.salePrice)}
+                              </span>
+                              <span className="text-xs text-[#567C8D]">
+                                Stock: {product.stockQuantity}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedProductId(product.id);
+                                  setSelectedVariantId(product.variants[0]?.id || "");
+                                  setStorePage("PRODUCT_DETAIL");
+                                }}
+                                className="flex-1 py-2 rounded-lg border border-[#C8D9E6] text-xs font-semibold"
+                              >
+                                Details
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleAddToCart(product.id, product.variants[0]?.id)
+                                }
+                                className="flex-1 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold"
+                              >
+                                Add to Cart
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* PRODUCT DETAILS VIEW */}
+            {/* ============================================================== */}
+            {/* 4.D PRODUCT DETAILS PAGE (2-Column + Specs, Reviews, Related)  */}
+            {/* ============================================================== */}
             {storePage === "PRODUCT_DETAIL" && (() => {
               const product = products.find((p) => p.id === selectedProductId) || products[0];
               const prodReviews = reviews.filter((r) => r.productId === product.id);
+              const relatedProducts = products
+                .filter((p) => p.id !== product.id)
+                .slice(0, 3);
               return (
                 <div className="space-y-8">
                   <button
                     onClick={() => setStorePage("SHOP")}
-                    className="text-xs font-bold text-indigo-600 hover:underline"
+                    className="text-xs font-semibold text-[#567C8D] hover:text-[#2F4156]"
                   >
-                    ← Back to Collection
+                    ← Back to Shop Catalog
                   </button>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div
-                      className={`h-80 md:h-full min-h-[320px] rounded-3xl bg-gradient-to-br ${product.imageGrad} p-8 text-white flex flex-col justify-between shadow-inner`}
-                    >
-                      <span className="text-xs uppercase tracking-wider bg-black/30 px-3 py-1 rounded-full w-fit font-mono">
-                        SKU: {product.sku} • Barcode: {product.barcode}
-                      </span>
-                      <div>
-                        <p className="text-sm text-white/80 mb-1">{product.nameBn}</p>
-                        <h1 className="text-2xl md:text-4xl font-black tracking-tight">
-                          {product.name}
-                        </h1>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-[#243344] p-7 rounded-2xl border border-[#C8D9E6] dark:border-[#567C8D]/40 shadow-sm">
+                    {/* Left: Image & Thumbnail Gallery + Zoom */}
+                    <div className="space-y-3">
+                      <div
+                        onClick={() => setZoomActive(!zoomActive)}
+                        className={`h-80 rounded-xl border border-[#C8D9E6] overflow-hidden relative cursor-zoom-in transition-transform ${
+                          zoomActive ? "scale-[1.03]" : ""
+                        }`}
+                      >
+                        <ProductVisualArtwork
+                          sku={product.sku}
+                          categoryId={product.categoryId}
+                        />
+                        <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-white/90 text-[#2F4156] text-[11px] font-semibold flex items-center gap-1 border border-[#C8D9E6]">
+                          <ZoomIn className="w-3.5 h-3.5" /> {zoomActive ? "Reset Zoom" : "Click to Zoom"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        {["Front Studio View", "Side Profile", "Packaging & Box"].map((lbl, idx) => (
+                          <div
+                            key={idx}
+                            className="p-2.5 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-center text-[11px] font-medium text-[#567C8D]"
+                          >
+                            {lbl}
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="space-y-6 flex flex-col justify-center">
+                    {/* Right: Product Info, Variants, Quantity, Add to Cart, Buy Now */}
+                    <div className="space-y-5">
                       <div>
-                        <div className="flex items-center gap-2 text-xs text-amber-500 font-bold">
-                          <span>★★★★★ {product.rating}</span>
-                          <span className="text-slate-400">
-                            ({product.reviewCount} verified customer reviews)
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-mono text-[#567C8D]">
+                            SKU: {product.sku} | Barcode: {product.barcode}
+                          </span>
+                          <span className="text-amber-600 font-bold">
+                            ★★★★★ {product.rating} ({product.reviewCount} reviews)
                           </span>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-black mt-1">{product.name}</h2>
-                        <p className="text-sm text-slate-500 mt-3 leading-relaxed">
+                        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#2F4156] dark:text-white mt-2">
+                          {product.name}
+                        </h1>
+                        <p className="text-xs text-[#567C8D] mt-0.5">{product.nameBn}</p>
+                        <p className="text-sm text-slate-600 dark:text-[#C8D9E6] mt-3 leading-relaxed">
                           {product.description}
                         </p>
                       </div>
 
                       <div className="flex items-baseline gap-3">
-                        <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                        <span className="text-3xl font-bold text-[#2F4156] dark:text-white">
                           {formatBDT(product.salePrice)}
                         </span>
                         <span className="text-base text-slate-400 line-through">
                           {formatBDT(product.regularPrice)}
                         </span>
-                        <span className="text-xs bg-emerald-500/15 text-emerald-600 px-3 py-1 rounded-full font-bold">
-                          {product.stockQuantity} units in warehouse
+                        <span className="text-xs bg-[#C8D9E6]/60 text-[#2F4156] px-2.5 py-1 rounded font-semibold">
+                          {product.stockQuantity} units available
                         </span>
                       </div>
 
                       {product.variants.length > 0 && (
                         <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                            Choose Option / Variant:
+                          <label className="text-xs font-semibold uppercase text-[#567C8D]">
+                            Select Variant:
                           </label>
                           <div className="flex flex-wrap gap-2">
                             {product.variants.map((v) => (
                               <button
                                 key={v.id}
                                 onClick={() => setSelectedVariantId(v.id)}
-                                className={`px-4 py-2.5 rounded-2xl text-xs font-bold border transition ${
+                                className={`px-3.5 py-2 rounded-lg text-xs font-semibold border transition ${
                                   selectedVariantId === v.id
-                                    ? "border-indigo-600 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400"
-                                    : "border-slate-200 dark:border-slate-700"
+                                    ? "border-[#2F4156] bg-[#2F4156] text-white"
+                                    : "border-[#C8D9E6] text-[#2F4156] dark:text-white"
                                 }`}
                               >
-                                {v.name} ({v.stock} left)
+                                {v.name} ({v.stock} in stock)
                               </button>
                             ))}
                           </div>
                         </div>
                       )}
 
-                      <div className="flex gap-3 pt-2">
+                      {/* Quantity Selector & Primary Actions */}
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <div className="flex items-center border border-[#C8D9E6] rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634]">
+                          <button
+                            onClick={() => setDetailQty(Math.max(1, detailQty - 1))}
+                            className="px-3 py-2.5 font-bold text-sm"
+                          >
+                            -
+                          </button>
+                          <span className="px-4 font-bold text-sm">{detailQty}</span>
+                          <button
+                            onClick={() =>
+                              setDetailQty(Math.min(product.stockQuantity, detailQty + 1))
+                            }
+                            className="px-3 py-2.5 font-bold text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+
                         <button
-                          onClick={() => handleAddToCart(product.id, selectedVariantId)}
-                          className="flex-1 py-3.5 px-6 rounded-2xl bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 text-white font-bold text-sm shadow-lg transition"
+                          onClick={() =>
+                            handleAddToCart(product.id, selectedVariantId, detailQty)
+                          }
+                          className="flex-1 py-3 px-5 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-semibold text-sm transition"
                         >
-                          Add to Shopping Bag
+                          Add to Shopping Cart
                         </button>
                         <button
                           onClick={() => {
-                            handleAddToCart(product.id, selectedVariantId);
+                            handleAddToCart(product.id, selectedVariantId, detailQty);
                             setStorePage("CHECKOUT");
                           }}
-                          className="py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg transition"
+                          className="py-3 px-5 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white font-semibold text-sm transition"
                         >
-                          Express Buy Now
+                          Buy Now
                         </button>
+                      </div>
+
+                      <div className="p-3.5 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs space-y-1">
+                        <div className="font-semibold text-[#2F4156] dark:text-white">
+                          Delivery & Return Information:
+                        </div>
+                        <div className="text-[#567C8D] dark:text-[#C8D9E6]">
+                          Inside Dhaka: ৳{settings.insideDhakaShipping} (24h) • Outside Dhaka: ৳{settings.outsideDhakaShipping} (48-72h) • Free over ৳{settings.freeShippingThreshold}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 space-y-5">
-                    <h3 className="text-lg font-black">Verified Customer Reviews ({prodReviews.length})</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {prodReviews.map((rev) => (
-                        <div
-                          key={rev.id}
-                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800"
-                        >
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="font-bold">{rev.customerName}</span>
-                            <span className="text-amber-500">{"★".repeat(rev.rating)}</span>
+                  {/* Below: Tabs for Description, Specifications, Reviews */}
+                  <div className="bg-white dark:bg-[#243344] p-7 rounded-2xl border border-[#C8D9E6] dark:border-[#567C8D]/40 space-y-5">
+                    <div className="flex gap-2 border-b border-[#C8D9E6] pb-3 text-xs font-bold">
+                      <button
+                        onClick={() => setDetailTab("DESCRIPTION")}
+                        className={`px-4 py-2 rounded-lg ${
+                          detailTab === "DESCRIPTION"
+                            ? "bg-[#2F4156] text-white"
+                            : "text-[#567C8D]"
+                        }`}
+                      >
+                        Product Description
+                      </button>
+                      <button
+                        onClick={() => setDetailTab("SPECS")}
+                        className={`px-4 py-2 rounded-lg ${
+                          detailTab === "SPECS"
+                            ? "bg-[#2F4156] text-white"
+                            : "text-[#567C8D]"
+                        }`}
+                      >
+                        Technical Specifications
+                      </button>
+                      <button
+                        onClick={() => setDetailTab("REVIEWS")}
+                        className={`px-4 py-2 rounded-lg ${
+                          detailTab === "REVIEWS"
+                            ? "bg-[#2F4156] text-white"
+                            : "text-[#567C8D]"
+                        }`}
+                      >
+                        Customer Reviews ({prodReviews.length})
+                      </button>
+                    </div>
+
+                    {detailTab === "DESCRIPTION" && (
+                      <p className="text-sm text-slate-600 dark:text-[#C8D9E6] leading-relaxed">
+                        {product.description}
+                      </p>
+                    )}
+
+                    {detailTab === "SPECS" && (
+                      <div className="divide-y divide-[#C8D9E6]/60 text-xs max-w-xl">
+                        {Object.entries(product.specs || {}).map(([k, v]) => (
+                          <div key={k} className="py-2.5 flex justify-between gap-4">
+                            <span className="font-semibold text-[#567C8D]">{k}</span>
+                            <span className="font-bold text-[#2F4156] dark:text-white">{v}</span>
                           </div>
-                          <p className="text-xs text-slate-600 dark:text-slate-300">{rev.comment}</p>
+                        ))}
+                      </div>
+                    )}
+
+                    {detailTab === "REVIEWS" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {prodReviews.map((rev) => (
+                            <div
+                              key={rev.id}
+                              className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6]"
+                            >
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="font-bold">{rev.customerName}</span>
+                                <span className="text-amber-500">{"★".repeat(rev.rating)}</span>
+                              </div>
+                              <p className="text-xs text-slate-600 dark:text-slate-300">
+                                {rev.comment}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!newReviewForm.comment.trim()) return;
+                            setReviews((prev) => [
+                              {
+                                id: `rev-${Date.now()}`,
+                                productId: product.id,
+                                customerName: newReviewForm.customerName,
+                                rating: newReviewForm.rating,
+                                comment: newReviewForm.comment,
+                                createdAt: "2026-11-10"
+                              },
+                              ...prev
+                            ]);
+                            setNewReviewForm({ ...newReviewForm, comment: "" });
+                            showToast("Thank you! Your verified review has been posted.");
+                          }}
+                          className="flex flex-wrap gap-3 pt-3 border-t border-[#C8D9E6]"
+                        >
+                          <input
+                            type="text"
+                            value={newReviewForm.customerName}
+                            onChange={(e) =>
+                              setNewReviewForm({
+                                ...newReviewForm,
+                                customerName: e.target.value
+                              })
+                            }
+                            placeholder="Your Name"
+                            className="px-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent"
+                          />
+                          <select
+                            value={newReviewForm.rating}
+                            onChange={(e) =>
+                              setNewReviewForm({
+                                ...newReviewForm,
+                                rating: Number(e.target.value)
+                              })
+                            }
+                            className="px-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent"
+                          >
+                            <option value={5}>5 Stars</option>
+                            <option value={4}>4 Stars</option>
+                            <option value={3}>3 Stars</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={newReviewForm.comment}
+                            onChange={(e) =>
+                              setNewReviewForm({ ...newReviewForm, comment: e.target.value })
+                            }
+                            placeholder="Write your product experience..."
+                            className="flex-1 min-w-[200px] px-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent"
+                          />
+                          <button
+                            type="submit"
+                            className="px-4 py-2 rounded-lg bg-[#2F4156] text-white text-xs font-semibold"
+                          >
+                            Submit Review
+                          </button>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Related Products */}
+                  <div className="space-y-4">
+                    <h3 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                      Related Products
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                      {relatedProducts.map((rp) => (
+                        <div
+                          key={rp.id}
+                          onClick={() => {
+                            setSelectedProductId(rp.id);
+                            setSelectedVariantId(rp.variants[0]?.id || "");
+                          }}
+                          className="p-4 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6] cursor-pointer hover:border-[#2F4156] transition flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-bold text-xs">{rp.name}</div>
+                            <div className="text-xs font-bold text-[#567C8D] mt-0.5">
+                              {formatBDT(rp.salePrice)}
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-[#567C8D]" />
                         </div>
                       ))}
                     </div>
-
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (!newReviewForm.comment.trim()) return;
-                        setReviews((prev) => [
-                          {
-                            id: `rev-${Date.now()}`,
-                            productId: product.id,
-                            customerName: newReviewForm.customerName,
-                            rating: newReviewForm.rating,
-                            comment: newReviewForm.comment,
-                            createdAt: "2026-11-10"
-                          },
-                          ...prev
-                        ]);
-                        setNewReviewForm({ ...newReviewForm, comment: "" });
-                        showToast("Thank you! Your verified review has been posted.");
-                      }}
-                      className="flex flex-wrap gap-3 pt-4 border-t border-slate-200 dark:border-slate-800"
-                    >
-                      <input
-                        type="text"
-                        value={newReviewForm.customerName}
-                        onChange={(e) =>
-                          setNewReviewForm({ ...newReviewForm, customerName: e.target.value })
-                        }
-                        placeholder="Your Name"
-                        className="px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
-                      />
-                      <select
-                        value={newReviewForm.rating}
-                        onChange={(e) =>
-                          setNewReviewForm({ ...newReviewForm, rating: Number(e.target.value) })
-                        }
-                        className="px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
-                      >
-                        <option value={5}>5 Stars</option>
-                        <option value={4}>4 Stars</option>
-                        <option value={3}>3 Stars</option>
-                      </select>
-                      <input
-                        type="text"
-                        value={newReviewForm.comment}
-                        onChange={(e) =>
-                          setNewReviewForm({ ...newReviewForm, comment: e.target.value })
-                        }
-                        placeholder="Share your experience with this product..."
-                        className="flex-1 min-w-[200px] px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
-                      />
-                      <button
-                        type="submit"
-                        className="px-5 py-2 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
-                      >
-                        Submit Review
-                      </button>
-                    </form>
                   </div>
                 </div>
               );
             })()}
 
-            {/* CART & CHECKOUT VIEW */}
+            {/* ============================================================== */}
+            {/* 4.E & 4.F SHOPPING CART & DISTRACTION-FREE CHECKOUT            */}
+            {/* ============================================================== */}
             {(storePage === "CART" || storePage === "CHECKOUT") && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-                    <h2 className="text-xl font-black">Your Shopping Bag</h2>
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                    <h2 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white">
+                      Shopping Cart & Stock Verification
+                    </h2>
                     {cartDetails.lines.length === 0 ? (
-                      <div className="text-center py-10 text-slate-500 text-sm">
-                        Your shopping bag is currently empty.{" "}
+                      <div className="text-center py-8 text-[#567C8D] text-sm">
+                        Your shopping cart is empty.{" "}
                         <button
                           onClick={() => setStorePage("SHOP")}
-                          className="text-indigo-600 font-bold underline"
+                          className="text-[#2F4156] font-semibold underline"
                         >
-                          Explore products
+                          Browse products
                         </button>
                       </div>
                     ) : (
@@ -2814,20 +3487,20 @@ ${queueOrders
                         {cartDetails.lines.map((line, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800"
+                            className="flex items-center justify-between gap-4 p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6]"
                           >
                             <div>
                               <div className="font-bold text-sm">{line.product.name}</div>
-                              <div className="text-xs text-slate-500">
+                              <div className="text-xs text-[#567C8D]">
                                 SKU: {line.product.sku}{" "}
-                                {line.variant ? `• Variant: ${line.variant.name}` : ""}
+                                {line.variant ? `| Variant: ${line.variant.name}` : ""}
                               </div>
-                              <div className="text-xs font-bold text-indigo-600 mt-1">
+                              <div className="text-xs font-semibold text-[#2F4156] dark:text-[#C8D9E6] mt-0.5">
                                 {formatBDT(line.unitPrice)} each
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-2">
                               <button
                                 onClick={() =>
                                   setCart((prev) =>
@@ -2841,22 +3514,22 @@ ${queueOrders
                                       .filter((item) => item.quantity > 0)
                                   )
                                 }
-                                className="w-8 h-8 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
+                                className="w-7 h-7 rounded border border-[#C8D9E6] bg-white dark:bg-[#243344] font-bold"
                               >
                                 -
                               </button>
-                              <span className="text-sm font-black w-6 text-center">
+                              <span className="text-sm font-bold w-6 text-center">
                                 {line.quantity}
                               </span>
                               <button
                                 onClick={() =>
                                   handleAddToCart(line.productId, line.variantId)
                                 }
-                                className="w-8 h-8 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
+                                className="w-7 h-7 rounded border border-[#C8D9E6] bg-white dark:bg-[#243344] font-bold"
                               >
                                 +
                               </button>
-                              <div className="w-24 text-right font-black text-sm">
+                              <div className="w-24 text-right font-bold text-sm">
                                 {formatBDT(line.totalPrice)}
                               </div>
                             </div>
@@ -2865,20 +3538,20 @@ ${queueOrders
                       </div>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#C8D9E6]">
                       <input
                         type="text"
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                         placeholder="Promo Code (e.g. NEXUS15 or WELCOME500)"
-                        className="px-4 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent flex-1 font-mono"
+                        className="px-3.5 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent flex-1"
                       />
                       <button
                         onClick={() => {
                           setAppliedCoupon(couponInput);
                           showToast(`Applied promo code: ${couponInput}`);
                         }}
-                        className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
+                        className="px-4 py-2 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white text-xs font-semibold"
                       >
                         Apply Coupon
                       </button>
@@ -2887,12 +3560,14 @@ ${queueOrders
 
                   <form
                     onSubmit={handlePlaceOrder}
-                    className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm"
+                    className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4"
                   >
-                    <h3 className="text-lg font-black">Express Checkout & Delivery Details</h3>
+                    <h3 className="font-serif text-lg font-bold text-[#2F4156] dark:text-white">
+                      Delivery & Payment Information
+                    </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       <div>
-                        <label className="font-bold block mb-1.5">Recipient Full Name *</label>
+                        <label className="font-semibold block mb-1">Full Name *</label>
                         <input
                           type="text"
                           required
@@ -2900,11 +3575,11 @@ ${queueOrders
                           onChange={(e) =>
                             setCheckoutForm({ ...checkoutForm, customerName: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-bold block mb-1.5">Mobile Number (BD) *</label>
+                        <label className="font-semibold block mb-1">Mobile Number (BD) *</label>
                         <input
                           type="text"
                           required
@@ -2912,11 +3587,11 @@ ${queueOrders
                           onChange={(e) =>
                             setCheckoutForm({ ...checkoutForm, customerPhone: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="font-bold block mb-1.5">Full Delivery Address *</label>
+                        <label className="font-semibold block mb-1">Detailed Delivery Address *</label>
                         <input
                           type="text"
                           required
@@ -2924,11 +3599,11 @@ ${queueOrders
                           onChange={(e) =>
                             setCheckoutForm({ ...checkoutForm, deliveryAddress: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-bold block mb-1.5">Delivery Area / Zone</label>
+                        <label className="font-semibold block mb-1">Delivery Zone</label>
                         <select
                           value={checkoutForm.deliveryZone}
                           onChange={(e) =>
@@ -2937,7 +3612,7 @@ ${queueOrders
                               deliveryZone: e.target.value as any
                             })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         >
                           <option value="Inside Dhaka">
                             Inside Dhaka ({formatBDT(settings.insideDhakaShipping)})
@@ -2951,7 +3626,7 @@ ${queueOrders
                         </select>
                       </div>
                       <div>
-                        <label className="font-bold block mb-1.5">Payment Method</label>
+                        <label className="font-semibold block mb-1">Payment Method</label>
                         <select
                           value={checkoutForm.paymentMethod}
                           onChange={(e) =>
@@ -2960,7 +3635,7 @@ ${queueOrders
                               paymentMethod: e.target.value as PaymentMethod
                             })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         >
                           <option value="CASH_ON_DELIVERY">Cash on Delivery (COD)</option>
                           <option value="BKASH">bKash Merchant Payment</option>
@@ -2974,7 +3649,7 @@ ${queueOrders
                       {checkoutForm.paymentMethod !== "CASH_ON_DELIVERY" && (
                         <>
                           <div>
-                            <label className="font-bold block mb-1.5">
+                            <label className="font-semibold block mb-1">
                               Transaction ID (TrxID / Reference)
                             </label>
                             <input
@@ -2987,11 +3662,11 @@ ${queueOrders
                                 })
                               }
                               placeholder="e.g. BKX9988112"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                             />
                           </div>
                           <div>
-                            <label className="font-bold block mb-1.5">Sender Account / Phone</label>
+                            <label className="font-semibold block mb-1">Sender Account / Phone</label>
                             <input
                               type="text"
                               value={checkoutForm.senderPhone}
@@ -2999,7 +3674,7 @@ ${queueOrders
                                 setCheckoutForm({ ...checkoutForm, senderPhone: e.target.value })
                               }
                               placeholder="017XXXXXXXX"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                             />
                           </div>
                         </>
@@ -3008,34 +3683,36 @@ ${queueOrders
 
                     <button
                       type="submit"
-                      className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-xl transition"
+                      className="w-full py-3 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-bold text-sm transition"
                     >
                       Confirm & Place Order ({formatBDT(cartDetails.grandTotal)})
                     </button>
                   </form>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 h-fit space-y-4 text-sm shadow-sm">
-                  <h3 className="font-black text-base border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] h-fit space-y-3 text-sm">
+                  <h3 className="font-serif font-bold text-base border-b border-[#C8D9E6] pb-2">
                     Order Summary
                   </h3>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Subtotal</span>
-                    <span className="font-bold">{formatBDT(cartDetails.subtotal)}</span>
+                    <span className="text-[#567C8D]">Subtotal</span>
+                    <span className="font-semibold">{formatBDT(cartDetails.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-emerald-600 font-semibold">
+                  <div className="flex justify-between text-emerald-600">
                     <span>Discount ({appliedCoupon || "None"})</span>
                     <span>-{formatBDT(cartDetails.discountAmount)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">
+                    <span className="text-[#567C8D]">
                       Delivery ({checkoutForm.deliveryZone})
                     </span>
-                    <span className="font-bold">{formatBDT(cartDetails.deliveryCharge)}</span>
+                    <span className="font-semibold">{formatBDT(cartDetails.deliveryCharge)}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-black border-t border-slate-200 dark:border-slate-800 pt-3">
+                  <div className="flex justify-between text-base font-extrabold border-t border-[#C8D9E6] pt-2">
                     <span>Grand Total</span>
-                    <span className="text-indigo-600">{formatBDT(cartDetails.grandTotal)}</span>
+                    <span className="text-[#2F4156] dark:text-[#C8D9E6]">
+                      {formatBDT(cartDetails.grandTotal)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -3043,35 +3720,35 @@ ${queueOrders
 
             {/* WISHLIST VIEW */}
             {storePage === "WISHLIST" && (
-              <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <h2 className="text-xl font-black">Saved Wishlist ({wishlist.length})</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <h2 className="font-serif text-xl font-bold">Saved Wishlist ({wishlist.length})</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {products
                     .filter((p) => wishlist.includes(p.id))
                     .map((p) => (
                       <div
                         key={p.id}
-                        className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3"
+                        className="p-4 rounded-lg border border-[#C8D9E6] flex flex-col justify-between gap-3"
                       >
                         <div>
                           <div className="font-bold text-sm">{p.name}</div>
-                          <div className="text-xs text-slate-500">{p.nameBn}</div>
-                          <div className="text-base font-black text-indigo-600 mt-1">
+                          <div className="text-xs text-[#567C8D]">{p.nameBn}</div>
+                          <div className="text-sm font-bold text-[#2F4156] dark:text-white mt-1">
                             {formatBDT(p.salePrice)}
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleAddToCart(p.id, p.variants[0]?.id)}
-                            className="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold"
+                            className="flex-1 py-1.5 rounded bg-[#2F4156] text-white text-xs font-semibold"
                           >
-                            Move to Bag
+                            Move to Cart
                           </button>
                           <button
                             onClick={() =>
                               setWishlist((prev) => prev.filter((id) => id !== p.id))
                             }
-                            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs"
+                            className="px-3 py-1.5 rounded border border-[#C8D9E6] text-xs"
                           >
                             Remove
                           </button>
@@ -3082,105 +3759,134 @@ ${queueOrders
               </div>
             )}
 
-            {/* ORDER TRACKING & CUSTOMER ORDERS VIEW */}
-            {(storePage === "TRACK_ORDER" || storePage === "CUSTOMER_DASHBOARD") && (
-              <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <h2 className="text-xl font-black">Live Order & Courier Status Tracker</h2>
-                      <p className="text-xs text-slate-500">
-                        Enter your Order ID or mobile number to inspect real-time fulfillment milestones.
-                      </p>
+            {/* ============================================================== */}
+            {/* 4.G DEDICATED CUSTOMER ACCOUNT DASHBOARD & ORDER TRACKING      */}
+            {/* ============================================================== */}
+            {(storePage === "CUSTOMER_DASHBOARD" || storePage === "TRACK_ORDER") && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <aside className="lg:col-span-3">
+                  <div className="bg-white dark:bg-[#243344] rounded-xl border border-[#C8D9E6] p-4 space-y-1 text-xs font-semibold">
+                    <div className="p-3 rounded-lg bg-[#C8D9E6]/40 text-[#2F4156] dark:text-white mb-2">
+                      <div className="font-bold text-sm">{customerLoginName}</div>
+                      <div className="text-[11px] text-[#567C8D]">{customerLoginEmail}</div>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-80">
+                    {[
+                      { id: "OVERVIEW", label: "Overview" },
+                      { id: "MY_ORDERS", label: "My Orders" },
+                      { id: "TRACKING", label: "Order Tracking" },
+                      { id: "WISHLIST", label: "Wishlist" },
+                      { id: "ADDRESSES", label: "My Addresses" },
+                      { id: "PROFILE", label: "Profile Settings" },
+                      { id: "PASSWORD", label: "Change Password" }
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setCustomerDashTab(t.id as any)}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition ${
+                          customerDashTab === t.id
+                            ? "bg-[#2F4156] text-white"
+                            : "hover:bg-[#F5F1EE] dark:hover:bg-[#1B2634]"
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </aside>
+
+                <div className="lg:col-span-9 space-y-6">
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                    <h2 className="font-serif text-xl font-bold">
+                      Real-Time Order & Courier Tracking
+                    </h2>
+                    <div className="flex gap-2 max-w-lg">
                       <input
                         type="text"
                         value={trackingQuery}
                         onChange={(e) => setTrackingQuery(e.target.value)}
-                        placeholder="Order ID (e.g. ORD-20261110-8821) or Phone"
-                        className="flex-1 px-4 py-2.5 text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent font-mono"
+                        placeholder="Enter Order ID (e.g. ORD-20261110-8821) or Phone"
+                        className="flex-1 px-3.5 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent"
                       />
                     </div>
-                  </div>
 
-                  {orders
-                    .filter(
-                      (o) =>
-                        o.orderNumber.toLowerCase().includes(trackingQuery.toLowerCase()) ||
-                        o.customerPhone.includes(trackingQuery)
-                    )
-                    .map((ord) => (
-                      <div
-                        key={ord.id}
-                        className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-4"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <span className="font-mono font-black text-base text-indigo-600">
-                              {ord.orderNumber}
-                            </span>
-                            <span className="text-xs text-slate-500 ml-3">{ord.createdAt}</span>
+                    {orders
+                      .filter(
+                        (o) =>
+                          o.orderNumber.toLowerCase().includes(trackingQuery.toLowerCase()) ||
+                          o.customerPhone.includes(trackingQuery)
+                      )
+                      .map((ord) => (
+                        <div
+                          key={ord.id}
+                          className="p-5 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] space-y-4"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <span className="font-mono font-bold text-base text-[#2F4156] dark:text-white">
+                                {ord.orderNumber}
+                              </span>
+                              <span className="text-xs text-[#567C8D] ml-3">{ord.createdAt}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`text-xs font-bold px-3 py-1 rounded-full border ${getStatusBadgeStyle(
+                                  ord.orderStatus
+                                )}`}
+                              >
+                                {ord.orderStatus}
+                              </span>
+                              <button
+                                onClick={() => handleBulkPrintMemos([ord.id])}
+                                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[#2F4156] text-white text-xs font-semibold"
+                              >
+                                <Printer className="w-3.5 h-3.5" /> View / Print Invoice
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`text-xs font-bold px-3 py-1 rounded-full border ${getStatusBadgeStyle(
-                                ord.orderStatus
-                              )}`}
-                            >
-                              {ord.orderStatus}
-                            </span>
-                            <button
-                              onClick={() => handleBulkPrintMemos([ord.id])}
-                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold"
-                            >
-                              <Printer className="w-3.5 h-3.5" /> View / Print Invoice
-                            </button>
-                          </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                          <div>
-                            <div className="text-slate-400 uppercase font-bold">Recipient</div>
-                            <div className="font-bold text-sm mt-0.5">{ord.customerName}</div>
-                            <div>{ord.customerPhone}</div>
-                            <div>{ord.deliveryAddress}</div>
-                          </div>
-                          <div>
-                            <div className="text-slate-400 uppercase font-bold">
-                              Courier & Tracking
-                            </div>
-                            <div className="font-bold text-sm mt-0.5">
-                              Provider: {ord.courierProvider}
-                            </div>
-                            <div>Tracking #: {ord.trackingNumber || "Assigning soon"}</div>
-                          </div>
-                          <div>
-                            <div className="text-slate-400 uppercase font-bold">
-                              Payment Summary
-                            </div>
-                            <div className="font-bold text-sm mt-0.5">
-                              Total: {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
-                            </div>
-                            <div>Status: {ord.paymentStatus}</div>
-                          </div>
-                        </div>
-
-                        <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                          <div className="text-xs font-bold mb-2">Fulfillment Timeline:</div>
-                          <div className="space-y-1.5">
-                            {ord.history.map((h) => (
-                              <div key={h.id} className="text-xs flex items-center gap-2">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                <span className="font-bold">{h.newState}</span>
-                                <span className="text-slate-500">— {h.note}</span>
-                                <span className="text-slate-400 ml-auto">{h.createdAt}</span>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            <div>
+                              <div className="text-[#567C8D] uppercase font-semibold">
+                                Recipient
                               </div>
-                            ))}
+                              <div className="font-bold">{ord.customerName}</div>
+                              <div>{ord.customerPhone}</div>
+                              <div>{ord.deliveryAddress}</div>
+                            </div>
+                            <div>
+                              <div className="text-[#567C8D] uppercase font-semibold">
+                                Courier & Tracking
+                              </div>
+                              <div className="font-bold">Provider: {ord.courierProvider}</div>
+                              <div>Tracking #: {ord.trackingNumber || "Assigning soon"}</div>
+                            </div>
+                            <div>
+                              <div className="text-[#567C8D] uppercase font-semibold">
+                                Payment Summary
+                              </div>
+                              <div className="font-bold">
+                                Total: {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
+                              </div>
+                              <div>Status: {ord.paymentStatus}</div>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-[#C8D9E6] pt-3">
+                            <div className="text-xs font-semibold mb-2">Status Timeline:</div>
+                            <div className="space-y-1.5">
+                              {ord.history.map((h) => (
+                                <div key={h.id} className="text-xs flex items-center gap-2">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-[#567C8D] shrink-0" />
+                                  <span className="font-semibold">{h.newState}</span>
+                                  <span className="text-[#567C8D]">— {h.note}</span>
+                                  <span className="text-slate-400 ml-auto">{h.createdAt}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -3190,14 +3896,14 @@ ${queueOrders
             {/* ============================================================== */}
             {storePage === "AUTH" && (
               <div className="max-w-4xl mx-auto space-y-6">
-                <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xl">
-                  <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200 dark:border-slate-800 text-xs font-bold">
+                <div className="bg-white dark:bg-[#243344] rounded-2xl border border-[#C8D9E6] overflow-hidden shadow-md">
+                  <div className="grid grid-cols-1 md:grid-cols-3 border-b border-[#C8D9E6] text-xs font-bold">
                     <button
                       onClick={() => setAuthMode("STAFF_LOGIN")}
                       className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
                         authMode === "STAFF_LOGIN"
-                          ? "bg-slate-900 text-white dark:bg-indigo-600"
-                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                          ? "bg-[#2F4156] text-white"
+                          : "text-[#567C8D] hover:bg-[#F5F1EE]"
                       }`}
                     >
                       <ShieldCheck className="w-4 h-4" />
@@ -3207,8 +3913,8 @@ ${queueOrders
                       onClick={() => setAuthMode("SUPERUSER_SETUP")}
                       className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
                         authMode === "SUPERUSER_SETUP"
-                          ? "bg-amber-500 text-slate-950 font-black"
-                          : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                          ? "bg-[#567C8D] text-white"
+                          : "text-[#2F4156] dark:text-[#C8D9E6] hover:bg-[#C8D9E6]/30"
                       }`}
                     >
                       <Crown className="w-4 h-4" />
@@ -3218,8 +3924,8 @@ ${queueOrders
                       onClick={() => setAuthMode("CUSTOMER_LOGIN")}
                       className={`py-4 px-5 flex items-center justify-center gap-2 transition ${
                         authMode === "CUSTOMER_LOGIN"
-                          ? "bg-slate-900 text-white dark:bg-indigo-600"
-                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                          ? "bg-[#2F4156] text-white"
+                          : "text-[#567C8D] hover:bg-[#F5F1EE]"
                       }`}
                     >
                       <ShoppingBag className="w-4 h-4" />
@@ -3232,14 +3938,14 @@ ${queueOrders
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                         <form onSubmit={handleStaffLoginSubmit} className="space-y-4">
                           <div>
-                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
                               Protected RBAC Staff Portal
                             </span>
-                            <h2 className="text-2xl font-black mt-1">
+                            <h2 className="font-serif text-2xl font-bold mt-1">
                               Sign In to Admin & Staff ERP
                             </h2>
-                            <p className="text-xs text-slate-500 mt-1">
-                              Normal customers never see the admin menu. Sign in below to unlock the Admin Dashboard for your role.
+                            <p className="text-xs text-[#567C8D] mt-1">
+                              Normal customers never see the admin menu. Sign in below to unlock the Admin, Moderator, or Delivery Dashboard for your role.
                             </p>
                           </div>
 
@@ -3251,7 +3957,7 @@ ${queueOrders
                                 required
                                 value={staffLoginEmail}
                                 onChange={(e) => setStaffLoginEmail(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent font-medium"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                               />
                             </div>
                             <div>
@@ -3261,26 +3967,23 @@ ${queueOrders
                                 required
                                 value={staffLoginPassword}
                                 onChange={(e) => setStaffLoginPassword(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent font-medium"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                               />
                             </div>
                           </div>
 
                           <button
                             type="submit"
-                            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg transition"
+                            className="w-full py-3 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-bold text-xs transition"
                           >
                             Unlock Admin & Staff Dashboard →
                           </button>
                         </form>
 
-                        <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                          <div className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                        <div className="bg-[#F5F1EE] dark:bg-[#1B2634] p-5 rounded-xl border border-[#C8D9E6] space-y-3">
+                          <div className="text-xs font-bold uppercase tracking-wider text-[#2F4156] dark:text-[#C8D9E6]">
                             1-Click Instant Role Login (Pre-Seeded Staff)
                           </div>
-                          <p className="text-xs text-slate-500">
-                            Click any staff account below to immediately sign in and test that role&apos;s permissions:
-                          </p>
                           <div className="space-y-2">
                             {staffList.map((stf) => {
                               const r = roles.find((rl) => rl.id === stf.roleId);
@@ -3292,21 +3995,24 @@ ${queueOrders
                                     setActiveStaffId(stf.id);
                                     setIsStaffLoggedIn(true);
                                     setPortalMode("ADMIN");
-                                    setAdminTab("DASHBOARD");
+                                    if (r?.slug === "MODERATOR") setAdminTab("MODERATOR_DESK");
+                                    else if (r?.slug === "DELIVERY_STAFF")
+                                      setAdminTab("DELIVERY_DESK");
+                                    else setAdminTab("DASHBOARD");
                                     showToast(`Signed in as ${stf.name} (${r?.name})`);
                                   }}
-                                  className="w-full p-3 rounded-xl bg-white dark:bg-slate-900 hover:border-indigo-500 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-left text-xs transition"
+                                  className="w-full p-3 rounded-lg bg-white dark:bg-[#243344] hover:border-[#2F4156] border border-[#C8D9E6] flex items-center justify-between text-left text-xs transition"
                                 >
                                   <div>
                                     <div className="font-bold flex items-center gap-1.5">
                                       <span>{stf.name}</span>
                                       {(stf.isSuperuser || r?.slug === "SUPER_ADMIN") && (
-                                        <Crown className="w-3.5 h-3.5 text-amber-500" />
+                                        <Crown className="w-3.5 h-3.5 text-[#567C8D]" />
                                       )}
                                     </div>
-                                    <div className="text-[11px] text-slate-400">{stf.email}</div>
+                                    <div className="text-[11px] text-[#567C8D]">{stf.email}</div>
                                   </div>
-                                  <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold text-[11px]">
+                                  <span className="px-2.5 py-1 rounded bg-[#C8D9E6]/50 text-[#2F4156] font-bold text-[11px]">
                                     {r?.name} →
                                   </span>
                                 </button>
@@ -3321,13 +4027,13 @@ ${queueOrders
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                         <form onSubmit={handleCreateOrPromoteSuperuser} className="space-y-4">
                           <div>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider bg-[#C8D9E6] text-[#2F4156] px-2.5 py-1 rounded">
                               <Crown className="w-3.5 h-3.5" /> Superuser Configuration
                             </span>
-                            <h2 className="text-2xl font-black mt-2">
+                            <h2 className="font-serif text-2xl font-bold mt-2">
                               Create or Promote a Superuser (`SUPER_ADMIN`)
                             </h2>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-[#567C8D] mt-1">
                               Create your own personal Superuser account with full unrestricted access to all 28 permissions, financial reports, custom roles, and staff management.
                             </p>
                           </div>
@@ -3343,7 +4049,7 @@ ${queueOrders
                                   setSuperuserForm({ ...superuserForm, name: e.target.value })
                                 }
                                 placeholder="e.g. Md. Rakibul Islam"
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                               />
                             </div>
                             <div>
@@ -3356,7 +4062,7 @@ ${queueOrders
                                   setSuperuserForm({ ...superuserForm, email: e.target.value })
                                 }
                                 placeholder="owner@yourdomain.com"
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                               />
                             </div>
                             <div>
@@ -3367,7 +4073,7 @@ ${queueOrders
                                 onChange={(e) =>
                                   setSuperuserForm({ ...superuserForm, phone: e.target.value })
                                 }
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                               />
                             </div>
                             <div className="sm:col-span-2">
@@ -3380,52 +4086,35 @@ ${queueOrders
                                   setSuperuserForm({ ...superuserForm, password: e.target.value })
                                 }
                                 placeholder="Enter strong password"
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                               />
                             </div>
                           </div>
 
                           <button
                             type="submit"
-                            className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-2"
+                            className="w-full py-3 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-bold text-xs transition flex items-center justify-center gap-2"
                           >
                             <Crown className="w-4 h-4" />
                             <span>Create Superuser & Launch Admin Dashboard</span>
                           </button>
                         </form>
 
-                        <div className="bg-slate-950 text-slate-200 p-6 rounded-2xl border border-slate-800 space-y-4 text-xs">
-                          <div className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <KeyRound className="w-4 h-4" /> How to Set a Superuser in PostgreSQL / CLI
+                        <div className="bg-[#2F4156] text-white p-6 rounded-xl space-y-4 text-xs">
+                          <div className="font-bold text-[#C8D9E6] uppercase tracking-wider flex items-center gap-1.5">
+                            <KeyRound className="w-4 h-4" /> How to Set a Superuser Locally
                           </div>
-                          <p className="text-slate-400 leading-relaxed">
-                            When running locally with PostgreSQL, you have three ways to set or create a Superuser:
-                          </p>
                           <div className="space-y-3">
-                            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                              <div className="font-bold text-white">
-                                Way 1: Pre-Seeded Superuser Account
-                              </div>
-                              <div className="font-mono text-[11px] text-emerald-400 mt-1">
-                                Email: superadmin@nexusmart.com.bd
-                                <br />
-                                Password: Password123!
+                            <div className="p-3 rounded-lg bg-[#243344] border border-[#567C8D]/40">
+                              <div className="font-bold">1. Default Seeded Superuser</div>
+                              <div className="font-mono text-[11px] text-[#C8D9E6] mt-1">
+                                Email: superadmin@nexusmart.com.bd | Pass: Password123!
                               </div>
                             </div>
-                            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                              <div className="font-bold text-white">
-                                Way 2: Run the Superuser CLI Command
-                              </div>
-                              <div className="font-mono text-[11px] text-indigo-300 mt-1">
-                                npm run create-superuser -- your@email.com &quot;Your Name&quot; &quot;MyPass123!&quot;
-                              </div>
-                            </div>
-                            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                              <div className="font-bold text-white">
-                                Way 3: Visual Prisma Studio GUI
-                              </div>
-                              <div className="font-mono text-[11px] text-slate-300 mt-1">
-                                Run `npx prisma studio` → open `User` table → set `isStaff = true` and assign `SUPER_ADMIN` in `UserRole`.
+                            <div className="p-3 rounded-lg bg-[#243344] border border-[#567C8D]/40">
+                              <div className="font-bold">2. Terminal CLI Command</div>
+                              <div className="font-mono text-[11px] text-[#C8D9E6] mt-1">
+                                npm run create-superuser -- your@email.com &quot;Name&quot; &quot;Pass123!&quot;
                               </div>
                             </div>
                           </div>
@@ -3435,20 +4124,10 @@ ${queueOrders
 
                     {authMode === "CUSTOMER_LOGIN" && (
                       <div className="max-w-md mx-auto space-y-4">
-                        <h2 className="text-2xl font-black">Customer Account Sign In</h2>
-                        <p className="text-xs text-slate-500">
-                          Customers can browse products, place orders, and track deliveries. (Admin menus remain hidden for customer accounts).
-                        </p>
+                        <h2 className="font-serif text-2xl font-bold">Customer Account Sign In</h2>
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            setLoggedInCustomer({
-                              id: `cust-${Date.now()}`,
-                              name: customerLoginName,
-                              email: customerLoginEmail,
-                              phone: customerLoginPhone,
-                              loyaltyPoints: 500
-                            });
                             setIsStaffLoggedIn(false);
                             setPortalMode("STOREFRONT");
                             setStorePage("CUSTOMER_DASHBOARD");
@@ -3463,7 +4142,7 @@ ${queueOrders
                               required
                               value={customerLoginName}
                               onChange={(e) => setCustomerLoginName(e.target.value)}
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                             />
                           </div>
                           <div>
@@ -3473,22 +4152,12 @@ ${queueOrders
                               required
                               value={customerLoginEmail}
                               onChange={(e) => setCustomerLoginEmail(e.target.value)}
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="font-bold block mb-1">Mobile Phone</label>
-                            <input
-                              type="text"
-                              required
-                              value={customerLoginPhone}
-                              onChange={(e) => setCustomerLoginPhone(e.target.value)}
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                              className="w-full px-3.5 py-2.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                             />
                           </div>
                           <button
                             type="submit"
-                            className="w-full py-3 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white font-bold"
+                            className="w-full py-3 rounded-lg bg-[#2F4156] text-white font-bold"
                           >
                             Continue as Customer
                           </button>
@@ -3500,59 +4169,61 @@ ${queueOrders
               </div>
             )}
 
-            {/* STATIC INFORMATION PAGES: ABOUT, CONTACT, PRIVACY, TERMS */}
+            {/* ABOUT, CONTACT, PRIVACY, TERMS */}
             {(storePage === "ABOUT" ||
               storePage === "CONTACT" ||
               storePage === "PRIVACY" ||
               storePage === "TERMS") && (
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-3xl mx-auto space-y-4">
+              <div className="bg-white dark:bg-[#243344] p-8 rounded-2xl border border-[#C8D9E6] max-w-3xl mx-auto space-y-4">
                 {storePage === "ABOUT" && (
                   <>
-                    <h2 className="text-2xl font-black">About {settings.companyName}</h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <h2 className="font-serif text-2xl font-bold">About {settings.companyName}</h2>
+                    <p className="text-sm text-[#567C8D] dark:text-[#C8D9E6] leading-relaxed">
                       {settings.companyName} ({settings.companyNameBn}) is a flagship multi-role eCommerce platform engineered with Next.js App Router, Prisma ORM, PostgreSQL, and granular Role-Based Access Control.
                     </p>
                   </>
                 )}
                 {storePage === "CONTACT" && (
                   <>
-                    <h2 className="text-2xl font-black">Showroom & Support</h2>
-                    <p className="text-sm text-slate-500">
+                    <h2 className="font-serif text-2xl font-bold">Contact & Showroom Support</h2>
+                    <p className="text-sm text-[#567C8D]">
                       Address: {settings.companyAddress} ({settings.companyAddressBn})
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-[#567C8D]">
                       Hotline: {settings.companyPhone} | Email: {settings.companyEmail}
                     </p>
                   </>
                 )}
                 {storePage === "PRIVACY" && (
                   <>
-                    <h2 className="text-2xl font-black">Privacy Policy</h2>
-                    <p className="text-sm text-slate-500">
+                    <h2 className="font-serif text-2xl font-bold">Privacy Policy</h2>
+                    <p className="text-sm text-[#567C8D]">
                       Customer phone numbers, addresses, and payment transaction references are encrypted, validated via Zod schemas, and restricted strictly to authorized order fulfillment personnel under RBAC audit logging.
                     </p>
                   </>
                 )}
                 {storePage === "TERMS" && (
                   <>
-                    <h2 className="text-2xl font-black">Terms & Conditions</h2>
-                    <p className="text-sm text-slate-500">{settings.invoiceTermsEn}</p>
-                    <p className="text-sm text-slate-500">{settings.invoiceTermsBn}</p>
+                    <h2 className="font-serif text-2xl font-bold">Terms & Conditions</h2>
+                    <p className="text-sm text-[#567C8D]">{settings.invoiceTermsEn}</p>
+                    <p className="text-sm text-[#567C8D]">{settings.invoiceTermsBn}</p>
                   </>
                 )}
               </div>
             )}
           </main>
 
-          {/* Luxury Storefront Footer with subtle Staff Portal Entry Link */}
-          <footer className="bg-slate-950 text-slate-400 text-xs py-12 px-4 border-t border-slate-900 mt-16">
+          {/* Storefront Footer in Official Navy (#2F4156) */}
+          <footer className="bg-[#2F4156] text-[#C8D9E6] text-xs py-10 px-4 border-t border-[#567C8D]/40 mt-12">
             <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-6">
-              <div className="space-y-1">
-                <div className="text-white font-black text-base">{settings.companyName}</div>
-                <p>{settings.companyAddress}</p>
-                <p>Hotline: {settings.companyPhone} • {settings.companyEmail}</p>
+              <div>
+                <div className="text-white font-serif font-bold text-base">
+                  {settings.companyName}
+                </div>
+                <p className="mt-1">{settings.companyAddress}</p>
+                <p>Hotline: {settings.companyPhone}</p>
               </div>
-              <div className="flex flex-wrap gap-5 items-center">
+              <div className="flex flex-wrap gap-4 items-center">
                 <button onClick={() => setStorePage("ABOUT")} className="hover:text-white">
                   About Us
                 </button>
@@ -3570,10 +4241,10 @@ ${queueOrders
                     setAuthMode("STAFF_LOGIN");
                     setStorePage("AUTH");
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-slate-200 hover:text-white border border-slate-800 font-semibold transition flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#567C8D] hover:bg-white text-white hover:text-[#2F4156] font-semibold transition flex items-center gap-1.5"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Staff & Superuser Portal</span>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Staff & Superuser Login</span>
                 </button>
               </div>
             </div>
@@ -3582,45 +4253,52 @@ ${queueOrders
       )}
 
       {/* ==================================================================== */}
-      {/* PORTAL 2: REDESIGNED EXECUTIVE ADMIN & STAFF ERP DASHBOARD           */}
-      {/* (Strictly accessible ONLY when `isStaffLoggedIn === true`)           */}
+      {/* PORTAL 2: ENTERPRISE SAAS ADMIN, MODERATOR & DELIVERY DASHBOARDS     */}
+      {/* Uses Official Navy (#2F4156) Sidebar & Teal (#567C8D) Active States  */}
       {/* ==================================================================== */}
       {isStaffLoggedIn && portalMode === "ADMIN" && (
         <div className="max-w-[1440px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-          {/* Sleek Executive Sidebar */}
-          <aside className="no-print w-full lg:w-64 shrink-0">
-            <div className="bg-slate-950 text-slate-200 rounded-3xl border border-slate-800/90 p-4 space-y-5 shadow-2xl sticky top-[68px]">
-              {/* Active Staff Profile Card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-600/25 via-violet-600/15 to-slate-900 border border-indigo-500/30 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
-                    {activeStaff.employeeCode}
-                  </span>
-                  {(activeStaff.isSuperuser || activeRole.slug === "SUPER_ADMIN") && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full">
-                      <Crown className="w-3 h-3" /> SUPERUSER
-                    </span>
-                  )}
-                </div>
-                <div className="font-black text-sm text-white truncate">{activeStaff.name}</div>
-                <div className="text-[11px] text-slate-400 truncate">{activeRole.name}</div>
-                <div className="pt-1 flex items-center justify-between text-[11px] text-emerald-400 font-semibold border-t border-white/10">
-                  <span>Effective Perms</span>
-                  <span>{activePermissions.size} / 28</span>
-                </div>
+          {/* Collapsible Navy (#2F4156) Sidebar Navigation */}
+          <aside
+            className={`no-print shrink-0 transition-all ${
+              sidebarCollapsed ? "w-full lg:w-20" : "w-full lg:w-64"
+            }`}
+          >
+            <div className="bg-[#2F4156] text-white rounded-2xl border border-[#567C8D]/40 p-4 space-y-4 shadow-lg sticky top-[68px]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#567C8D]/40">
+                {!sidebarCollapsed && (
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#C8D9E6]">
+                      Logged-In Role
+                    </div>
+                    <div className="font-bold text-sm">{activeStaff.name}</div>
+                    <div className="text-xs text-[#C8D9E6]">
+                      {activeRole.name} ({activeStaff.employeeCode})
+                    </div>
+                  </div>
+                )}
+                <button
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="p-2 rounded-lg bg-[#243344] hover:bg-[#567C8D] text-[#C8D9E6] hover:text-white"
+                  title="Collapse / Expand Sidebar"
+                >
+                  <Menu className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Grouped Sidebar Navigation */}
-              <nav className="space-y-1 text-xs font-semibold">
+              <nav className="space-y-1 text-xs font-medium">
                 {[
                   { id: "DASHBOARD", label: "Dashboard & KPIs", icon: BarChart3, perm: "dashboard.view" },
+                  { id: "MODERATOR_DESK", label: "Moderator Workspace", icon: UserCheck, perm: ["orders.confirm", "orders.view_assigned"] },
+                  { id: "DELIVERY_DESK", label: "Delivery Rider App", icon: Truck, perm: ["delivery.view", "delivery.update"] },
                   { id: "ORDERS", label: `Orders (${visibleOrders.length})`, icon: ClipboardList, perm: ["orders.view_all", "orders.view_assigned"] },
                   { id: "INVOICES", label: "Invoice & Memo Printing", icon: Printer, perm: ["invoices.print", "invoices.bulk_print", "orders.view_assigned"] },
                   { id: "PRODUCTS", label: "Products Catalog", icon: Package, perm: "products.view" },
                   { id: "CATEGORIES", label: "Categories", icon: Layers, perm: "categories.manage" },
                   { id: "INVENTORY", label: "Inventory & Ledger", icon: RefreshCw, perm: "inventory.view" },
-                  { id: "ASSIGNMENTS", label: "Order Assignments & COD", icon: Truck, perm: ["orders.assign", "delivery.view", "orders.view_assigned"] },
-                  { id: "STAFF", label: "Staff & Superuser", icon: Users, perm: "staff.manage" },
+                  { id: "CUSTOMERS", label: `Customers (${customers.length})`, icon: User, perm: "customers.manage" },
+                  { id: "ASSIGNMENTS", label: "Order Assignments & COD", icon: CheckCircle2, perm: ["orders.assign", "delivery.view", "orders.view_assigned"] },
+                  { id: "STAFF", label: "Staff & Audit Logs", icon: Users, perm: "staff.manage" },
                   { id: "ROLES", label: "Roles & Permissions", icon: KeyRound, perm: "roles.manage" },
                   { id: "PAYMENTS", label: "Payments & Gateways", icon: CreditCard, perm: "payments.verify" },
                   { id: "SHIPPING", label: "Shipping & Couriers", icon: MapPin, perm: ["shipping.manage", "delivery.view"] },
@@ -3634,19 +4312,22 @@ ${queueOrders
                     <button
                       key={item.id}
                       onClick={() => setAdminTab(item.id as any)}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition ${
+                      title={item.label}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition ${
                         adminTab === item.id
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/25 font-bold"
+                          ? "bg-[#567C8D] text-white font-semibold shadow-sm"
                           : allowed
-                          ? "text-slate-300 hover:bg-slate-900 hover:text-white"
-                          : "text-slate-600 opacity-55 hover:bg-slate-900"
+                          ? "text-[#F5F1EE] hover:bg-[#243344]"
+                          : "text-slate-400 opacity-50 hover:bg-[#243344]"
                       }`}
                     >
                       <span className="flex items-center gap-2.5">
                         <Icon className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{item.label}</span>
+                        {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                       </span>
-                      {!allowed && <Lock className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
+                      {!sidebarCollapsed && !allowed && (
+                        <Lock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                      )}
                     </button>
                   );
                 })}
@@ -3654,169 +4335,190 @@ ${queueOrders
             </div>
           </aside>
 
-          {/* Main Admin Workspace Content */}
+          {/* Main Admin Content Area */}
           <div className="flex-1 min-w-0 space-y-6">
+            {/* Breadcrumb & Global Search Topbar */}
+            <div className="no-print bg-white dark:bg-[#243344] px-5 py-3.5 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#567C8D]">Admin Portal</span>
+                <span>/</span>
+                <span className="font-bold text-[#2F4156] dark:text-white">{adminTab}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-[#567C8D] absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    placeholder="Quick search order ID or phone..."
+                    className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#C8D9E6] bg-[#F5F1EE] dark:bg-[#1B2634] w-48 sm:w-64"
+                  />
+                </div>
+                <button
+                  onClick={() => setAdminTab("ORDERS")}
+                  className="p-2 rounded-lg bg-[#C8D9E6]/40 text-[#2F4156] relative"
+                  title="Pending Order Alerts"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#2F4156] text-white text-[10px] font-bold flex items-center justify-center">
+                    {kpiMetrics.pendingCount}
+                  </span>
+                </button>
+              </div>
+            </div>
+
             {/* ============================================================== */}
-            {/* TAB 1: REDESIGNED EXECUTIVE ADMIN DASHBOARD                    */}
+            {/* 5.B ADMIN DASHBOARD OVERVIEW (10 Statistic Cards + Charts)     */}
             {/* ============================================================== */}
             {adminTab === "DASHBOARD" && (
               <div className="space-y-6">
-                {/* Hero Command Header */}
-                <div className="rounded-3xl bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 text-white p-7 border border-slate-800 shadow-xl flex flex-wrap items-center justify-between gap-6">
-                  <div className="space-y-1.5">
-                    <div className="inline-flex items-center gap-2 text-xs font-bold text-indigo-300">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>PostgreSQL & Prisma ORM Connected • Live Telemetry</span>
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-                      Executive Command Center — {activeRole.name}
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-4 shadow-sm">
+                  <div>
+                    <h1 className="font-serif text-2xl font-bold text-[#2F4156] dark:text-white">
+                      Executive eCommerce Dashboard — {activeRole.name} View
                     </h1>
-                    <p className="text-xs text-slate-300 max-w-2xl">
-                      All KPIs, purchase cost margins, and order queues below are dynamically scoped to your active role permissions.
+                    <p className="text-xs text-[#567C8D] mt-0.5">
+                      Real-time operations telemetry. Restricted financial figures automatically adapt to your RBAC permissions.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2.5">
-                    <button
-                      onClick={() => setAdminTab("STAFF")}
-                      className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-lg transition"
-                    >
-                      <Crown className="w-4 h-4" /> Set / Manage Superusers
-                    </button>
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setAdminTab("ORDERS")}
-                      className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 transition"
+                      className="px-4 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold transition"
                     >
                       Manage Orders
                     </button>
                     <button
                       onClick={() => setAdminTab("INVOICES")}
-                      className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg transition"
+                      className="px-4 py-2 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white text-xs font-semibold flex items-center gap-1.5 transition"
                     >
-                      <Printer className="w-4 h-4" /> Print Order Memos
+                      <Printer className="w-3.5 h-3.5" /> Print Order Memos
                     </button>
                   </div>
                 </div>
 
-                {/* 4 Luxury KPI Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Total Revenue
-                      </span>
-                      <div className="w-9 h-9 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5" />
+                {/* 10 Requested Statistic Cards in Official Palette */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+                  {[
+                    {
+                      label: "Total Revenue",
+                      value: hasPerm("financials.view") ? formatBDT(kpiMetrics.totalRevenue) : "Restricted",
+                      sub: "+18.4% vs last week",
+                      icon: DollarSign
+                    },
+                    {
+                      label: "Today's Sales",
+                      value: hasPerm("financials.view") ? formatBDT(kpiMetrics.todayRevenue) : "Restricted",
+                      sub: "10 Nov 2026",
+                      icon: TrendingUp
+                    },
+                    {
+                      label: "Monthly Sales",
+                      value: hasPerm("financials.view") ? formatBDT(kpiMetrics.totalRevenue * 4) : "Restricted",
+                      sub: "Nov 2026 Run-Rate",
+                      icon: BarChart3
+                    },
+                    {
+                      label: "Total Orders",
+                      value: `${orders.length}`,
+                      sub: `${visibleOrders.length} in your scope`,
+                      icon: ClipboardList
+                    },
+                    {
+                      label: "Pending Orders",
+                      value: `${kpiMetrics.pendingCount}`,
+                      sub: "Awaiting confirmation",
+                      icon: AlertTriangle
+                    },
+                    {
+                      label: "Confirmed Orders",
+                      value: `${kpiMetrics.confirmedCount}`,
+                      sub: "Ready for packing",
+                      icon: CheckCircle2
+                    },
+                    {
+                      label: "Delivered Orders",
+                      value: `${kpiMetrics.deliveredCount}`,
+                      sub: "Completed fulfillment",
+                      icon: Truck
+                    },
+                    {
+                      label: "Total Customers",
+                      value: `${customers.length}`,
+                      sub: "2 VIP Repeat Buyers",
+                      icon: Users
+                    },
+                    {
+                      label: "Total Products",
+                      value: `${products.length}`,
+                      sub: `${categories.length} Categories`,
+                      icon: Package
+                    },
+                    {
+                      label: "Low Stock Products",
+                      value: `${kpiMetrics.lowStockProducts.length} SKUs`,
+                      sub: "Below threshold",
+                      icon: RefreshCw
+                    }
+                  ].map((stat, i) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div
+                        key={i}
+                        className="bg-white dark:bg-[#243344] p-4 rounded-xl border border-[#C8D9E6] dark:border-[#567C8D]/40 shadow-sm flex flex-col justify-between"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-[#567C8D] dark:text-[#C8D9E6]">
+                            {stat.label}
+                          </span>
+                          <div className="w-7 h-7 rounded-lg bg-[#C8D9E6]/50 text-[#2F4156] flex items-center justify-center">
+                            <Icon className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+                        <div className="text-xl font-bold text-[#2F4156] dark:text-white mt-2">
+                          {stat.value}
+                        </div>
+                        <div className="text-[10px] text-[#567C8D] mt-1">{stat.sub}</div>
                       </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black mt-3">
-                      {hasPerm("financials.view") ? (
-                        formatBDT(kpiMetrics.totalRevenue)
-                      ) : (
-                        <span className="text-sm text-rose-500 flex items-center gap-1.5 py-1">
-                          <Lock className="w-4 h-4" /> Restricted by RBAC
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold mt-2">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      <span>+18.4% vs last 7 days</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Net Gross Profit
-                      </span>
-                      <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5" />
-                      </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black mt-3 text-emerald-600">
-                      {hasPerm(["financials.view", "products.purchase_price"]) ? (
-                        formatBDT(kpiMetrics.grossProfit)
-                      ) : (
-                        <span className="text-sm text-rose-500 flex items-center gap-1.5 py-1">
-                          <Lock className="w-4 h-4" /> Cost Price Masked
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-2">
-                      Protected by <code>financials.view</code>
-                    </div>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Order Pipeline
-                      </span>
-                      <div className="w-9 h-9 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-                        <ClipboardList className="w-5 h-5" />
-                      </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black mt-3">
-                      {visibleOrders.length} Orders
-                    </div>
-                    <div className="text-xs text-amber-600 font-semibold mt-2">
-                      {kpiMetrics.pendingCount} Pending • {kpiMetrics.confirmedCount} Confirmed
-                    </div>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Low-Stock Alerts
-                      </span>
-                      <div className="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                        <AlertTriangle className="w-5 h-5" />
-                      </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black mt-3 text-amber-500">
-                      {kpiMetrics.lowStockProducts.length} SKUs
-                    </div>
-                    <div className="text-xs text-slate-400 mt-2">
-                      Across {products.length} active products
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
 
-                {/* Analytics Charts Grid */}
+                {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="font-black text-base">7-Day Revenue & Profit Velocity</h3>
-                        <p className="text-xs text-slate-500">
-                          Real-time financial trajectory across storefront and courier channels
-                        </p>
-                      </div>
-                    </div>
+                  <div className="lg:col-span-2 bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm">
+                    <h3 className="font-bold text-sm text-[#2F4156] dark:text-white mb-1">
+                      7-Day Revenue & Order Volume Trend
+                    </h3>
+                    <p className="text-xs text-[#567C8D] mb-4">
+                      Navy (#2F4156) Gross Revenue vs. Teal (#567C8D) Net Profit
+                    </p>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={REVENUE_CHART_DATA}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
-                          <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                          <YAxis tick={{ fontSize: 11 }} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#C8D9E6" opacity={0.5} />
+                          <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#567C8D" }} />
+                          <YAxis tick={{ fontSize: 11, fill: "#567C8D" }} />
                           <Tooltip />
                           <Area
                             type="monotone"
                             dataKey="revenue"
                             name="Revenue (BDT)"
-                            stroke="#6366f1"
+                            stroke="#2F4156"
                             strokeWidth={2.5}
-                            fill="#6366f1"
-                            fillOpacity={0.2}
+                            fill="#C8D9E6"
+                            fillOpacity={0.5}
                           />
                           {hasPerm("financials.view") && (
                             <Area
                               type="monotone"
                               dataKey="profit"
                               name="Net Profit (BDT)"
-                              stroke="#10b981"
+                              stroke="#567C8D"
                               strokeWidth={2.5}
-                              fill="#10b981"
-                              fillOpacity={0.2}
+                              fill="#567C8D"
+                              fillOpacity={0.25}
                             />
                           )}
                         </AreaChart>
@@ -3824,9 +4526,11 @@ ${queueOrders
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <h3 className="font-black text-base mb-1">Order Status Breakdown</h3>
-                    <p className="text-xs text-slate-500 mb-3">Live fulfillment distribution</p>
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm">
+                    <h3 className="font-bold text-sm text-[#2F4156] dark:text-white mb-1">
+                      Order Status Distribution
+                    </h3>
+                    <p className="text-xs text-[#567C8D] mb-3">Live pipeline donut chart</p>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -3836,13 +4540,12 @@ ${queueOrders
                             nameKey="name"
                             cx="50%"
                             cy="50%"
-                            innerRadius={45}
-                            outerRadius={75}
-                            paddingAngle={3}
+                            innerRadius={42}
+                            outerRadius={72}
                             label
                           >
                             {kpiMetrics.statusPie.map((_, idx) => (
-                              <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                              <Cell key={idx} fill={BRAND_PIE_COLORS[idx % BRAND_PIE_COLORS.length]} />
                             ))}
                           </Pie>
                           <Tooltip />
@@ -3853,49 +4556,53 @@ ${queueOrders
                   </div>
                 </div>
 
-                {/* Staff Performance & Low Stock Row */}
+                {/* Staff Performance Bar Chart & Low Stock Alerts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <h3 className="font-black text-base mb-3">Staff Order Fulfillment KPIs</h3>
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm">
+                    <h3 className="font-bold text-sm text-[#2F4156] dark:text-white mb-3">
+                      Staff Order Fulfillment Performance
+                    </h3>
                     <div className="h-56 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={staffList}>
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 11 }} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#C8D9E6" opacity={0.4} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#567C8D" }} />
+                          <YAxis tick={{ fontSize: 11, fill: "#567C8D" }} />
                           <Tooltip />
-                          <Bar dataKey="ordersAssigned" name="Assigned" fill="#6366f1" radius={[6, 6, 0, 0]} />
-                          <Bar dataKey="ordersCompleted" name="Completed" fill="#10b981" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="ordersAssigned" name="Assigned" fill="#2F4156" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="ordersCompleted" name="Completed" fill="#567C8D" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] shadow-sm space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-black text-base">Low-Stock Warehouse Alerts</h3>
+                      <h3 className="font-bold text-sm text-[#2F4156] dark:text-white">
+                        Low-Stock Inventory Alerts
+                      </h3>
                       <button
                         onClick={() => setAdminTab("INVENTORY")}
-                        className="text-xs text-indigo-600 font-bold hover:underline"
+                        className="text-xs text-[#567C8D] font-semibold hover:underline"
                       >
-                        Restock Ledger →
+                        Restock Now →
                       </button>
                     </div>
                     {kpiMetrics.lowStockProducts.map((p) => (
                       <div
                         key={p.id}
-                        className="flex items-center justify-between p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs"
+                        className="flex items-center justify-between p-3.5 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
                       >
                         <div>
-                          <div className="font-bold text-sm">{p.name}</div>
-                          <div className="text-slate-500 font-mono">SKU: {p.sku}</div>
+                          <div className="font-bold">{p.name}</div>
+                          <div className="text-[#567C8D]">SKU: {p.sku}</div>
                         </div>
                         <div className="text-right">
-                          <div className="font-black text-sm text-amber-600">
+                          <div className="font-extrabold text-amber-600">
                             {p.stockQuantity} left
                           </div>
-                          <div className="text-[11px] text-slate-400">
-                            Min Threshold: {p.lowStockThreshold}
+                          <div className="text-[11px] text-[#567C8D]">
+                            Alert Threshold: {p.lowStockThreshold}
                           </div>
                         </div>
                       </div>
@@ -3906,15 +4613,215 @@ ${queueOrders
             )}
 
             {/* ============================================================== */}
-            {/* TAB 2: ADVANCED ORDER MANAGEMENT                               */}
+            {/* SECTION 9: SIMPLIFIED MODERATOR DASHBOARD                      */}
+            {/* ============================================================== */}
+            {adminTab === "MODERATOR_DESK" && (
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
+                      Rapid Order Verification Desk
+                    </span>
+                    <h2 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white mt-0.5">
+                      Moderator Operational Workspace
+                    </h2>
+                    <p className="text-xs text-[#567C8D]">
+                      Streamlined queue for calling customers, confirming pending orders, adding internal notes, and printing order memos.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { label: "Assigned Orders", val: visibleOrders.length },
+                    { label: "Pending Confirmation", val: kpiMetrics.pendingCount },
+                    { label: "Processing Orders", val: kpiMetrics.confirmedCount },
+                    { label: "Completed Orders", val: kpiMetrics.deliveredCount }
+                  ].map((c, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-xl bg-white dark:bg-[#243344] border border-[#C8D9E6]"
+                    >
+                      <div className="text-xs text-[#567C8D]">{c.label}</div>
+                      <div className="text-2xl font-bold text-[#2F4156] dark:text-white mt-1">
+                        {c.val}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  {visibleOrders.map((ord) => (
+                    <div
+                      key={ord.id}
+                      className="bg-white dark:bg-[#243344] p-5 rounded-xl border border-[#C8D9E6] grid grid-cols-1 lg:grid-cols-12 gap-4 items-center text-xs"
+                    >
+                      <div className="lg:col-span-4 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-sm text-[#2F4156] dark:text-white">
+                            {ord.orderNumber}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadgeStyle(
+                              ord.orderStatus
+                            )}`}
+                          >
+                            {ord.orderStatus}
+                          </span>
+                        </div>
+                        <div className="font-bold text-sm">{ord.customerName}</div>
+                        <div className="text-[#567C8D] font-semibold">
+                          Phone: {ord.customerPhone} • {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
+                        </div>
+                        <div className="text-slate-500">{ord.deliveryAddress}</div>
+                      </div>
+
+                      <div className="lg:col-span-4">
+                        <label className="text-[11px] font-semibold text-[#567C8D] block mb-1">
+                          Internal Verification Note:
+                        </label>
+                        <input
+                          type="text"
+                          value={ord.internalNotes}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setOrders((prev) =>
+                              prev.map((o) =>
+                                o.id === ord.id ? { ...o, internalNotes: val } : o
+                              )
+                            );
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-[#F5F1EE] dark:bg-[#1B2634]"
+                        />
+                      </div>
+
+                      <div className="lg:col-span-4 flex flex-wrap justify-end gap-2">
+                        <button
+                          onClick={() =>
+                            handleUpdateOrderStatus(
+                              ord.id,
+                              "CONFIRMED",
+                              "Customer confirmed order via moderator call"
+                            )
+                          }
+                          className="px-4 py-2.5 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-semibold"
+                        >
+                          Confirm Order
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateOrderStatus(
+                              ord.id,
+                              "PROCESSING",
+                              "Sent to warehouse packing queue"
+                            )
+                          }
+                          className="px-4 py-2.5 rounded-lg bg-[#567C8D] text-white font-semibold"
+                        >
+                          Send to Packing
+                        </button>
+                        <button
+                          onClick={() => handleBulkPrintMemos([ord.id])}
+                          className="px-3.5 py-2.5 rounded-lg border border-[#2F4156] text-[#2F4156] dark:text-white font-semibold flex items-center gap-1"
+                        >
+                          <Printer className="w-3.5 h-3.5" /> Memo
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* SECTION 10: MOBILE-FIRST DELIVERY STAFF DASHBOARD              */}
+            {/* ============================================================== */}
+            {adminTab === "DELIVERY_DESK" && (
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#567C8D]">
+                    One-Handed Field Logistics
+                  </span>
+                  <h2 className="font-serif text-xl font-bold text-[#2F4156] dark:text-white mt-0.5">
+                    Delivery Rider Mobile Dispatch Cards
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {visibleOrders.map((ord) => (
+                    <div
+                      key={ord.id}
+                      className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-bold text-base text-[#2F4156] dark:text-white">
+                          {ord.orderNumber}
+                        </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadgeStyle(
+                            ord.orderStatus
+                          )}`}
+                        >
+                          {ord.orderStatus}
+                        </span>
+                      </div>
+
+                      <div className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] space-y-1 text-xs">
+                        <div className="font-bold text-sm">{ord.customerName}</div>
+                        <div className="font-semibold text-[#567C8D]">
+                          Phone: {ord.customerPhone}
+                        </div>
+                        <div className="text-slate-600 dark:text-[#C8D9E6]">
+                          {ord.deliveryAddress}
+                        </div>
+                        <div className="pt-2 font-bold text-sm text-[#2F4156] dark:text-white">
+                          COD Amount to Collect: {formatBDT(ord.grandTotal)} ({ord.paymentMethod})
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2.5 text-xs font-semibold">
+                        <button
+                          onClick={() =>
+                            handleUpdateOrderStatus(
+                              ord.id,
+                              "DELIVERED",
+                              `Delivered & collected cash ${formatBDT(ord.grandTotal)}`,
+                              ord.grandTotal
+                            )
+                          }
+                          className="py-3 px-4 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white"
+                        >
+                          ✓ Mark Delivered & Collect COD
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateOrderStatus(
+                              ord.id,
+                              "RETURNED",
+                              "Customer unreachable / parcel returned"
+                            )
+                          }
+                          className="py-3 px-4 rounded-lg border border-rose-500/40 text-rose-600"
+                        >
+                          ↺ Mark Returned
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* SECTION 6: ORDER MANAGEMENT UI                                 */}
             {/* ============================================================== */}
             {adminTab === "ORDERS" && (
               <div className="space-y-5">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-xl font-black">Advanced Order Management</h2>
-                      <p className="text-xs text-slate-500">
+                      <h2 className="font-serif text-xl font-bold">Advanced Order Management</h2>
+                      <p className="text-xs text-[#567C8D]">
                         {hasPerm("orders.view_all")
                           ? "Showing all platform orders"
                           : `Showing orders assigned to ${activeStaff.name}`}
@@ -3924,9 +4831,9 @@ ${queueOrders
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleBulkPrintMemos(selectedOrderIds)}
-                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-semibold shadow-sm"
                       >
-                        <Printer className="w-4 h-4" />
+                        <Printer className="w-3.5 h-3.5" />
                         Bulk Print Memos ({selectedOrderIds.length})
                       </button>
                     </div>
@@ -3934,19 +4841,19 @@ ${queueOrders
 
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="relative flex-1 min-w-[200px]">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+                      <Search className="w-4 h-4 text-[#567C8D] absolute left-3 top-2.5" />
                       <input
                         type="text"
                         value={orderSearch}
                         onChange={(e) => setOrderSearch(e.target.value)}
                         placeholder="Search by Order Number, Customer Name, or Phone..."
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent"
                       />
                     </div>
                     <select
                       value={orderStatusFilter}
                       onChange={(e) => setOrderStatusFilter(e.target.value)}
-                      className="px-3.5 py-2 text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent font-bold"
+                      className="px-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent font-semibold"
                     >
                       <option value="ALL">All Statuses (9)</option>
                       <option value="PENDING">1. Pending</option>
@@ -3959,13 +4866,23 @@ ${queueOrders
                       <option value="RETURNED">8. Returned</option>
                       <option value="REFUNDED">9. Refunded</option>
                     </select>
+                    <select
+                      value={orderPaymentFilter}
+                      onChange={(e) => setOrderPaymentFilter(e.target.value)}
+                      className="px-3 py-2 text-xs rounded-lg border border-[#C8D9E6] bg-transparent font-semibold"
+                    >
+                      <option value="ALL">All Payment States</option>
+                      <option value="PAID">Paid</option>
+                      <option value="UNPAID">Unpaid (COD)</option>
+                      <option value="PENDING_VERIFICATION">Pending Verification</option>
+                    </select>
                   </div>
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
-                          <th className="py-3 px-2">
+                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                          <th className="py-3 px-2.5">
                             <input
                               type="checkbox"
                               checked={
@@ -3979,24 +4896,24 @@ ${queueOrders
                               }
                             />
                           </th>
-                          <th className="py-3 px-2">Order ID & Date</th>
-                          <th className="py-3 px-2">Customer & Phone</th>
-                          <th className="py-3 px-2">Total & Payment</th>
-                          <th className="py-3 px-2">Status</th>
-                          <th className="py-3 px-2">Assigned Staff</th>
-                          <th className="py-3 px-2">Memo Prints</th>
-                          <th className="py-3 px-2 text-right">Actions</th>
+                          <th className="py-3 px-2.5">Order ID & Date</th>
+                          <th className="py-3 px-2.5">Customer & Phone</th>
+                          <th className="py-3 px-2.5">Total & Payment</th>
+                          <th className="py-3 px-2.5">Status</th>
+                          <th className="py-3 px-2.5">Assigned Staff</th>
+                          <th className="py-3 px-2.5">Memo Prints</th>
+                          <th className="py-3 px-2.5 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      <tbody className="divide-y divide-[#C8D9E6]/60">
                         {visibleOrders.map((ord) => {
                           const mod = staffList.find((s) => s.id === ord.assignedModeratorId);
                           return (
                             <tr
                               key={ord.id}
-                              className="hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                              className="hover:bg-[#C8D9E6]/20 transition"
                             >
-                              <td className="py-3.5 px-2">
+                              <td className="py-3 px-2.5">
                                 <input
                                   type="checkbox"
                                   checked={selectedOrderIds.includes(ord.id)}
@@ -4009,26 +4926,26 @@ ${queueOrders
                                   }
                                 />
                               </td>
-                              <td className="py-3.5 px-2">
-                                <div className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                              <td className="py-3 px-2.5">
+                                <div className="font-mono font-bold text-[#2F4156] dark:text-white">
                                   {ord.orderNumber}
                                 </div>
-                                <div className="text-[11px] text-slate-400">{ord.createdAt}</div>
+                                <div className="text-[11px] text-[#567C8D]">{ord.createdAt}</div>
                               </td>
-                              <td className="py-3.5 px-2">
+                              <td className="py-3 px-2.5">
                                 <div className="font-bold">{ord.customerName}</div>
-                                <div className="text-slate-500">{ord.customerPhone}</div>
+                                <div className="text-[#567C8D]">{ord.customerPhone}</div>
                                 <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
                                   {ord.deliveryAddress}
                                 </div>
                               </td>
-                              <td className="py-3.5 px-2">
-                                <div className="font-black">{formatBDT(ord.grandTotal)}</div>
-                                <div className="text-[11px] text-slate-500">
+                              <td className="py-3 px-2.5">
+                                <div className="font-bold">{formatBDT(ord.grandTotal)}</div>
+                                <div className="text-[11px] text-[#567C8D]">
                                   {ord.paymentMethod} ({ord.paymentStatus})
                                 </div>
                               </td>
-                              <td className="py-3.5 px-2">
+                              <td className="py-3 px-2.5">
                                 <select
                                   aria-label={`Change status for ${ord.orderNumber}`}
                                   value={ord.orderStatus}
@@ -4050,29 +4967,29 @@ ${queueOrders
                                   <option value="REFUNDED">REFUNDED</option>
                                 </select>
                               </td>
-                              <td className="py-3.5 px-2">
+                              <td className="py-3 px-2.5">
                                 <div className="text-[11px]">
                                   Mod: <span className="font-semibold">{mod?.name || "Unassigned"}</span>
                                 </div>
-                                <div className="text-[11px] text-slate-400">
+                                <div className="text-[11px] text-[#567C8D]">
                                   Courier: {ord.courierProvider}
                                 </div>
                               </td>
-                              <td className="py-3.5 px-2">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-[11px]">
+                              <td className="py-3 px-2.5">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F5F1EE] dark:bg-[#1B2634] font-mono text-[11px]">
                                   <Printer className="w-3 h-3" /> {ord.memoPrintCount}x
                                 </span>
                               </td>
-                              <td className="py-3.5 px-2 text-right space-x-1.5">
+                              <td className="py-3 px-2.5 text-right space-x-1.5">
                                 <button
                                   onClick={() => setInspectingOrderId(ord.id)}
-                                  className="px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  className="px-2.5 py-1.5 rounded-lg border border-[#C8D9E6] font-semibold hover:bg-[#F5F1EE]"
                                 >
                                   Details
                                 </button>
                                 <button
                                   onClick={() => handleBulkPrintMemos([ord.id])}
-                                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
+                                  className="px-2.5 py-1.5 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white font-semibold"
                                 >
                                   Print Memo
                                 </button>
@@ -4085,17 +5002,18 @@ ${queueOrders
                   </div>
                 </div>
 
+                {/* Two-Column Order Details Inspector (Section 6.C) */}
                 {inspectingOrderId && (() => {
                   const ord = orders.find((o) => o.id === inspectingOrderId);
                   if (!ord) return null;
                   return (
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-indigo-500/40 space-y-4">
-                      <div className="flex items-center justify-between">
+                    <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border-2 border-[#567C8D] space-y-4">
+                      <div className="flex items-center justify-between border-b border-[#C8D9E6] pb-3">
                         <div>
-                          <h3 className="text-base font-black">
+                          <h3 className="font-serif text-lg font-bold">
                             Order Details & Audit History — {ord.orderNumber}
                           </h3>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-[#567C8D]">
                             Printed {ord.memoPrintCount} time(s){" "}
                             {ord.lastPrintedBy ? `| Last printed by ${ord.lastPrintedBy}` : ""}
                           </p>
@@ -4103,13 +5021,13 @@ ${queueOrders
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleBulkPrintMemos([ord.id])}
-                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-1"
+                            className="px-3.5 py-1.5 rounded-lg bg-[#2F4156] text-white text-xs font-semibold flex items-center gap-1"
                           >
                             <Printer className="w-3.5 h-3.5" /> Open in Memo Printer
                           </button>
                           <button
                             onClick={() => setInspectingOrderId(null)}
-                            className="p-1.5 rounded-lg border border-slate-300 dark:border-slate-700"
+                            className="p-1.5 rounded-lg border border-[#C8D9E6]"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -4117,8 +5035,8 @@ ${queueOrders
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
-                          <div className="font-bold text-slate-400 uppercase">
+                        <div className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] space-y-1">
+                          <div className="font-bold text-[#567C8D] uppercase">
                             Internal Staff Notes (RBAC Protected)
                           </div>
                           {hasPerm("orders.internal_notes") ? (
@@ -4133,7 +5051,7 @@ ${queueOrders
                                   )
                                 );
                               }}
-                              className="w-full p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                              className="w-full p-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                             />
                           ) : (
                             <p className="text-rose-500">
@@ -4142,8 +5060,8 @@ ${queueOrders
                           )}
                         </div>
 
-                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1.5">
-                          <div className="font-bold text-slate-400 uppercase">
+                        <div className="p-4 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] space-y-1.5">
+                          <div className="font-bold text-[#567C8D] uppercase">
                             Status Audit Trail
                           </div>
                           {ord.history.map((h) => (
@@ -4151,7 +5069,7 @@ ${queueOrders
                               <span>
                                 <strong>{h.newState}</strong> ({h.changedBy}): {h.note}
                               </span>
-                              <span className="text-slate-400">{h.createdAt}</span>
+                              <span className="text-[#567C8D]">{h.createdAt}</span>
                             </div>
                           ))}
                         </div>
@@ -4163,20 +5081,20 @@ ${queueOrders
             )}
 
             {/* ============================================================== */}
-            {/* TAB 3: PROFESSIONAL ORDER MEMO & INVOICE PRINTING SYSTEM       */}
+            {/* SECTION 7: PROFESSIONAL ORDER MEMO & INVOICE PRINTING          */}
             {/* ============================================================== */}
             {adminTab === "INVOICES" && (
               <div className="space-y-6">
-                <div className="no-print bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="no-print bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
-                        High-Priority Printing Engine
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F4156] bg-[#C8D9E6] px-2.5 py-0.5 rounded">
+                        Commercial Printing Engine
                       </span>
-                      <h2 className="text-xl font-black mt-1">
+                      <h2 className="font-serif text-xl font-bold mt-1">
                         Order Memo & Invoice Printing Center
                       </h2>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[#567C8D]">
                         Supports A4 Corporate Invoice, 80mm POS Thermal Receipt, and Compact Order Memo with Bengali & English typography.
                       </p>
                     </div>
@@ -4184,14 +5102,14 @@ ${queueOrders
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={handleTriggerBrowserPrint}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white text-xs font-bold shadow"
                       >
                         <Printer className="w-4 h-4" />
                         Print Now ({printQueueIds.length} Memo{printQueueIds.length > 1 ? "s" : ""})
                       </button>
                       <button
                         onClick={handleDownloadInvoiceHtml}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white text-xs font-bold shadow"
                       >
                         <Download className="w-4 h-4" />
                         Download Invoice File
@@ -4199,9 +5117,9 @@ ${queueOrders
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-[#C8D9E6] text-xs">
                     <div>
-                      <label className="font-semibold block mb-1.5 text-slate-500">
+                      <label className="font-semibold block mb-1.5 text-[#567C8D]">
                         1. Select Print Template Layout:
                       </label>
                       <div className="flex gap-1.5">
@@ -4215,10 +5133,10 @@ ${queueOrders
                           <button
                             key={tpl.id}
                             onClick={() => setInvoiceLayout(tpl.id)}
-                            className={`flex-1 py-2 px-2.5 rounded-xl font-semibold border ${
+                            className={`flex-1 py-2 px-2.5 rounded-lg font-semibold border ${
                               invoiceLayout === tpl.id
-                                ? "bg-indigo-600 text-white border-indigo-600"
-                                : "border-slate-300 dark:border-slate-700"
+                                ? "bg-[#2F4156] text-white border-[#2F4156]"
+                                : "border-[#C8D9E6]"
                             }`}
                           >
                             {tpl.label}
@@ -4228,7 +5146,7 @@ ${queueOrders
                     </div>
 
                     <div>
-                      <label className="font-semibold block mb-1.5 text-slate-500">
+                      <label className="font-semibold block mb-1.5 text-[#567C8D]">
                         2. Select Memo Language:
                       </label>
                       <div className="flex gap-1.5">
@@ -4242,10 +5160,10 @@ ${queueOrders
                           <button
                             key={lng.id}
                             onClick={() => setInvoiceLang(lng.id)}
-                            className={`flex-1 py-2 px-2.5 rounded-xl font-semibold border ${
+                            className={`flex-1 py-2 px-2.5 rounded-lg font-semibold border ${
                               invoiceLang === lng.id
-                                ? "bg-indigo-600 text-white border-indigo-600"
-                                : "border-slate-300 dark:border-slate-700"
+                                ? "bg-[#2F4156] text-white border-[#2F4156]"
+                                : "border-[#C8D9E6]"
                             }`}
                           >
                             {lng.label}
@@ -4255,7 +5173,7 @@ ${queueOrders
                     </div>
 
                     <div>
-                      <label className="font-semibold block mb-1.5 text-slate-500">
+                      <label className="font-semibold block mb-1.5 text-[#567C8D]">
                         3. Select Orders in Bulk Print Queue:
                       </label>
                       <div className="flex flex-wrap gap-1.5">
@@ -4275,8 +5193,8 @@ ${queueOrders
                               }
                               className={`px-2.5 py-1.5 rounded-lg font-mono text-[11px] font-semibold border ${
                                 active
-                                  ? "bg-emerald-600 text-white border-emerald-600"
-                                  : "border-slate-300 dark:border-slate-700"
+                                  ? "bg-[#567C8D] text-white border-[#567C8D]"
+                                  : "border-[#C8D9E6]"
                               }`}
                             >
                               {o.orderNumber.slice(-4)} ({o.memoPrintCount}x)
@@ -4285,7 +5203,7 @@ ${queueOrders
                         })}
                         <button
                           onClick={() => setPrintQueueIds(visibleOrders.map((o) => o.id))}
-                          className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-200 dark:bg-slate-800"
+                          className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#C8D9E6]/50 text-[#2F4156]"
                         >
                           Select All
                         </button>
@@ -4294,6 +5212,7 @@ ${queueOrders
                   </div>
                 </div>
 
+                {/* Printable Commercial Invoice Surface */}
                 <div className="print-only-area space-y-8">
                   {orders
                     .filter((o) => printQueueIds.includes(o.id))
@@ -4304,7 +5223,7 @@ ${queueOrders
                       return (
                         <div
                           key={order.id}
-                          className={`bg-white text-slate-900 rounded-2xl shadow-lg border border-slate-300 mx-auto transition-all ${
+                          className={`bg-white text-[#2F4156] rounded-xl shadow-md border border-[#C8D9E6] mx-auto transition-all ${
                             invoiceLayout === "THERMAL_80MM"
                               ? "max-w-[320px] p-4 font-mono text-[11px]"
                               : invoiceLayout === "COMPACT_MEMO"
@@ -4317,14 +5236,14 @@ ${queueOrders
                               invoiceLayout === "THERMAL_80MM"
                                 ? "flex-col text-center gap-2"
                                 : "justify-between items-start"
-                            } border-b-2 border-slate-900 pb-4 mb-4`}
+                            } border-b-2 border-[#2F4156] pb-4 mb-4`}
                           >
                             <div className="space-y-0.5">
                               <div className="inline-flex items-center gap-2">
-                                <span className="w-7 h-7 rounded-lg bg-slate-900 text-white font-extrabold flex items-center justify-center text-sm">
+                                <span className="w-7 h-7 rounded bg-[#2F4156] text-white font-serif font-bold flex items-center justify-center text-sm">
                                   N
                                 </span>
-                                <span className="font-extrabold text-base tracking-tight">
+                                <span className="font-bold text-base tracking-tight">
                                   {invoiceLang === "bn"
                                     ? settings.companyNameBn
                                     : invoiceLang === "en"
@@ -4332,12 +5251,12 @@ ${queueOrders
                                     : `${settings.companyName} | ${settings.companyNameBn}`}
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-600">
+                              <p className="text-xs text-[#567C8D]">
                                 {invoiceLang === "bn"
                                   ? settings.companyAddressBn
                                   : settings.companyAddress}
                               </p>
-                              <p className="text-xs text-slate-600 font-semibold">
+                              <p className="text-xs text-[#567C8D] font-semibold">
                                 Hotline: {settings.companyPhone} | {settings.companyEmail}
                               </p>
                             </div>
@@ -4345,25 +5264,25 @@ ${queueOrders
                             <div
                               className={
                                 invoiceLayout === "THERMAL_80MM"
-                                  ? "border-t border-dashed border-slate-400 pt-2"
+                                  ? "border-t border-dashed border-[#C8D9E6] pt-2"
                                   : "text-right"
                               }
                             >
-                              <div className="font-extrabold uppercase tracking-wider text-xs text-indigo-700">
+                              <div className="font-extrabold uppercase tracking-wider text-xs text-[#567C8D]">
                                 {invoiceLayout === "THERMAL_80MM"
                                   ? "80MM POS RECEIPT / ক্যাশ মেমো"
                                   : invoiceLayout === "COMPACT_MEMO"
                                   ? "COMPACT ORDER MEMO / অর্ডার স্লিপ"
-                                  : "OFFICIAL TAX INVOICE / অর্ডার মেমো"}
+                                  : "OFFICIAL COMMERCIAL INVOICE / অর্ডার মেমো"}
                               </div>
                               <div className="font-mono font-bold text-base">
                                 {order.orderNumber}
                               </div>
-                              <div className="text-[11px] text-slate-500">
+                              <div className="text-[11px] text-[#567C8D]">
                                 Date: {order.createdAt}
                               </div>
                               {order.trackingNumber && (
-                                <div className="text-[11px] font-mono font-semibold text-slate-700">
+                                <div className="text-[11px] font-mono font-semibold">
                                   Courier: {order.courierProvider} ({order.trackingNumber})
                                 </div>
                               )}
@@ -4373,30 +5292,30 @@ ${queueOrders
                           <div
                             className={`grid ${
                               invoiceLayout === "THERMAL_80MM" ? "grid-cols-1 gap-2" : "grid-cols-2 gap-4"
-                            } mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs`}
+                            } mb-4 bg-[#F5F1EE] p-3.5 rounded-lg border border-[#C8D9E6] text-xs`}
                           >
                             <div>
-                              <div className="font-bold uppercase text-slate-400 text-[10px]">
+                              <div className="font-bold uppercase text-[#567C8D] text-[10px]">
                                 {invoiceLang === "bn"
                                   ? "গ্রাহকের তথ্য (Billed & Shipped To)"
                                   : "Customer & Delivery Info / গ্রাহকের তথ্য"}
                               </div>
-                              <div className="font-bold text-slate-900 mt-0.5">
+                              <div className="font-bold text-[#2F4156] mt-0.5">
                                 {order.customerName}
                               </div>
                               <div className="font-semibold">Phone: {order.customerPhone}</div>
-                              <div className="text-slate-700">{order.deliveryAddress}</div>
-                              <div className="text-slate-500">Zone: {order.deliveryZone}</div>
+                              <div>{order.deliveryAddress}</div>
+                              <div className="text-[#567C8D]">Zone: {order.deliveryZone}</div>
                             </div>
 
                             <div
                               className={
                                 invoiceLayout === "THERMAL_80MM"
-                                  ? "border-t border-dashed border-slate-300 pt-2"
+                                  ? "border-t border-dashed border-[#C8D9E6] pt-2"
                                   : "text-right"
                               }
                             >
-                              <div className="font-bold uppercase text-slate-400 text-[10px]">
+                              <div className="font-bold uppercase text-[#567C8D] text-[10px]">
                                 Payment & Fulfillment / পেমেন্ট ও স্টাফ
                               </div>
                               <div>
@@ -4419,48 +5338,48 @@ ${queueOrders
 
                           <table className="w-full border-collapse mb-4 text-xs">
                             <thead>
-                              <tr className="border-b-2 border-slate-900 text-left">
-                                <th className="py-1.5">
+                              <tr className="bg-[#F5F1EE] border-b-2 border-[#2F4156] text-left">
+                                <th className="py-2 px-2">
                                   {invoiceLang === "bn" ? "পণ্যের বিবরণ" : "Product / বিবরণ"}
                                 </th>
                                 {invoiceLayout !== "THERMAL_80MM" && (
-                                  <th className="py-1.5">SKU</th>
+                                  <th className="py-2 px-2">SKU</th>
                                 )}
-                                <th className="py-1.5 text-center">Qty</th>
-                                <th className="py-1.5 text-right">Unit</th>
-                                <th className="py-1.5 text-right">Total</th>
+                                <th className="py-2 px-2 text-center">Qty</th>
+                                <th className="py-2 px-2 text-right">Unit</th>
+                                <th className="py-2 px-2 text-right">Total</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200">
+                            <tbody className="divide-y divide-[#C8D9E6]">
                               {order.items.map((item, i) => (
                                 <tr key={i}>
-                                  <td className="py-2 pr-2">
+                                  <td className="py-2 px-2">
                                     {invoiceLang !== "bn" && (
-                                      <div className="font-bold text-slate-900">
+                                      <div className="font-bold text-[#2F4156]">
                                         {item.productName}
                                       </div>
                                     )}
                                     {invoiceLang !== "en" && (
-                                      <div className="text-slate-700 font-medium">
+                                      <div className="text-[#567C8D] font-medium">
                                         {item.productNameBn}
                                       </div>
                                     )}
                                     {item.variantName && (
-                                      <div className="text-[11px] text-slate-500">
+                                      <div className="text-[11px] text-[#567C8D]">
                                         Variant: {item.variantName}
                                       </div>
                                     )}
                                   </td>
                                   {invoiceLayout !== "THERMAL_80MM" && (
-                                    <td className="py-2 font-mono text-[11px]">{item.sku}</td>
+                                    <td className="py-2 px-2 font-mono text-[11px]">{item.sku}</td>
                                   )}
-                                  <td className="py-2 text-center font-semibold">
+                                  <td className="py-2 px-2 text-center font-semibold">
                                     {item.quantity}
                                   </td>
-                                  <td className="py-2 text-right">
+                                  <td className="py-2 px-2 text-right">
                                     {formatBDT(item.unitPrice)}
                                   </td>
-                                  <td className="py-2 text-right font-bold">
+                                  <td className="py-2 px-2 text-right font-bold">
                                     {formatBDT(item.totalPrice)}
                                   </td>
                                 </tr>
@@ -4473,16 +5392,16 @@ ${queueOrders
                               invoiceLayout === "THERMAL_80MM"
                                 ? "flex-col gap-3"
                                 : "justify-between items-start gap-6"
-                            } border-t border-slate-300 pt-3 mb-4 text-xs`}
+                            } border-t border-[#C8D9E6] pt-3 mb-4 text-xs`}
                           >
                             <div className="space-y-1 max-w-xs">
                               {order.customerNotes && (
                                 <div>
                                   <span className="font-bold">Customer Note: </span>
-                                  <span className="text-slate-600">{order.customerNotes}</span>
+                                  <span className="text-[#567C8D]">{order.customerNotes}</span>
                                 </div>
                               )}
-                              <div className="text-[11px] text-slate-500">
+                              <div className="text-[11px] text-[#567C8D]">
                                 Print Count: #{order.memoPrintCount + 1} | Verified Order Data
                               </div>
                             </div>
@@ -4504,7 +5423,7 @@ ${queueOrders
                                 <span>Delivery / ডেলিভারি চার্জ:</span>
                                 <span>{formatBDT(order.deliveryCharge)}</span>
                               </div>
-                              <div className="flex justify-between py-1.5 mt-1 border-t-2 border-slate-900 font-extrabold text-sm">
+                              <div className="flex justify-between py-1.5 mt-1 border-t-2 border-[#2F4156] font-extrabold text-sm">
                                 <span>Grand Total / সর্বমোট:</span>
                                 <span>{formatBDT(order.grandTotal)}</span>
                               </div>
@@ -4512,20 +5431,20 @@ ${queueOrders
                           </div>
 
                           {invoiceLayout === "A4_STANDARD" && (
-                            <div className="grid grid-cols-2 gap-12 pt-8 pb-4 text-xs text-slate-500">
-                              <div className="border-t border-slate-400 pt-1 text-center">
+                            <div className="grid grid-cols-2 gap-12 pt-8 pb-4 text-xs text-[#567C8D]">
+                              <div className="border-t border-[#C8D9E6] pt-1 text-center">
                                 Customer Signature / গ্রাহকের স্বাক্ষর
                               </div>
-                              <div className="border-t border-slate-400 pt-1 text-center">
+                              <div className="border-t border-[#C8D9E6] pt-1 text-center">
                                 Authorized Signatory ({activeStaff.name})
                               </div>
                             </div>
                           )}
 
-                          <div className="border-t border-dashed border-slate-300 pt-3 text-center text-[11px] text-slate-600 space-y-1">
+                          <div className="border-t border-dashed border-[#C8D9E6] pt-3 text-center text-[11px] text-[#567C8D] space-y-1">
                             {invoiceLang !== "bn" && <p>{settings.invoiceTermsEn}</p>}
                             {invoiceLang !== "en" && <p>{settings.invoiceTermsBn}</p>}
-                            <p className="font-bold text-slate-900 pt-1">
+                            <p className="font-bold text-[#2F4156] pt-1">
                               {invoiceLang === "bn"
                                 ? settings.invoiceThankYouBn
                                 : invoiceLang === "en"
@@ -4541,23 +5460,27 @@ ${queueOrders
             )}
 
             {/* ============================================================== */}
-            {/* TAB 4: PRODUCTS CATALOG MANAGEMENT                             */}
+            {/* SECTION 11: PRODUCT & INVENTORY MANAGEMENT UI                  */}
             {/* ============================================================== */}
             {adminTab === "PRODUCTS" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-xl font-black">Product Catalog & SKU Management</h2>
-                      <p className="text-xs text-slate-500">
+                      <h2 className="font-serif text-xl font-bold">
+                        Product Catalog & SKU Management
+                      </h2>
+                      <p className="text-xs text-[#567C8D]">
                         Purchase cost prices are strictly protected by the{" "}
-                        <code className="font-mono text-indigo-500">products.purchase_price</code>{" "}
+                        <code className="font-mono text-[#2F4156] dark:text-[#C8D9E6]">
+                          products.purchase_price
+                        </code>{" "}
                         permission.
                       </p>
                     </div>
                     <button
                       onClick={handleExportProductsCsv}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-600 text-white text-xs font-bold"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#567C8D] hover:bg-[#2F4156] text-white text-xs font-semibold"
                     >
                       <Download className="w-3.5 h-3.5" /> Export Excel / CSV
                     </button>
@@ -4577,6 +5500,7 @@ ${queueOrders
                           barcode: `890${Math.floor(1000000000 + Math.random() * 9000000000)}`,
                           categoryId: newProductForm.categoryId,
                           description: "Enterprise catalog item with tracked warehouse stock.",
+                          specs: { Warranty: "12 Months Official Warranty" },
                           regularPrice: Number(newProductForm.regularPrice),
                           salePrice: Number(newProductForm.salePrice),
                           purchasePrice: Number(newProductForm.purchasePrice),
@@ -4586,7 +5510,6 @@ ${queueOrders
                           isActive: true,
                           rating: 5.0,
                           reviewCount: 1,
-                          imageGrad: "from-indigo-600 to-slate-900",
                           variants: [
                             {
                               id: `v-${Date.now()}`,
@@ -4607,7 +5530,7 @@ ${queueOrders
                         setNewProductForm({ ...newProductForm, name: "", nameBn: "", sku: "" });
                         showToast(`Created product ${created.name} (${created.sku})`);
                       }}
-                      className="grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
+                      className="grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
                     >
                       <input
                         type="text"
@@ -4617,7 +5540,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, name: e.target.value })
                         }
                         placeholder="Product Name (EN)"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <input
                         type="text"
@@ -4626,7 +5549,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, nameBn: e.target.value })
                         }
                         placeholder="নাম (বাংলা)"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <input
                         type="text"
@@ -4636,7 +5559,7 @@ ${queueOrders
                           setNewProductForm({ ...newProductForm, sku: e.target.value })
                         }
                         placeholder="SKU (e.g. NX-700)"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <input
                         type="number"
@@ -4649,7 +5572,7 @@ ${queueOrders
                           })
                         }
                         placeholder="Sale Price"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <input
                         type="number"
@@ -4662,11 +5585,11 @@ ${queueOrders
                           })
                         }
                         placeholder="Initial Stock"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
+                        className="px-4 py-2 rounded-lg bg-[#2F4156] hover:bg-[#567C8D] text-white font-semibold"
                       >
                         + Add Product
                       </button>
@@ -4676,32 +5599,32 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
-                          <th className="py-2.5 px-2">Product / বাংলা নাম</th>
-                          <th className="py-2.5 px-2">SKU & Barcode</th>
-                          <th className="py-2.5 px-2">Sale Price</th>
-                          <th className="py-2.5 px-2">Purchase Cost (RBAC)</th>
-                          <th className="py-2.5 px-2">Stock</th>
-                          <th className="py-2.5 px-2 text-right">Status</th>
+                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                          <th className="py-2.5 px-2.5">Product / বাংলা নাম</th>
+                          <th className="py-2.5 px-2.5">SKU & Barcode</th>
+                          <th className="py-2.5 px-2.5">Sale Price</th>
+                          <th className="py-2.5 px-2.5">Purchase Cost (RBAC)</th>
+                          <th className="py-2.5 px-2.5">Stock</th>
+                          <th className="py-2.5 px-2.5 text-right">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      <tbody className="divide-y divide-[#C8D9E6]/60">
                         {products.map((p) => (
                           <tr key={p.id}>
-                            <td className="py-3 px-2">
+                            <td className="py-2.5 px-2.5">
                               <div className="font-bold">{p.name}</div>
-                              <div className="text-slate-500">{p.nameBn}</div>
+                              <div className="text-[#567C8D]">{p.nameBn}</div>
                             </td>
-                            <td className="py-3 px-2 font-mono">
+                            <td className="py-2.5 px-2.5 font-mono">
                               <div>{p.sku}</div>
-                              <div className="text-[10px] text-slate-400">{p.barcode}</div>
+                              <div className="text-[10px] text-[#567C8D]">{p.barcode}</div>
                             </td>
-                            <td className="py-3 px-2 font-black text-indigo-600">
+                            <td className="py-2.5 px-2.5 font-bold text-[#2F4156] dark:text-white">
                               {formatBDT(p.salePrice)}
                             </td>
-                            <td className="py-3 px-2">
+                            <td className="py-2.5 px-2.5">
                               {hasPerm("products.purchase_price") ? (
-                                <span className="font-mono font-bold text-emerald-600">
+                                <span className="font-mono font-semibold text-emerald-700">
                                   {formatBDT(p.purchasePrice)}
                                 </span>
                               ) : (
@@ -4710,18 +5633,18 @@ ${queueOrders
                                 </span>
                               )}
                             </td>
-                            <td className="py-3 px-2">
+                            <td className="py-2.5 px-2.5">
                               <span
-                                className={`px-2 py-0.5 rounded-full font-bold ${
+                                className={`px-2 py-0.5 rounded font-bold ${
                                   p.stockQuantity <= p.lowStockThreshold
-                                    ? "bg-amber-500/15 text-amber-600"
-                                    : "bg-emerald-500/15 text-emerald-600"
+                                    ? "bg-amber-500/15 text-amber-700"
+                                    : "bg-[#C8D9E6]/50 text-[#2F4156]"
                                 }`}
                               >
                                 {p.stockQuantity} pcs
                               </span>
                             </td>
-                            <td className="py-3 px-2 text-right">
+                            <td className="py-2.5 px-2.5 text-right">
                               <button
                                 onClick={() =>
                                   setProducts((prev) =>
@@ -4734,7 +5657,7 @@ ${queueOrders
                                 }
                                 className={`px-2.5 py-1 rounded-lg font-semibold ${
                                   p.isActive
-                                    ? "bg-emerald-500/15 text-emerald-600"
+                                    ? "bg-[#C8D9E6]/60 text-[#2F4156]"
                                     : "bg-slate-200 text-slate-600"
                                 }`}
                               >
@@ -4750,10 +5673,12 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 5: CATEGORIES */}
+            {/* CATEGORIES */}
             {adminTab === "CATEGORIES" && (
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <h2 className="text-xl font-black">Product Categories & Bilingual Labels</h2>
+              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <h2 className="font-serif text-xl font-bold">
+                  Product Categories & Bilingual Labels
+                </h2>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -4767,6 +5692,7 @@ ${queueOrders
                         slug:
                           newCategoryForm.slug ||
                           newCategoryForm.name.toLowerCase().replace(/\s+/g, "-"),
+                        itemCount: 0,
                         isActive: true
                       }
                     ]);
@@ -4782,7 +5708,7 @@ ${queueOrders
                       setNewCategoryForm({ ...newCategoryForm, name: e.target.value })
                     }
                     placeholder="Category Name (English)"
-                    className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                    className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                   />
                   <input
                     type="text"
@@ -4791,11 +5717,11 @@ ${queueOrders
                       setNewCategoryForm({ ...newCategoryForm, nameBn: e.target.value })
                     }
                     placeholder="ক্যাটাগরি নাম (বাংলা)"
-                    className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                    className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
+                    className="px-4 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
                   >
                     + Create Category
                   </button>
@@ -4805,13 +5731,13 @@ ${queueOrders
                   {categories.map((c) => (
                     <div
                       key={c.id}
-                      className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center"
+                      className="p-4 rounded-xl border border-[#C8D9E6] flex justify-between items-center"
                     >
                       <div>
                         <div className="font-bold text-sm">{c.name}</div>
-                        <div className="text-xs text-slate-500">{c.nameBn}</div>
+                        <div className="text-xs text-[#567C8D]">{c.nameBn}</div>
                       </div>
-                      <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded">
+                      <span className="text-xs font-mono bg-[#F5F1EE] dark:bg-[#1B2634] px-2.5 py-1 rounded">
                         /{c.slug}
                       </span>
                     </div>
@@ -4820,11 +5746,11 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 6: INVENTORY & STOCK LEDGER */}
+            {/* INVENTORY & STOCK LEDGER */}
             {adminTab === "INVENTORY" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h2 className="text-xl font-black">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <h2 className="font-serif text-xl font-bold">
                     Atomic Inventory Adjustment & Movement Ledger
                   </h2>
                   <form
@@ -4857,7 +5783,7 @@ ${queueOrders
                         referenceId: `ADJ-${Date.now().toString().slice(-4)}`,
                         note: stockAdjustForm.note,
                         performedBy: activeStaff.name,
-                        createdAt: "2026-11-10 04:25 PM"
+                        createdAt: "2026-11-10 05:25 PM"
                       };
                       setInventoryTx((prev) => [tx, ...prev]);
                       logAction(
@@ -4868,14 +5794,14 @@ ${queueOrders
                       );
                       showToast(`Updated ${target.name} stock to ${nextStock} units!`);
                     }}
-                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
+                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
                   >
                     <select
                       value={stockAdjustForm.productId}
                       onChange={(e) =>
                         setStockAdjustForm({ ...stockAdjustForm, productId: e.target.value })
                       }
-                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                     >
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -4891,7 +5817,7 @@ ${queueOrders
                           type: e.target.value as InventoryTx["type"]
                         })
                       }
-                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                     >
                       <option value="PURCHASE_RESTOCK">PURCHASE_RESTOCK (+)</option>
                       <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (+/-)</option>
@@ -4907,7 +5833,7 @@ ${queueOrders
                         })
                       }
                       placeholder="Qty Delta (e.g. 15 or -3)"
-                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                     />
                     <input
                       type="text"
@@ -4916,11 +5842,11 @@ ${queueOrders
                         setStockAdjustForm({ ...stockAdjustForm, note: e.target.value })
                       }
                       placeholder="Reason / PO Reference"
-                      className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
+                      className="px-4 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
                     >
                       Record Movement
                     </button>
@@ -4929,25 +5855,25 @@ ${queueOrders
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
-                          <th className="py-2.5 px-2">Timestamp</th>
-                          <th className="py-2.5 px-2">Product & SKU</th>
-                          <th className="py-2.5 px-2">Movement Type</th>
-                          <th className="py-2.5 px-2">Prev → Delta → New</th>
-                          <th className="py-2.5 px-2">Reference & Note</th>
-                          <th className="py-2.5 px-2">Staff</th>
+                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                          <th className="py-2.5 px-2.5">Timestamp</th>
+                          <th className="py-2.5 px-2.5">Product & SKU</th>
+                          <th className="py-2.5 px-2.5">Movement Type</th>
+                          <th className="py-2.5 px-2.5">Prev → Delta → New</th>
+                          <th className="py-2.5 px-2.5">Reference & Note</th>
+                          <th className="py-2.5 px-2.5">Staff</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      <tbody className="divide-y divide-[#C8D9E6]/60">
                         {inventoryTx.map((tx) => (
                           <tr key={tx.id}>
-                            <td className="py-2.5 px-2 text-slate-400">{tx.createdAt}</td>
-                            <td className="py-2.5 px-2">
+                            <td className="py-2.5 px-2.5 text-[#567C8D]">{tx.createdAt}</td>
+                            <td className="py-2.5 px-2.5">
                               <div className="font-bold">{tx.productName}</div>
-                              <div className="font-mono text-[11px] text-slate-500">{tx.sku}</div>
+                              <div className="font-mono text-[11px] text-[#567C8D]">{tx.sku}</div>
                             </td>
-                            <td className="py-2.5 px-2 font-mono text-[11px]">{tx.type}</td>
-                            <td className="py-2.5 px-2 font-mono">
+                            <td className="py-2.5 px-2.5 font-mono text-[11px]">{tx.type}</td>
+                            <td className="py-2.5 px-2.5 font-mono">
                               {tx.previousStock} →{" "}
                               <span
                                 className={
@@ -4962,11 +5888,11 @@ ${queueOrders
                               </span>{" "}
                               → <strong>{tx.newStock}</strong>
                             </td>
-                            <td className="py-2.5 px-2">
+                            <td className="py-2.5 px-2.5">
                               <span className="font-mono font-semibold">{tx.referenceId}</span>:{" "}
                               {tx.note}
                             </td>
-                            <td className="py-2.5 px-2 font-semibold">{tx.performedBy}</td>
+                            <td className="py-2.5 px-2.5 font-semibold">{tx.performedBy}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -4976,33 +5902,78 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 7: ORDER ASSIGNMENTS & DELIVERY STAFF COD PORTAL */}
+            {/* ============================================================== */}
+            {/* SECTION 12: CUSTOMER MANAGEMENT UI                             */}
+            {/* ============================================================== */}
+            {adminTab === "CUSTOMERS" && (
+              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <h2 className="font-serif text-xl font-bold">
+                  Customer Directory & Purchase History
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                        <th className="py-3 px-2.5">Customer</th>
+                        <th className="py-3 px-2.5">Phone & Email</th>
+                        <th className="py-3 px-2.5">Total Orders</th>
+                        <th className="py-3 px-2.5">Total Spent</th>
+                        <th className="py-3 px-2.5">Registered</th>
+                        <th className="py-3 px-2.5">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C8D9E6]/60">
+                      {customers.map((c) => (
+                        <tr key={c.id}>
+                          <td className="py-3 px-2.5">
+                            <div className="font-bold">{c.name}</div>
+                            <div className="text-[11px] text-[#567C8D]">{c.address}</div>
+                          </td>
+                          <td className="py-3 px-2.5">
+                            <div className="font-semibold">{c.phone}</div>
+                            <div className="text-[#567C8D]">{c.email}</div>
+                          </td>
+                          <td className="py-3 px-2.5 font-bold">{c.totalOrders} orders</td>
+                          <td className="py-3 px-2.5 font-bold text-[#2F4156] dark:text-white">
+                            {formatBDT(c.totalSpent)}
+                          </td>
+                          <td className="py-3 px-2.5 text-[#567C8D]">{c.registeredAt}</td>
+                          <td className="py-3 px-2.5">
+                            <span className="px-2.5 py-0.5 rounded bg-[#C8D9E6]/50 text-[#2F4156] font-bold">
+                              {c.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ORDER ASSIGNMENTS & COD */}
             {adminTab === "ASSIGNMENTS" && (
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <h2 className="text-xl font-black">
+              <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                <h2 className="font-serif text-xl font-bold">
                   Moderator, Order Processor & Delivery Rider Assignments
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Assign orders to specific staff members and record Cash on Delivery (COD) collections.
-                </p>
-
                 <div className="space-y-3">
                   {visibleOrders.map((ord) => (
                     <div
                       key={ord.id}
-                      className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-xs"
+                      className="p-4 rounded-xl border border-[#C8D9E6] grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-xs"
                     >
                       <div>
-                        <div className="font-mono font-bold text-indigo-600">
+                        <div className="font-mono font-bold text-[#2F4156] dark:text-white">
                           {ord.orderNumber}
                         </div>
                         <div className="font-bold">{ord.customerName}</div>
-                        <div className="text-slate-500">{ord.customerPhone}</div>
+                        <div className="text-[#567C8D]">{ord.customerPhone}</div>
                         <div className="text-slate-400">{ord.deliveryAddress}</div>
                       </div>
 
                       <div>
-                        <label className="text-[11px] text-slate-400 block">
+                        <label className="text-[11px] text-[#567C8D] block">
                           Assigned Moderator:
                         </label>
                         <select
@@ -5017,7 +5988,7 @@ ${queueOrders
                             );
                             showToast(`Assigned moderator for ${ord.orderNumber}`);
                           }}
-                          className="w-full mt-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                         >
                           {staffList.map((s) => (
                             <option key={s.id} value={s.id}>
@@ -5028,7 +5999,7 @@ ${queueOrders
                       </div>
 
                       <div>
-                        <label className="text-[11px] text-slate-400 block">
+                        <label className="text-[11px] text-[#567C8D] block">
                           Assigned Delivery Rider:
                         </label>
                         <select
@@ -5043,7 +6014,7 @@ ${queueOrders
                             );
                             showToast(`Assigned delivery rider for ${ord.orderNumber}`);
                           }}
-                          className="w-full mt-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-[#C8D9E6] bg-transparent"
                         >
                           {staffList.map((s) => (
                             <option key={s.id} value={s.id}>
@@ -5063,7 +6034,7 @@ ${queueOrders
                               ord.grandTotal
                             )
                           }
-                          className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold"
+                          className="px-3 py-1.5 rounded-lg bg-[#2F4156] text-white font-semibold"
                         >
                           Mark Delivered + Collect {formatBDT(ord.grandTotal)}
                         </button>
@@ -5075,7 +6046,7 @@ ${queueOrders
                               "Customer unavailable / returned parcel"
                             )
                           }
-                          className="px-3 py-1.5 rounded-xl border border-rose-500/40 text-rose-500 font-bold"
+                          className="px-3 py-1.5 rounded-lg border border-rose-500/40 text-rose-500 font-semibold"
                         >
                           Mark Returned (Auto-Restock)
                         </button>
@@ -5087,30 +6058,27 @@ ${queueOrders
             )}
 
             {/* ============================================================== */}
-            {/* TAB 8: STAFF MANAGEMENT, SUPERUSER PROMOTION & AUDIT LOGS      */}
+            {/* SECTION 8: STAFF MANAGEMENT, SUPERUSER & AUDIT LOGS            */}
             {/* ============================================================== */}
             {adminTab === "STAFF" && (
               <div className="space-y-6">
-                {/* Dedicated Superuser Setup & Promotion Box */}
-                <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-6 border border-amber-500/30 shadow-xl space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-3 py-1 rounded-full">
-                        <Crown className="w-3.5 h-3.5" /> Superuser (`SUPER_ADMIN`) Management
-                      </span>
-                      <h2 className="text-xl font-black mt-2">
-                        Where to Set or Create a Superuser
-                      </h2>
-                      <p className="text-xs text-slate-300 mt-0.5">
-                        Create a new Superuser account directly below, or click <strong>&quot;Make Superuser&quot;</strong> next to any staff member in the table.
-                      </p>
-                    </div>
+                <div className="rounded-xl bg-[#2F4156] text-white p-6 border border-[#567C8D] space-y-4">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider bg-[#C8D9E6] text-[#2F4156] px-2.5 py-0.5 rounded">
+                      <Crown className="w-3.5 h-3.5" /> Superuser (`SUPER_ADMIN`) Management
+                    </span>
+                    <h2 className="font-serif text-xl font-bold mt-2">
+                      Set or Promote a Superuser
+                    </h2>
+                    <p className="text-xs text-[#C8D9E6] mt-0.5">
+                      Create a new Superuser below or click <strong>&quot;Make Superuser&quot;</strong> on any staff row.
+                    </p>
                   </div>
 
-                  {hasPerm("staff.manage") ? (
+                  {hasPerm("staff.manage") && (
                     <form
                       onSubmit={handleCreateOrPromoteSuperuser}
-                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs"
+                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-xl bg-[#243344] border border-[#567C8D]/40 text-xs"
                     >
                       <input
                         type="text"
@@ -5120,7 +6088,7 @@ ${queueOrders
                           setSuperuserForm({ ...superuserForm, name: e.target.value })
                         }
                         placeholder="Superuser Full Name"
-                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                        className="px-3 py-2 rounded-lg border border-[#567C8D] bg-[#1B2634] text-white"
                       />
                       <input
                         type="email"
@@ -5130,7 +6098,7 @@ ${queueOrders
                           setSuperuserForm({ ...superuserForm, email: e.target.value })
                         }
                         placeholder="Superuser Email"
-                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                        className="px-3 py-2 rounded-lg border border-[#567C8D] bg-[#1B2634] text-white"
                       />
                       <input
                         type="text"
@@ -5139,7 +6107,7 @@ ${queueOrders
                           setSuperuserForm({ ...superuserForm, phone: e.target.value })
                         }
                         placeholder="Phone Number"
-                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                        className="px-3 py-2 rounded-lg border border-[#567C8D] bg-[#1B2634] text-white"
                       />
                       <input
                         type="password"
@@ -5149,26 +6117,21 @@ ${queueOrders
                           setSuperuserForm({ ...superuserForm, password: e.target.value })
                         }
                         placeholder="Password"
-                        className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-slate-900 text-white"
+                        className="px-3 py-2 rounded-lg border border-[#567C8D] bg-[#1B2634] text-white"
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black flex items-center justify-center gap-1.5"
+                        className="px-4 py-2 rounded-lg bg-[#C8D9E6] hover:bg-white text-[#2F4156] font-bold flex items-center justify-center gap-1"
                       >
                         <Crown className="w-4 h-4" /> + Create Superuser
                       </button>
                     </form>
-                  ) : (
-                    <div className="p-3 rounded-xl bg-rose-500/20 text-rose-200 text-xs">
-                      Switch to a Super Admin session to create or promote Superusers.
-                    </div>
                   )}
                 </div>
 
-                {/* Regular Staff Creation & Directory */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h2 className="text-lg font-black">Staff Directory & Role Assignments</h2>
-                  {hasPerm("staff.manage") ? (
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                  <h2 className="font-serif text-xl font-bold">Multi-Role Staff Management</h2>
+                  {hasPerm("staff.manage") && (
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -5183,6 +6146,7 @@ ${queueOrders
                           designation: newStaffForm.designation,
                           roleId: newStaffForm.roleId,
                           isSuperuser: newStaffForm.roleId === "role-super-admin",
+                          joinDate: "10 Nov 2026",
                           directPermissions: [],
                           status: "ACTIVE",
                           ordersAssigned: 0,
@@ -5200,7 +6164,7 @@ ${queueOrders
                         setNewStaffForm({ ...newStaffForm, name: "", email: "" });
                         showToast(`Added staff member ${created.name}!`);
                       }}
-                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 text-xs"
+                      className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] text-xs"
                     >
                       <input
                         type="text"
@@ -5210,7 +6174,7 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, name: e.target.value })
                         }
                         placeholder="Full Name"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <input
                         type="email"
@@ -5220,7 +6184,7 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, email: e.target.value })
                         }
                         placeholder="Email Address"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <input
                         type="text"
@@ -5229,14 +6193,14 @@ ${queueOrders
                           setNewStaffForm({ ...newStaffForm, designation: e.target.value })
                         }
                         placeholder="Designation"
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       />
                       <select
                         value={newStaffForm.roleId}
                         onChange={(e) =>
                           setNewStaffForm({ ...newStaffForm, roleId: e.target.value })
                         }
-                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                       >
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
@@ -5246,65 +6210,59 @@ ${queueOrders
                       </select>
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
+                        className="px-4 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
                       >
                         + Create Staff
                       </button>
                     </form>
-                  ) : (
-                    <div className="p-3 rounded-xl bg-rose-500/10 text-rose-500 text-xs">
-                      Only Super Admin or staff with <code>staff.manage</code> can add or modify staff accounts.
-                    </div>
                   )}
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase">
-                          <th className="py-2.5 px-2">Staff Member</th>
-                          <th className="py-2.5 px-2">Role & Superuser Status</th>
-                          <th className="py-2.5 px-2">Assigned / Completed / Cancelled</th>
-                          <th className="py-2.5 px-2">COD Collected</th>
-                          <th className="py-2.5 px-2 text-right">Actions</th>
+                        <tr className="bg-[#F5F1EE] dark:bg-[#1B2634] border-b border-[#C8D9E6] text-[#2F4156] dark:text-[#C8D9E6] uppercase">
+                          <th className="py-2.5 px-2.5">Staff Member</th>
+                          <th className="py-2.5 px-2.5">Role</th>
+                          <th className="py-2.5 px-2.5">Assigned / Completed / Cancelled</th>
+                          <th className="py-2.5 px-2.5">Join Date</th>
+                          <th className="py-2.5 px-2.5 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      <tbody className="divide-y divide-[#C8D9E6]/60">
                         {staffList.map((stf) => {
                           const r = roles.find((rl) => rl.id === stf.roleId);
                           const isSu = stf.isSuperuser || r?.slug === "SUPER_ADMIN";
                           return (
                             <tr key={stf.id}>
-                              <td className="py-3 px-2">
+                              <td className="py-2.5 px-2.5">
                                 <div className="font-bold flex items-center gap-1.5">
                                   <span>
                                     {stf.name} ({stf.employeeCode})
                                   </span>
                                   {isSu && (
-                                    <span className="inline-flex items-center gap-1 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-black">
-                                      <Crown className="w-3 h-3" /> SUPERUSER
+                                    <span className="px-2 py-0.5 rounded bg-[#C8D9E6] text-[#2F4156] text-[10px] font-bold">
+                                      SUPERUSER
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-slate-500">{stf.email}</div>
+                                <div className="text-[#567C8D]">{stf.email}</div>
                               </td>
-                              <td className="py-3 px-2 font-bold text-indigo-600">
+                              <td className="py-2.5 px-2.5 font-semibold text-[#567C8D]">
                                 {r?.name}
                               </td>
-                              <td className="py-3 px-2 font-mono">
+                              <td className="py-2.5 px-2.5 font-mono">
                                 {stf.ordersAssigned} /{" "}
                                 <span className="text-emerald-600 font-bold">
                                   {stf.ordersCompleted}
                                 </span>{" "}
                                 / <span className="text-rose-500">{stf.ordersCancelled}</span>
                               </td>
-                              <td className="py-3 px-2 font-bold">
-                                {formatBDT(stf.cashCollected)}
-                              </td>
-                              <td className="py-3 px-2 text-right space-x-2">
+                              <td className="py-2.5 px-2.5 text-[#567C8D]">{stf.joinDate}</td>
+                              <td className="py-2.5 px-2.5 text-right space-x-2">
                                 {!isSu && (
                                   <button
                                     onClick={() => handlePromoteStaffToSuperuser(stf.id)}
-                                    className="px-3 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-600 hover:text-slate-950 font-bold transition"
+                                    className="px-2.5 py-1 rounded bg-[#C8D9E6]/60 text-[#2F4156] font-semibold"
                                   >
                                     Make Superuser
                                   </button>
@@ -5314,7 +6272,7 @@ ${queueOrders
                                     setActiveStaffId(stf.id);
                                     showToast(`Switched active session to ${stf.name}`);
                                   }}
-                                  className="px-3 py-1 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white font-semibold"
+                                  className="px-3 py-1 rounded bg-[#2F4156] text-white font-semibold"
                                 >
                                   Test Role
                                 </button>
@@ -5327,21 +6285,21 @@ ${queueOrders
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3">
-                  <h3 className="font-black text-sm">Immutable Staff Activity Audit Log</h3>
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-3">
+                  <h3 className="font-bold text-sm">Immutable Staff Activity Audit Log</h3>
                   <div className="space-y-2">
                     {activityLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
+                        className="p-3 rounded-lg bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-2 text-xs"
                       >
                         <div>
                           <span className="font-bold">{log.staffName}</span>{" "}
-                          <span className="text-indigo-500 font-semibold">[{log.staffRole}]</span>{" "}
+                          <span className="text-[#567C8D] font-semibold">[{log.staffRole}]</span>{" "}
                           — <span className="font-mono font-bold">{log.action}</span>:{" "}
                           <span>{log.details}</span>
                         </div>
-                        <span className="text-slate-400 font-mono text-[11px]">
+                        <span className="text-[#567C8D] font-mono text-[11px]">
                           {log.createdAt}
                         </span>
                       </div>
@@ -5351,20 +6309,22 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 9: CUSTOM ROLES & GRANULAR PERMISSION BUILDER */}
+            {/* ============================================================== */}
+            {/* SECTION 8.B: GROUPED ROLE & PERMISSION MATRIX                  */}
+            {/* ============================================================== */}
             {adminTab === "ROLES" && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-5">
                   <div>
-                    <h2 className="text-xl font-black">
-                      Custom Role Builder & 28-Permission Matrix
+                    <h2 className="font-serif text-xl font-bold">
+                      Custom Role Builder & Grouped 28-Permission Matrix
                     </h2>
-                    <p className="text-xs text-slate-500">
-                      Super Admin can create custom roles with granular module permissions and assign them to staff.
+                    <p className="text-xs text-[#567C8D]">
+                      Configure custom roles grouped by operational module (Dashboard, Orders, Products, Inventory, Invoices, Staff, Reports, Settings).
                     </p>
                   </div>
 
-                  {hasPerm("roles.manage") ? (
+                  {hasPerm("roles.manage") && (
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -5396,7 +6356,7 @@ ${queueOrders
                         });
                         showToast(`Created custom role "${created.name}"!`);
                       }}
-                      className="space-y-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs"
+                      className="space-y-5 p-5 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634] border border-[#C8D9E6] text-xs"
                     >
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input
@@ -5407,7 +6367,7 @@ ${queueOrders
                             setNewRoleForm({ ...newRoleForm, name: e.target.value })
                           }
                           placeholder="Custom Role Name (e.g. Night Shift Supervisor)"
-                          className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                          className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                         />
                         <input
                           type="text"
@@ -5416,87 +6376,76 @@ ${queueOrders
                             setNewRoleForm({ ...newRoleForm, description: e.target.value })
                           }
                           placeholder="Role description"
-                          className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                          className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-white dark:bg-[#243344]"
                         />
                         <button
                           type="submit"
-                          className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold"
+                          className="px-4 py-2 rounded-lg bg-[#2F4156] text-white font-bold"
                         >
                           + Save Custom Role ({newRoleForm.permissions.length} Perms)
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-2">
-                        {ALL_PERMISSIONS.map((perm) => {
-                          const checked = newRoleForm.permissions.includes(perm.code);
-                          return (
-                            <label
-                              key={perm.code}
-                              className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer ${
-                                checked
-                                  ? "border-indigo-500 bg-indigo-500/10"
-                                  : "border-slate-200 dark:border-slate-700"
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={(e) =>
-                                  setNewRoleForm((prev) => ({
-                                    ...prev,
-                                    permissions: e.target.checked
-                                      ? [...prev.permissions, perm.code]
-                                      : prev.permissions.filter((c) => c !== perm.code)
-                                  }))
-                                }
-                                className="mt-0.5"
-                              />
-                              <div>
-                                <div className="font-semibold leading-tight">{perm.name}</div>
-                                <div className="font-mono text-[10px] text-slate-400">
-                                  {perm.code}
-                                </div>
-                              </div>
-                            </label>
-                          );
-                        })}
+                      <div className="space-y-4">
+                        {groupedPermissions.map(([moduleName, perms]) => (
+                          <div key={moduleName} className="space-y-2">
+                            <div className="font-bold uppercase tracking-wider text-[11px] text-[#567C8D]">
+                              {moduleName}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                              {perms.map((perm) => {
+                                const checked = newRoleForm.permissions.includes(perm.code);
+                                return (
+                                  <label
+                                    key={perm.code}
+                                    className={`flex items-start gap-2 p-2.5 rounded-lg border cursor-pointer ${
+                                      checked
+                                        ? "border-[#2F4156] bg-[#C8D9E6]/40"
+                                        : "border-[#C8D9E6] bg-white dark:bg-[#243344]"
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={(e) =>
+                                        setNewRoleForm((prev) => ({
+                                          ...prev,
+                                          permissions: e.target.checked
+                                            ? [...prev.permissions, perm.code]
+                                            : prev.permissions.filter((c) => c !== perm.code)
+                                        }))
+                                      }
+                                      className="mt-0.5"
+                                    />
+                                    <div>
+                                      <div className="font-semibold leading-tight">{perm.name}</div>
+                                      <div className="font-mono text-[10px] text-[#567C8D]">
+                                        {perm.code}
+                                      </div>
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </form>
-                  ) : (
-                    <div className="p-4 rounded-xl bg-rose-500/10 text-rose-500 text-xs font-semibold">
-                      RBAC Guard: Your current role ({activeRole.name}) does not hold{" "}
-                      <code>roles.manage</code>. Switch to Super Admin in the top bar to create custom roles.
-                    </div>
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {roles.map((r) => (
                       <div
                         key={r.id}
-                        className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2"
+                        className="p-4 rounded-xl border border-[#C8D9E6] space-y-2"
                       >
                         <div className="flex justify-between items-center">
-                          <span className="font-black text-sm">{r.name}</span>
-                          <span className="text-[11px] font-mono bg-indigo-500/10 text-indigo-500 px-2.5 py-0.5 rounded-full font-bold">
+                          <span className="font-bold text-sm">{r.name}</span>
+                          <span className="text-[11px] font-mono bg-[#C8D9E6]/50 text-[#2F4156] px-2 py-0.5 rounded font-semibold">
                             {r.permissions.length} permissions
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">{r.description}</p>
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {r.permissions.slice(0, 8).map((c) => (
-                            <span
-                              key={c}
-                              className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800"
-                            >
-                              {c}
-                            </span>
-                          ))}
-                          {r.permissions.length > 8 && (
-                            <span className="text-[10px] text-slate-400">
-                              +{r.permissions.length - 8} more
-                            </span>
-                          )}
-                        </div>
+                        <p className="text-xs text-[#567C8D]">{r.description}</p>
                       </div>
                     ))}
                   </div>
@@ -5504,51 +6453,27 @@ ${queueOrders
               </div>
             )}
 
-            {/* TAB 10: PAYMENTS, SHIPPING, COUPONS, REPORTS & SETTINGS */}
+            {/* PAYMENTS, SHIPPING, COUPONS, REPORTS & 13-SECTION WEBSITE SETTINGS */}
             {(adminTab === "PAYMENTS" ||
               adminTab === "SHIPPING" ||
               adminTab === "COUPONS" ||
               adminTab === "REPORTS" ||
-              adminTab === "SETTINGS" ||
-              adminTab === "CUSTOMERS") && (
+              adminTab === "SETTINGS") && (
               <div className="space-y-6">
                 {adminTab === "PAYMENTS" && (
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-xl font-black">
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                    <h2 className="font-serif text-xl font-bold">
                       Payment Verification & Gateway Architecture (SSLCommerz, bKash, Nagad, Stripe)
                     </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      {[
-                        { name: "SSLCommerz V4", status: "Sandbox Ready", env: "SSLCOMMERZ_STORE_ID" },
-                        { name: "bKash Tokenized", status: "Sandbox Ready", env: "BKASH_APP_KEY" },
-                        { name: "Nagad Merchant", status: "Sandbox Ready", env: "NAGAD_MERCHANT_ID" },
-                        { name: "Stripe Webhook", status: "Sandbox Ready", env: "STRIPE_SECRET_KEY" }
-                      ].map((gw) => (
-                        <div
-                          key={gw.name}
-                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800"
-                        >
-                          <div className="font-bold">{gw.name}</div>
-                          <div className="text-emerald-600 font-semibold mt-0.5">{gw.status}</div>
-                          <div className="font-mono text-[10px] text-slate-400 mt-1">{gw.env}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-2">
+                    <div className="space-y-2">
                       {orders.map((o) => (
                         <div
                           key={o.id}
-                          className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
+                          className="p-3.5 rounded-lg border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-2 text-xs"
                         >
                           <div>
                             <span className="font-mono font-bold">{o.orderNumber}</span> —{" "}
                             <span>{o.customerName}</span> ({o.paymentMethod})
-                            {o.transactionId && (
-                              <span className="ml-2 font-mono bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded">
-                                TrxID: {o.transactionId}
-                              </span>
-                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold">{formatBDT(o.grandTotal)}</span>
@@ -5561,7 +6486,7 @@ ${queueOrders
                                 );
                                 showToast(`Verified payment for ${o.orderNumber}`);
                               }}
-                              className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-semibold"
+                              className="px-3 py-1 rounded bg-[#2F4156] text-white font-semibold"
                             >
                               Mark Paid
                             </button>
@@ -5573,22 +6498,22 @@ ${queueOrders
                 )}
 
                 {adminTab === "SHIPPING" && (
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-xl font-black">
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                    <h2 className="font-serif text-xl font-bold">
                       Courier Integration & Dispatch (Steadfast, Pathao Courier, RedX)
                     </h2>
                     <div className="space-y-3">
                       {orders.map((o) => (
                         <div
                           key={o.id}
-                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs"
+                          className="p-3.5 rounded-lg border border-[#C8D9E6] flex flex-wrap items-center justify-between gap-3 text-xs"
                         >
                           <div>
                             <div className="font-bold">
                               {o.orderNumber} — {o.customerName} ({o.deliveryZone})
                             </div>
-                            <div className="text-slate-500">{o.deliveryAddress}</div>
-                            <div className="font-mono text-indigo-600 mt-0.5">
+                            <div className="text-[#567C8D]">{o.deliveryAddress}</div>
+                            <div className="font-mono text-[#2F4156] dark:text-[#C8D9E6] mt-0.5">
                               Provider: {o.courierProvider} | Tracking:{" "}
                               {o.trackingNumber || "Not Dispatched"}
                             </div>
@@ -5617,7 +6542,7 @@ ${queueOrders
                                     `Dispatched ${o.orderNumber} to ${provider} (Tracking: ${trk})`
                                   );
                                 }}
-                                className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold hover:bg-indigo-600 hover:text-white"
+                                className="px-3 py-1.5 rounded-lg border border-[#C8D9E6] font-semibold hover:bg-[#2F4156] hover:text-white"
                               >
                                 Send to {provider}
                               </button>
@@ -5630,8 +6555,10 @@ ${queueOrders
                 )}
 
                 {adminTab === "COUPONS" && (
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-xl font-black">Coupons & Promotional Discounts</h2>
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                    <h2 className="font-serif text-xl font-bold">
+                      Coupons & Promotional Discounts
+                    </h2>
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -5661,7 +6588,7 @@ ${queueOrders
                           setNewCouponForm({ ...newCouponForm, code: e.target.value })
                         }
                         placeholder="Code (e.g. WINTER20)"
-                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                       />
                       <select
                         value={newCouponForm.discountType}
@@ -5671,7 +6598,7 @@ ${queueOrders
                             discountType: e.target.value as any
                           })
                         }
-                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                       >
                         <option value="PERCENTAGE">Percentage (%)</option>
                         <option value="FIXED_AMOUNT">Fixed Amount (৳)</option>
@@ -5686,7 +6613,7 @@ ${queueOrders
                           })
                         }
                         placeholder="Discount Value"
-                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                       />
                       <input
                         type="number"
@@ -5698,11 +6625,11 @@ ${queueOrders
                           })
                         }
                         placeholder="Min Purchase"
-                        className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                        className="px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold"
+                        className="px-4 py-2 rounded-lg bg-[#2F4156] text-white font-semibold"
                       >
                         + Create Coupon
                       </button>
@@ -5712,13 +6639,11 @@ ${queueOrders
                       {coupons.map((c) => (
                         <div
                           key={c.id}
-                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center"
+                          className="p-4 rounded-xl border border-[#C8D9E6] flex justify-between items-center"
                         >
                           <div>
-                            <div className="font-mono font-bold text-sm text-indigo-600">
-                              {c.code}
-                            </div>
-                            <div className="text-slate-500">
+                            <div className="font-mono font-bold text-sm">{c.code}</div>
+                            <div className="text-[#567C8D]">
                               {c.discountType === "PERCENTAGE"
                                 ? `${c.discountValue}% OFF`
                                 : `${formatBDT(c.discountValue)} OFF`}{" "}
@@ -5735,25 +6660,33 @@ ${queueOrders
                 )}
 
                 {adminTab === "REPORTS" && (
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-xl font-black">Financial & Profitability Reports</h2>
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+                    <h2 className="font-serif text-xl font-bold">
+                      Financial & Profitability Reports
+                    </h2>
                     {hasPerm("financials.view") ? (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800">
-                          <div className="text-slate-500">Gross Revenue</div>
-                          <div className="text-2xl font-black mt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                          <div className="text-[#567C8D]">Today&apos;s Sales</div>
+                          <div className="text-xl font-extrabold mt-1">
+                            {formatBDT(kpiMetrics.todayRevenue)}
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                          <div className="text-[#567C8D]">Weekly Sales</div>
+                          <div className="text-xl font-extrabold mt-1">
                             {formatBDT(kpiMetrics.totalRevenue)}
                           </div>
                         </div>
-                        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800">
-                          <div className="text-slate-500">Net Profit Margin</div>
-                          <div className="text-2xl font-black text-emerald-600 mt-1">
+                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                          <div className="text-[#567C8D]">Net Profit Margin</div>
+                          <div className="text-xl font-extrabold text-emerald-700 mt-1">
                             {formatBDT(kpiMetrics.grossProfit)}
                           </div>
                         </div>
-                        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800">
-                          <div className="text-slate-500">Delivered Orders</div>
-                          <div className="text-2xl font-black mt-1">
+                        <div className="p-4 rounded-xl bg-[#F5F1EE] dark:bg-[#1B2634]">
+                          <div className="text-[#567C8D]">Delivered Orders</div>
+                          <div className="text-xl font-extrabold mt-1">
                             {kpiMetrics.deliveredCount}
                           </div>
                         </div>
@@ -5766,47 +6699,73 @@ ${queueOrders
                   </div>
                 )}
 
+                {/* SECTION 14: TABBED WEBSITE SETTINGS UI */}
                 {adminTab === "SETTINGS" && (
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h2 className="text-xl font-black">
-                      Website & Bilingual Invoice Header Configuration
-                    </h2>
+                  <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-5">
+                    <div>
+                      <h2 className="font-serif text-xl font-bold">
+                        Website & Bilingual Invoice Header Configuration
+                      </h2>
+                      <div className="flex flex-wrap gap-2 mt-3 border-b border-[#C8D9E6] pb-3 text-xs font-semibold">
+                        {[
+                          { id: "GENERAL", label: "General & Company" },
+                          { id: "BRANDING", label: "Branding & Palette" },
+                          { id: "SHIPPING", label: "Shipping Rates" },
+                          { id: "PAYMENT", label: "Payment Gateways" },
+                          { id: "INVOICE", label: "Invoice Terms" },
+                          { id: "SEO_LEGAL", label: "SEO & Legal" }
+                        ].map((st) => (
+                          <button
+                            key={st.id}
+                            onClick={() => setSettingsSubTab(st.id as any)}
+                            className={`px-3.5 py-1.5 rounded-lg ${
+                              settingsSubTab === st.id
+                                ? "bg-[#2F4156] text-white"
+                                : "bg-[#F5F1EE] text-[#2F4156]"
+                            }`}
+                          >
+                            {st.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div>
-                        <label className="font-bold block mb-1">Company Name (English)</label>
+                        <label className="font-semibold block mb-1">Company Name (English)</label>
                         <input
                           type="text"
                           value={settings.companyName}
                           onChange={(e) =>
                             setSettings({ ...settings, companyName: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-bold block mb-1">Company Name (বাংলা)</label>
+                        <label className="font-semibold block mb-1">Company Name (বাংলা)</label>
                         <input
                           type="text"
                           value={settings.companyNameBn}
                           onChange={(e) =>
                             setSettings({ ...settings, companyNameBn: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-bold block mb-1">Hotline Phone</label>
+                        <label className="font-semibold block mb-1">Hotline Phone</label>
                         <input
                           type="text"
                           value={settings.companyPhone}
                           onChange={(e) =>
                             setSettings({ ...settings, companyPhone: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                       <div>
-                        <label className="font-bold block mb-1">
+                        <label className="font-semibold block mb-1">
                           Promotional Storefront Banner
                         </label>
                         <input
@@ -5815,13 +6774,13 @@ ${queueOrders
                           onChange={(e) =>
                             setSettings({ ...settings, promoBannerText: e.target.value })
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+                          className="w-full px-3 py-2 rounded-lg border border-[#C8D9E6] bg-transparent"
                         />
                       </div>
                     </div>
                     <button
                       onClick={() => showToast("Website & Invoice settings updated!")}
-                      className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold"
+                      className="px-5 py-2.5 rounded-lg bg-[#2F4156] text-white text-xs font-semibold"
                     >
                       Save Configuration
                     </button>
@@ -5838,39 +6797,23 @@ ${queueOrders
       {/* ==================================================================== */}
       {isStaffLoggedIn && portalMode === "ARCHITECTURE" && (
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-          <div className="bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-            <h1 className="text-2xl font-black">
-              System Architecture, 29-Model Prisma Schema & Next.js App Router Blueprint
+          <div className="bg-white dark:bg-[#243344] p-6 rounded-xl border border-[#C8D9E6] space-y-4">
+            <h1 className="font-serif text-2xl font-bold">
+              System Architecture, 29-Model Prisma Schema & Official Brand Palette
             </h1>
-            <p className="text-xs text-slate-500">
-              All source files, Server Actions, Route Handlers, RBAC middleware, and Prisma models are packaged in the downloadable project archive.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
-                <div className="font-bold text-indigo-600 uppercase">
-                  1. Normalized 29-Model Prisma Schema
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+              {[
+                { name: "Navy", hex: "#2F4156", bg: "bg-[#2F4156] text-white" },
+                { name: "Teal", hex: "#567C8D", bg: "bg-[#567C8D] text-white" },
+                { name: "Sky Blue", hex: "#C8D9E6", bg: "bg-[#C8D9E6] text-[#2F4156]" },
+                { name: "Beige", hex: "#F5F1EE", bg: "bg-[#F5F1EE] text-[#2F4156] border border-[#C8D9E6]" },
+                { name: "White", hex: "#FFFFFF", bg: "bg-white text-[#2F4156] border border-[#C8D9E6]" }
+              ].map((sw) => (
+                <div key={sw.hex} className={`p-4 rounded-xl font-bold ${sw.bg}`}>
+                  <div>{sw.name}</div>
+                  <div className="font-mono text-[11px] opacity-80">{sw.hex}</div>
                 </div>
-                <p className="text-slate-500 leading-relaxed">
-                  User, Account, Session, Role, Permission, RolePermission, UserRole, CustomerProfile, StaffProfile, Address, Category, Product, ProductVariant, ProductImage, Inventory, InventoryTransaction, Cart, CartItem, Wishlist, Order, OrderItem, OrderStatusHistory, OrderAssignment, Payment, Shipping, Coupon, Review, StaffActivityLog, WebsiteSettings.
-                </p>
-              </div>
-              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
-                <div className="font-bold text-emerald-600 uppercase">
-                  2. Server-Side RBAC Enforcement
-                </div>
-                <p className="text-slate-500 leading-relaxed">
-                  Every Server Action and API Route calls <code>requirePermission()</code> to verify role permissions and user-level overrides against PostgreSQL before mutating data or returning cost prices.
-                </p>
-              </div>
-              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
-                <div className="font-bold text-purple-600 uppercase">
-                  3. Bilingual 3-Layout Order Memo Engine
-                </div>
-                <p className="text-slate-500 leading-relaxed">
-                  Supports A4 Standard Invoice, 80mm POS Thermal Receipt, and Compact Order Memo in English, বাংলা (Bengali), or Bilingual mode with print-count audit logging.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </div>
